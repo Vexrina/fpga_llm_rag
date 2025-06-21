@@ -1,0 +1,144 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "rag.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "RagService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {},
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "ragAddDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "Ответ на добавление документа"
+    },
+    "ragDeleteDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "Ответ на удаление документа"
+    },
+    "ragDocumentResult": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "similarityScore": {
+          "type": "number",
+          "format": "float"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Результат поиска документа"
+    },
+    "ragGetDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/definitions/ragDocumentResult"
+        },
+        "found": {
+          "type": "boolean"
+        }
+      },
+      "title": "Ответ с документом"
+    },
+    "ragGetIndexStatsResponse": {
+      "type": "object",
+      "properties": {
+        "totalDocuments": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "indexSizeBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "lastUpdated": {
+          "type": "string"
+        }
+      },
+      "title": "Ответ со статистикой индекса"
+    },
+    "ragSearchResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ragDocumentResult"
+          }
+        },
+        "totalFound": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "Ответ на поиск документов"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

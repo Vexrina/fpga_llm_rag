@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package rag;
+
+option go_package = "./rag";
+
+// RAG сервис для работы с документами и поиском
+service RagService {
+  // Добавить документ в индекс
+  rpc AddDocument(AddDocumentRequest) returns (AddDocumentResponse);
+  
+  // Поиск документов по запросу
+  rpc SearchDocuments(SearchRequest) returns (SearchResponse);
+  
+  // Получить документ по ID
+  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
+  
+  // Удалить документ по ID
+  rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse);
+  
+  // Получить статистику индекса
+  rpc GetIndexStats(GetIndexStatsRequest) returns (GetIndexStatsResponse);
+}
+
+// Запрос на добавление документа
+message AddDocumentRequest {
+  string id = 1;
+  string content = 2;
+  string title = 3;
+  map<string, string> metadata = 4;
+}
+
+// Ответ на добавление документа
+message AddDocumentResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Запрос на поиск документов
+message SearchRequest {
+  string query = 1;
+  int32 limit = 2;
+  float similarity_threshold = 3;
+}
+
+// Ответ на поиск документов
+message SearchResponse {
+  repeated DocumentResult results = 1;
+  int32 total_found = 2;
+}
+
+// Результат поиска документа
+message DocumentResult {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+  float similarity_score = 4;
+  map<string, string> metadata = 5;
+}
+
+// Запрос на получение документа
+message GetDocumentRequest {
+  string id = 1;
+}
+
+// Ответ с документом
+message GetDocumentResponse {
+  DocumentResult document = 1;
+  bool found = 2;
+}
+
+// Запрос на удаление документа
+message DeleteDocumentRequest {
+  string id = 1;
+}
+
+// Ответ на удаление документа
+message DeleteDocumentResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Запрос статистики индекса
+message GetIndexStatsRequest {}
+
+// Ответ со статистикой индекса
+message GetIndexStatsResponse {
+  int32 total_documents = 1;
+  int64 index_size_bytes = 2;
+  string last_updated = 3;
+} 
