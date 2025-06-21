@@ -27,7 +27,8 @@ type AddDocumentRequest struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	Metadata      map[string]string      `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Embedding     []float32              `protobuf:"fixed32,4,rep,packed,name=embedding,proto3" json:"embedding,omitempty"`
+	Metadata      map[string]string      `protobuf:"bytes,5,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -81,6 +82,13 @@ func (x *AddDocumentRequest) GetTitle() string {
 		return x.Title
 	}
 	return ""
+}
+
+func (x *AddDocumentRequest) GetEmbedding() []float32 {
+	if x != nil {
+		return x.Embedding
+	}
+	return nil
 }
 
 func (x *AddDocumentRequest) GetMetadata() map[string]string {
@@ -632,12 +640,13 @@ var File_api_rag_proto protoreflect.FileDescriptor
 
 const file_api_rag_proto_rawDesc = "" +
 	"\n" +
-	"\rapi/rag.proto\x12\x03rag\"\xd4\x01\n" +
+	"\rapi/rag.proto\x12\x03rag\"\xf2\x01\n" +
 	"\x12AddDocumentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x14\n" +
-	"\x05title\x18\x03 \x01(\tR\x05title\x12A\n" +
-	"\bmetadata\x18\x04 \x03(\v2%.rag.AddDocumentRequest.MetadataEntryR\bmetadata\x1a;\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x1c\n" +
+	"\tembedding\x18\x04 \x03(\x02R\tembedding\x12A\n" +
+	"\bmetadata\x18\x05 \x03(\v2%.rag.AddDocumentRequest.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"I\n" +

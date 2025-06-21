@@ -1,7 +1,9 @@
 package app
 
 import (
+	"context"
 	"fmt"
+
 	pb "rag/pkg/rag"
 )
 

@@ -55,7 +55,7 @@ func (r *VecDb) WithTransactional(ctx context.Context, fn func(tx pgx.Tx) error)
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 		}
 	}()
 	if err = fn(tx); err != nil {

@@ -27,7 +27,8 @@ message AddDocumentRequest {
   string id = 1;
   string content = 2;
   string title = 3;
-  map<string, string> metadata = 4;
+  repeated float embedding = 4;
+  map<string, string> metadata = 5;
 }
 
 // Ответ на добавление документа
