@@ -1,0 +1,15 @@
+services:
+  tgi-mxbai:
+    image: ghcr.io/huggingface/text-generation-inference:1.4.3
+    container_name: tgi-mxbai
+    ports:
+      - "8080:80"
+    volumes:
+      - ./models/mxbai-embed-large:/data/model
+    environment:
+      - MODEL_ID=/data/model
+      - NUM_SHARD=1
+      - MAX_BATCH_PREFILL_TOKENS=32768
+      - MAX_INPUT_LENGTH=8192
+      - MAX_TOTAL_TOKENS=8190
+    restart: unless-stopped 

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package floatweaver;
+
+option go_package = "./floatweaver";
+
+service EmbedService {
+  rpc Embed(EmbedRequest) returns (EmbedResponse) {}
+}
+
+message EmbedRequest {
+  string text = 1;
+}
+
+message EmbedResponse {
+  repeated float embedding = 1;
+} 
