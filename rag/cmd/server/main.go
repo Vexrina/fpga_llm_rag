@@ -17,10 +17,7 @@ import (
 
 // some check
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	port := getEnv("PORT", "8080")
 
 	dbUser := getEnv("POSTGRES_USER", "rag_user")
 	dbPassword := getEnv("POSTGRES_PASSWORD", "rag_password")

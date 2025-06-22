@@ -22,7 +22,7 @@ type (
 	}
 
 	AddDocumentUsecase interface {
-		AddDocument(ctx context.Context, req *utils.AddDocumentDomain) (*pb.AddDocumentResponse, error)
+		AddDocument(ctx context.Context, req *utils.AddDocumentDomain) error
 	}
 	GetDocumentUsecase interface {
 		GetDocument(ctx context.Context, req *utils.GetDocumentDomain) (*pb.GetDocumentResponse, error)

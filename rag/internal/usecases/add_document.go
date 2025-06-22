@@ -27,7 +27,7 @@ func NewAddDocumentUsecase(
 
 }
 
-func (u *AddDocumentUsecase) AddDocument(ctx context.Context, domain utils.AddDocumentDomain) error {
+func (u *AddDocumentUsecase) AddDocument(ctx context.Context, domain *utils.AddDocumentDomain) error {
 	return u.addDocRepository.WithTransactional(ctx, func(tx pgx.Tx) error {
 		item := repository.Item{
 			Title:     domain.Title,
