@@ -67,7 +67,7 @@ func (x *EmbedRequest) GetText() string {
 
 type EmbedResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Embedding     []float32              `protobuf:"fixed32,1,rep,packed,name=embedding,proto3" json:"embedding,omitempty"`
+	Embeddings    []*Embedding           `protobuf:"bytes,1,rep,name=embeddings,proto3" json:"embeddings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -102,9 +102,53 @@ func (*EmbedResponse) Descriptor() ([]byte, []int) {
 	return file_api_floatweaver_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *EmbedResponse) GetEmbedding() []float32 {
+func (x *EmbedResponse) GetEmbeddings() []*Embedding {
 	if x != nil {
-		return x.Embedding
+		return x.Embeddings
+	}
+	return nil
+}
+
+type Embedding struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Values        []float32              `protobuf:"fixed32,1,rep,packed,name=values,proto3" json:"values,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Embedding) Reset() {
+	*x = Embedding{}
+	mi := &file_api_floatweaver_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Embedding) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Embedding) ProtoMessage() {}
+
+func (x *Embedding) ProtoReflect() protoreflect.Message {
+	mi := &file_api_floatweaver_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Embedding.ProtoReflect.Descriptor instead.
+func (*Embedding) Descriptor() ([]byte, []int) {
+	return file_api_floatweaver_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Embedding) GetValues() []float32 {
+	if x != nil {
+		return x.Values
 	}
 	return nil
 }
@@ -115,9 +159,13 @@ const file_api_floatweaver_proto_rawDesc = "" +
 	"\n" +
 	"\x15api/floatweaver.proto\x12\vfloatweaver\"\"\n" +
 	"\fEmbedRequest\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text\"-\n" +
-	"\rEmbedResponse\x12\x1c\n" +
-	"\tembedding\x18\x01 \x03(\x02R\tembedding2P\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\"G\n" +
+	"\rEmbedResponse\x126\n" +
+	"\n" +
+	"embeddings\x18\x01 \x03(\v2\x16.floatweaver.EmbeddingR\n" +
+	"embeddings\"#\n" +
+	"\tEmbedding\x12\x16\n" +
+	"\x06values\x18\x01 \x03(\x02R\x06values2P\n" +
 	"\fEmbedService\x12@\n" +
 	"\x05Embed\x12\x19.floatweaver.EmbedRequest\x1a\x1a.floatweaver.EmbedResponse\"\x00B\x0fZ\r./floatweaverb\x06proto3"
 
@@ -133,19 +181,21 @@ func file_api_floatweaver_proto_rawDescGZIP() []byte {
 	return file_api_floatweaver_proto_rawDescData
 }
 
-var file_api_floatweaver_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_api_floatweaver_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_api_floatweaver_proto_goTypes = []any{
 	(*EmbedRequest)(nil),  // 0: floatweaver.EmbedRequest
 	(*EmbedResponse)(nil), // 1: floatweaver.EmbedResponse
+	(*Embedding)(nil),     // 2: floatweaver.Embedding
 }
 var file_api_floatweaver_proto_depIdxs = []int32{
-	0, // 0: floatweaver.EmbedService.Embed:input_type -> floatweaver.EmbedRequest
-	1, // 1: floatweaver.EmbedService.Embed:output_type -> floatweaver.EmbedResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2, // 0: floatweaver.EmbedResponse.embeddings:type_name -> floatweaver.Embedding
+	0, // 1: floatweaver.EmbedService.Embed:input_type -> floatweaver.EmbedRequest
+	1, // 2: floatweaver.EmbedService.Embed:output_type -> floatweaver.EmbedResponse
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_api_floatweaver_proto_init() }
@@ -159,7 +209,7 @@ func file_api_floatweaver_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_floatweaver_proto_rawDesc), len(file_api_floatweaver_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

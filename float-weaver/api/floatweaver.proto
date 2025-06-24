@@ -13,5 +13,9 @@ message EmbedRequest {
 }
 
 message EmbedResponse {
-  repeated float embedding = 1;
-} 
+  repeated Embedding embeddings = 1;
+}
+
+message Embedding {
+  repeated float values = 1;
+}

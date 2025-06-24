@@ -5,26 +5,30 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
-type EmbedUsecase struct{}
+type EmbedUsecase struct {
+	tgiUrl  string
+	tgiPort string
+}
 
 type tgiRequest struct {
 	Inputs []string `json:"inputs"`
 }
 
-type tgiResponse struct {
-	Embeddings [][]float32 `json:"embeddings"`
+func NewEmbedUsecase(tgiUrl, tgiPort string) *EmbedUsecase {
+	return &EmbedUsecase{tgiUrl: tgiUrl, tgiPort: tgiPort}
 }
 
-func NewEmbedUsecase() *EmbedUsecase {
-	return &EmbedUsecase{}
-}
-
-func (u EmbedUsecase) EmbedContent(ctx context.Context, content string) ([]float32, error) {
+func (u EmbedUsecase) EmbedContent(ctx context.Context, content string) ([][]float32, error) {
 	reqBody, _ := json.Marshal(tgiRequest{Inputs: []string{content}})
-	resp, err := http.Post("http://localhost:8080/embed", "application/json", bytes.NewBuffer(reqBody))
+	resp, err := http.Post(
+		fmt.Sprintf("http://%s:%s/embed", u.tgiUrl, u.tgiPort),
+		"application/json",
+		bytes.NewBuffer(reqBody),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -34,12 +38,12 @@ func (u EmbedUsecase) EmbedContent(ctx context.Context, content string) ([]float
 		return nil, errors.New("ошибка при обращении к TGI")
 	}
 
-	var tgiResp tgiResponse
-	if err := json.NewDecoder(resp.Body).Decode(&tgiResp); err != nil {
+	var embeddings [][]float32
+	if err := json.NewDecoder(resp.Body).Decode(&embeddings); err != nil {
 		return nil, err
 	}
-	if len(tgiResp.Embeddings) == 0 {
+	if len(embeddings) == 0 {
 		return nil, errors.New("TGI не вернул эмбеддинг")
 	}
-	return tgiResp.Embeddings[0], nil
+	return embeddings, nil
 }

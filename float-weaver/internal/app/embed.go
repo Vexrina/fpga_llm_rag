@@ -14,12 +14,16 @@ func (fw *FloatWeaver) Embed(ctx context.Context, req *pb.EmbedRequest) (*pb.Emb
 		return nil, status.Errorf(codes.InvalidArgument, "validation error: %v", err)
 	}
 
-	_, err := fw.embedUsecase.EmbedContent(ctx, req.GetText())
+	res, err := fw.embedUsecase.EmbedContent(ctx, req.GetText())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "embed error: %v", err)
 	}
 
-	return &pb.EmbedResponse{}, nil
+	embeddings := make([]*pb.Embedding, 0, len(res))
+	for _, vec := range res {
+		embeddings = append(embeddings, &pb.Embedding{Values: vec})
+	}
+	return &pb.EmbedResponse{Embeddings: embeddings}, nil
 }
 
 func (fw *FloatWeaver) validateEmbed(req *pb.EmbedRequest) error {

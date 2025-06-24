@@ -14,7 +14,9 @@ import (
 )
 
 func main() {
-	port := getEnv("PORT", "8080")
+	port := getEnv("PORT", "8081")
+	tgi_url := getEnv("TGI_URL", "localhost")
+	tgi_port := getEnv("TGI_PORT", "8080")
 
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
@@ -25,7 +27,7 @@ func main() {
 	s := grpc.NewServer()
 
 	// Создаем юзкейсы
-	embedUc := usecases.NewEmbedUsecase()
+	embedUc := usecases.NewEmbedUsecase(tgi_url, tgi_port)
 
 	// Регистрируем наш сервис
 	ragServer := app.NewFloatWeaver(embedUc)

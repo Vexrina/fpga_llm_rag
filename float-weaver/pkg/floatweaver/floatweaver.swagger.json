@@ -20,7 +20,19 @@
     "floatweaverEmbedResponse": {
       "type": "object",
       "properties": {
-        "embedding": {
+        "embeddings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/floatweaverEmbedding"
+          }
+        }
+      }
+    },
+    "floatweaverEmbedding": {
+      "type": "object",
+      "properties": {
+        "values": {
           "type": "array",
           "items": {
             "type": "number",

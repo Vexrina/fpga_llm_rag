@@ -1,0 +1,28 @@
+# Используем официальный образ golang для сборки
+FROM golang:1.23 as builder
+
+WORKDIR /app
+
+# Копируем go.mod и go.sum
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Копируем исходники
+COPY . .
+
+# Собираем бинарник
+RUN CGO_ENABLED=0 GOOS=linux go build -o float-weaver-server ./cmd/server/main.go
+
+# Финальный минимальный образ
+FROM debian:bullseye-slim
+
+WORKDIR /app
+
+# Копируем бинарник из builder
+COPY --from=builder /app/float-weaver-server .
+
+# Открываем порт (по умолчанию 8081)
+EXPOSE 8081
+
+# Запуск сервера
+CMD ["./float-weaver-server"]

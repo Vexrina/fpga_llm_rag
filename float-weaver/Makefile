@@ -34,4 +34,4 @@ generate: clean deps proto swagger
 .PHONY: download-model
 download-model:
 	mkdir -p models/mxbai-embed-large
-	huggingface-cli download mixedbread-ai/mxbai-embed-large-v1 --local-dir float-weaver/models/mxbai-embed-large-v1 --local-dir-use-symlinks False
+	huggingface-cli download mixedbread-ai/mxbai-embed-large-v1 --local-dir models/mxbai-embed-large-v1 --local-dir-use-symlinks False

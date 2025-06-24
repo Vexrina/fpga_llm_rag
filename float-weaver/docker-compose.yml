@@ -1,15 +1,29 @@
 services:
   tgi-mxbai:
-    image: ghcr.io/huggingface/text-generation-inference:1.4.3
+    # image: ghcr.io/huggingface/text-embeddings-inference:latest # gpu
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.7
     container_name: tgi-mxbai
     ports:
       - "8080:80"
     volumes:
-      - ./models/mxbai-embed-large:/data/model
+      - ./models/mxbai-embed-large-v1:/data/model
     environment:
       - MODEL_ID=/data/model
       - NUM_SHARD=1
       - MAX_BATCH_PREFILL_TOKENS=32768
-      - MAX_INPUT_LENGTH=8192
-      - MAX_TOTAL_TOKENS=8190
+      - MAX_INPUT_LENGTH=512
+      - MAX_TOTAL_TOKENS=8192
+    restart: unless-stopped
+
+  float-weaver:
+    build: .
+    container_name: float-weaver
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - TGI_URL=tgi-mxbai
+      - TGI_PORT=80
+    depends_on:
+      - tgi-mxbai
     restart: unless-stopped 

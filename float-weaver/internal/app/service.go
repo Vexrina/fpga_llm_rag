@@ -13,7 +13,7 @@ type (
 	}
 
 	EmbedUsecase interface {
-		EmbedContent(ctx context.Context, content string) ([]float32, error)
+		EmbedContent(ctx context.Context, content string) ([][]float32, error)
 	}
 )
 
