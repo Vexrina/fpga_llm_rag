@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/pgvector/pgvector-go"
 )
 
 func (r *VecDb) SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []float32, limit int) ([]Item, error) {
@@ -28,15 +29,13 @@ func (r *VecDb) SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []f
 
 	var items []Item
 	for rows.Next() {
-		var (
-			item       Item
-			vectorScan VectorScan
-		)
-		readErr := rows.Scan(&item.ID, &vectorScan, &item.Text, &item.Metadata)
+		var item Item
+		var embedding pgvector.Vector
+		readErr := rows.Scan(&item.ID, &embedding, &item.Text, &item.Metadata)
 		if readErr != nil {
-			return nil, fmt.Errorf("failed to scan row: %w", err)
+			return nil, fmt.Errorf("не удалось считать строку: %w", readErr)
 		}
-		item.Embedding = VectorToFloat32(vectorScan)
+		item.Embedding = embedding.Slice()
 		items = append(items, item)
 	}
 

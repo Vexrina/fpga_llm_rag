@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/migrations
+      - ./rag/migrations:/migrations
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U rag_user -d rag_db"]
       interval: 10s
@@ -26,15 +26,51 @@ services:
     environment:
       DATABASE_URL: postgres://rag_user:rag_password@postgres:5432/rag_db?sslmode=disable
     volumes:
-      - ./migrations:/migrations
+      - ./rag/migrations:/migrations
     command: ["-path", "/migrations", "-database", "postgres://rag_user:rag_password@postgres:5432/rag_db?sslmode=disable", "up"]
 
+  tgi-mxbai:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.7
+    container_name: tgi-mxbai
+    ports:
+      - "8080:80"
+    volumes:
+      - ./float-weaver/models/mxbai-embed-large-v1:/data/model
+    environment:
+      - MODEL_ID=/data/model
+      - NUM_SHARD=1
+      - MAX_BATCH_PREFILL_TOKENS=32768
+      - MAX_INPUT_LENGTH=512
+      - MAX_TOTAL_TOKENS=8192
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  float-weaver:
+    build: ./float-weaver
+    container_name: float-weaver
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - TGI_URL=tgi-mxbai
+      - TGI_PORT=80
+    depends_on:
+      tgi-mxbai:
+        condition: service_healthy
+    restart: unless-stopped
+
   rag:
-    build: .
+    build: ./rag
     container_name: rag_service
     depends_on:
       migrate:
         condition: service_completed_successfully
+      float-weaver:
+        condition: service_started
     environment:
       PORT: 50051
       POSTGRES_USER: rag_user
@@ -47,7 +83,7 @@ services:
     ports:
       - "50051:50051"
     volumes:
-      - ./migrations:/app/migrations
+      - ./rag/migrations:/app/migrations
 
 volumes:
   postgres_data: 

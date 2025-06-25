@@ -35,12 +35,15 @@ func main() {
 	)
 
 	var ( // conns
-		fwConn = getConn("localhost", "8081")
+		fwHost = getEnv("FLOATWEAVER_HOST", "float-weaver")
+		fwPort = getEnv("FLOATWEAVER_PORT", "8081")
+		fwConn = getConn(fwHost, fwPort)
 	)
 
 	defer fwConn.Close()
 
 	var ( // grpc clienst
+
 		fw = floatweaver.NewEmbedServiceClient(fwConn)
 	)
 
@@ -50,7 +53,8 @@ func main() {
 	db := repository.NewVecDb(ctx, connStr)
 
 	var (
-		addDocumentUsecase = usecases.NewAddDocumentUsecase(db, fw)
+		addDocumentUsecase    = usecases.NewAddDocumentUsecase(db, fw)
+		searchDocumentUsecase = usecases.NewSearchDocumentsUsecase(db, fw)
 	)
 
 	// Создаем TCP listener на порту 50051
@@ -66,6 +70,7 @@ func main() {
 	ragServer := app.NewRagServer(
 		db,
 		addDocumentUsecase,
+		searchDocumentUsecase,
 	)
 	pb.RegisterRagServiceServer(s, ragServer)
 
@@ -88,6 +93,8 @@ func getEnv(key, fallback string) string {
 }
 
 func getConn(url, port string) *grpc.ClientConn {
+	log.Println("URL:", url)
+	log.Println("PORT:", port)
 	conn, err := grpc.NewClient(
 		fmt.Sprintf("%s:%s", url, port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),

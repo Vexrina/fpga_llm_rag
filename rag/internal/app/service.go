@@ -42,9 +42,11 @@ type (
 func NewRagServer(
 	database *repository.VecDb,
 	addDocumentUsecase AddDocumentUsecase,
+	searchDocumentUsecase SearchDocumentsUsecase,
 ) *RagServer {
 	return &RagServer{
-		db:                 database,
-		addDocumentUsecase: addDocumentUsecase,
+		db:                    database,
+		addDocumentUsecase:    addDocumentUsecase,
+		searchDocumentUsecase: searchDocumentUsecase,
 	}
 }
