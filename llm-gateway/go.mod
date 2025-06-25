@@ -5,8 +5,6 @@ go 1.23.0
 toolchain go1.24.3
 
 require (
-	fpga_llm_rag/float-weaver v0.0.0
-	fpga_llm_rag/rag v0.0.0
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
 )

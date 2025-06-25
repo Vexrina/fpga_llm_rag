@@ -1,15 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 
 	"llm-gateway/internal/app"
 	"llm-gateway/internal/usecases"
@@ -21,17 +24,23 @@ import (
 func main() {
 	// Configuration
 	grpcPort := getEnv("GRPC_PORT", "8083")
-	ragServiceAddr := getEnv("RAG_SERVICE_ADDR", "localhost:8082")
+	ragServiceAddr := getEnv("RAG_SERVICE_ADDR", "localhost:50051")
 	// floatWeaverServiceAddr := getEnv("FLOAT_WEAVER_SERVICE_ADDR", "localhost:8081")
 	ollamaApiAddr := getEnv("OLLAMA_API_ADDR", "http://localhost:11434")
-	ollamaModel := getEnv("OLLAMA_MODEL", "phi3")
+	ollamaModel := getEnv("OLLAMA_MODEL", "phi3:latest")
 
+	fmt.Println(ragServiceAddr)
 	// gRPC Clients
-	ragConn, err := grpc.NewClient(ragServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("failed to connect to rag service: %v", err)
-	}
+	ragConn := getConn("localhost", "50051")
 	defer ragConn.Close()
+
+	// Пробуем сделать первый вызов, чтобы проверить соединение:
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := rag.NewRagServiceClient(ragConn).SearchDocuments(ctx, &rag.SearchRequest{Query: "hello", Limit: 10, SimilarityThreshold: 0.5})
+	if err != nil {
+		log.Fatalf("Ошибка при вызове rag: %v", err)
+	}
 	ragClientGrpc := rag.NewRagServiceClient(ragConn)
 
 	ragClient := utils.NewRagGetter(ragClientGrpc)
@@ -53,6 +62,7 @@ func main() {
 	service := app.NewService(askUsecase)
 	server := grpc.NewServer()
 	llm_gateway.RegisterGatewayServiceServer(server, service)
+	reflection.Register(server)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", grpcPort))
 	if err != nil {
@@ -79,4 +89,17 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func getConn(url, port string) *grpc.ClientConn {
+	log.Println("URL:", url)
+	log.Println("PORT:", port)
+	conn, err := grpc.NewClient(
+		fmt.Sprintf("%s:%s", url, port),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("Не создали коннекшн с floatweaver: %v", err)
+	}
+	return conn
 }

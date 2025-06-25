@@ -6,26 +6,8 @@ services:
     volumes:
       - ./ollama_data:/root/.ollama
     restart: always
-    pull_policy: always
-    # On first run, this will pull the phi3 model
-    command: /bin/sh -c "ollama serve & (sleep 5 && ollama pull phi3 &) && wait"
-
-  llm-gateway:
-    build:
-      context: ./llm-gateway
-    ports:
-      - "8083:8083"
-    restart: always
-    depends_on:
-      - rag
-      - float-weaver
-      - ollama
     environment:
-      - GRPC_PORT=8083
-      - RAG_SERVICE_ADDR=rag:8082
-      - FLOAT_WEAVER_SERVICE_ADDR=float-weaver:8081
-      - OLLAMA_API_ADDR=http://ollama:11434
-      - OLLAMA_MODEL=phi3
+      - OLLAMA_MODELS=phi3:latest
 
 volumes:
   ollama_data: 

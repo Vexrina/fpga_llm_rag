@@ -25,8 +25,6 @@ clean:
 	rm -rf pkg/llm-gateway/*.swagger.json
 	@echo "Clean complete"
 
-generate: clean deps proto swagger
-	@echo "Full generation completed"
 
 FW_PROTO_DIR=../float-weaver/api
 FW_PROTO_FILE=floatweaver.proto
@@ -51,3 +49,6 @@ gen-rag:
 	  --go_out=$(RAG_OUT_DIR) \
 	  --go-grpc_out=$(RAG_OUT_DIR) \
 	  $(RAG_PROTO_DIR)/$(RAG_PROTO_FILE)
+
+generate: clean deps proto swagger gen-floatweaver gen-rag
+	@echo "Full generation completed"

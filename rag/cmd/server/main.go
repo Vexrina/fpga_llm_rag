@@ -43,7 +43,6 @@ func main() {
 	defer fwConn.Close()
 
 	var ( // grpc clienst
-
 		fw = floatweaver.NewEmbedServiceClient(fwConn)
 	)
 

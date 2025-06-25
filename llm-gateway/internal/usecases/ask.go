@@ -116,6 +116,8 @@ func (u *AskUsecase) Ask(ctx context.Context, question string) (string, error) {
 
 	finalPrompt := fmt.Sprintf(promptTemplate, contextBuilder.String(), question)
 
+	fmt.Printf("[OLLAMA] model: '%s'\n", u.ollamaModel)
+
 	llmResp, err := u.ollamaClient.Generate(ctx, &OllamaGenerateRequest{
 		Model:  u.ollamaModel,
 		Prompt: finalPrompt,

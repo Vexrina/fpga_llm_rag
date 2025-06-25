@@ -233,3 +233,4 @@ __marimo__/
 # TODO: clean up that
 float-weaver/models/ 
 float-weaver/float-weaver/models
+ollama_data/
