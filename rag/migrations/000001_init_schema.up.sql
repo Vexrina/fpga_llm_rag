@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS documents (
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     metadata JSONB,
-    embedding VECTOR(1536), -- для хранения эмбеддингов
+    embedding VECTOR(1024), -- для хранения эмбеддингов, необходимо выставить свою длину вектора
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

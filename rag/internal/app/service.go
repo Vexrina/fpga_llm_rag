@@ -39,8 +39,12 @@ type (
 )
 
 // NewRagServer создает новый экземпляр RagServer
-func NewRagServer(ctx context.Context, connStr string) *RagServer {
+func NewRagServer(
+	database *repository.VecDb,
+	addDocumentUsecase AddDocumentUsecase,
+) *RagServer {
 	return &RagServer{
-		db: repository.NewVecDb(ctx, connStr),
+		db:                 database,
+		addDocumentUsecase: addDocumentUsecase,
 	}
 }
