@@ -2,13 +2,16 @@
 """
 Извлечение текста со сканированных страниц PDF (layoutparser + Detectron2 PubLayNet + Tesseract).
 
-Рекомендуемый запуск для плотных таблиц + структурированных блоков (стр. 29 и 55):
 
-  pyenv activate lp_env
-  python extract_scanned_pages.py --pdf pdf_files/kug.pdf --pages 29 55 \\
-      --page-mode 29 full --page-mode 55 layout
+usage:
+python python_scripts/kug_scrap.py --pdf $PATH --pages $PAGES --stategy auto -o $OUTPUT_PATH
 
-Страницы — 1-based (как в просмотрщике PDF).
+example:
+python python_scripts/kug_scrap.py \
+  --pdf python_scripts/pdf_files/portfolio.pdf \
+  --pages 3 4 5 6 \
+  --strategy auto \
+  -o python_scripts/pdf_files/portfolio_pages_3_6_auto2.txt
 """
 from __future__ import annotations
 
@@ -214,13 +217,176 @@ def ocr_figure_block(img_gray, block) -> str:
 
 def clean_line(s: str) -> str:
     s = re.sub(r"[^\S\n]+", " ", s)
+    s = s.replace("®", "").replace("\u00ad", "")  # часто встречающаяся «галочка»/символ
     return s.strip()
+
+
+def postprocess_body(text: str) -> str:
+    """
+    Мини-постобработка для читабельности:
+    - выкидываем пустые строки
+    - убираем дублирующиеся/обрезанные строки колонтитулов (типа «…университет ИТМО» рядом с полной строкой)
+    - убираем совсем «мусорные» строки
+    """
+    lines = [clean_line(x) for x in text.splitlines()]
+    lines = [x for x in lines if x]
+    out: list[str] = []
+    for ln in lines:
+        if out and ln == out[-1]:
+            continue
+
+        prev = out[-1] if out else ""
+        if (
+            "Национальный исследовательский университет ИТМО" in prev
+            and re.search(r"(университет|ниверситет)\s*ИТМО", ln, flags=re.IGNORECASE)
+        ):
+            continue
+
+        # если строка почти без кириллицы и без цифр и это не таблица — выкидываем
+        if "|" not in ln:
+            cyr = len(re.findall(r"[А-Яа-яЁё]", ln))
+            digits = len(re.findall(r"[0-9]", ln))
+            if cyr < 4 and digits == 0 and len(ln) < 25:
+                continue
+
+        out.append(ln)
+
+    return "\n".join(out).strip()
 
 
 def ocr_full_page(img_ocr: np.ndarray, psm: int = 3) -> str:
     """Целиком страница: для плотных таблиц, когда разбиение по блокам даёт мусор."""
     cfg = f"--oem 3 --psm {psm} -c preserve_interword_spaces=1"
     return pytesseract.image_to_string(img_ocr, lang="rus+eng", config=cfg).strip()
+
+
+def _to_binary(enhanced_gray: np.ndarray) -> np.ndarray:
+    """Адаптивная бинаризация (часто помогает при «грязных» сканах)."""
+    if enhanced_gray.dtype != np.uint8:
+        enhanced_gray = np.clip(enhanced_gray, 0, 255).astype(np.uint8)
+    return cv2.adaptiveThreshold(
+        enhanced_gray,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY,
+        31,
+        15,
+    )
+
+
+def _text_quality_score(text: str) -> float:
+    """
+    Простая эвристика: сколько «нормального» русского текста распознано.
+    Используем в auto-выборе между full/layout.
+    """
+    if not text:
+        return -1.0
+    cyr_words = re.findall(r"[А-Яа-яЁё]{3,}", text)
+    cyr_chars = len(re.findall(r"[А-Яа-яЁё]", text))
+    digits = len(re.findall(r"[0-9]", text))
+    # Плохой признак: много «мусора» (одиночные символы и странные группы)
+    short_tokens = len(re.findall(r"\b.{1,2}\b", text))
+    score = (
+        len(cyr_words) * 10.0
+        + cyr_chars * 0.05
+        + digits * 0.2
+        - short_tokens * 0.2
+    )
+    return score
+
+
+def ocr_full_with_conf(img_ocr: np.ndarray, psm: int = 3) -> tuple[str, float, int]:
+    """
+    OCR всей страницы + качество по conf.
+    Возвращает (text, mean_conf, kept_word_count).
+    """
+    cfg = f"--oem 3 --psm {psm} -c preserve_interword_spaces=1"
+    data = pytesseract.image_to_data(
+        img_ocr,
+        lang="rus+eng",
+        output_type=Output.DICT,
+        config=cfg,
+    )
+
+    words = []
+    n = len(data["text"])
+    for i in range(n):
+        t = (data["text"][i] or "").strip()
+        if not t:
+            continue
+        try:
+            conf = int(float(data["conf"][i]))
+        except (TypeError, ValueError):
+            continue
+        # отсеиваем совсем мусор
+        if conf < 20:
+            continue
+        line_id = (data["block_num"][i], data["par_num"][i], data["line_num"][i])
+        left = data["left"][i]
+        words.append((line_id, left, t, conf))
+
+    if not words:
+        return "", -1.0, 0
+
+    confs = [w[3] for w in words]
+    mean_conf = float(np.mean(confs)) if confs else -1.0
+    kept_word_count = len(words)
+
+    grouped: dict[tuple[int, int, int], list[tuple[int, str]]] = {}
+    for line_id, left, t, _conf in words:
+        grouped.setdefault(line_id, []).append((left, t))
+
+    lines = []
+    for line_id in sorted(grouped.keys(), key=lambda k: (k[0], k[1], k[2])):
+        parts = sorted(grouped[line_id], key=lambda x: x[0])
+        line_text = " ".join(t for _, t in parts)
+        if line_text.strip():
+            lines.append(line_text)
+
+    return "\n".join(lines).strip(), mean_conf, kept_word_count
+
+
+def ocr_auto_page(
+    img_pil,
+    lp_model,
+    img_rgb: np.ndarray,
+    img_ocr: np.ndarray,
+) -> str:
+    """
+    Auto-режим без выбора full/layout пользователем:
+    пробуем несколько preprocess + psm для full и при необходимости падаем в layout.
+    """
+    # Кандидаты по препроцессу
+    candidates = [
+        ("gray", img_ocr),
+        ("bin", _to_binary(img_ocr)),
+    ]
+    # Кандидаты по PSM
+    psms = [3, 6]
+
+    best_full_text = ""
+    best_full_score = -1e9
+    best_full_conf = -1.0
+
+    for _name, img in candidates:
+        for psm in psms:
+            text, mean_conf, kept = ocr_full_with_conf(img, psm=psm)
+            if not text:
+                continue
+            # score: conf + количество слов + наличие русского текста
+            quality = _text_quality_score(text)
+            score = mean_conf + kept * 0.02 + quality * 0.02
+            if score > best_full_score:
+                best_full_score = score
+                best_full_text = text
+                best_full_conf = mean_conf
+
+    # Если full распознал мало адекватного русского текста — пробуем layout как резерв
+    if _text_quality_score(best_full_text) < 30 or best_full_conf < 25:
+        return parse_page(img_pil, lp_model, img_rgb, img_ocr)
+
+    # Нормализуем пробелы для читабельности
+    return "\n".join(clean_line(x) for x in best_full_text.splitlines() if clean_line(x))
 
 
 def parse_page(img_pil, lp_model, img_rgb: np.ndarray, img_ocr: np.ndarray):
@@ -287,9 +453,9 @@ def main():
     )
     ap.add_argument(
         "--strategy",
-        choices=("layout", "full"),
-        default="layout",
-        help="layout: PubLayNet + OCR по блокам; full: только Tesseract на всю страницу (плотные таблицы)",
+        choices=("layout", "full", "auto"),
+        default="auto",
+        help="layout: PubLayNet + OCR по блокам; full: только Tesseract на всю страницу; auto: адаптивно выбирает вариант per page",
     )
     ap.add_argument(
         "--full-psm",
@@ -330,8 +496,9 @@ def main():
             print(f"Недопустимый MODE: {m} (нужно layout или full)", file=sys.stderr)
             sys.exit(1)
 
-    need_layout = args.strategy == "layout" or any(
-        page_modes.get(p, args.strategy) == "layout" for p in args.pages
+    need_layout = (
+        args.strategy in ("layout", "auto")
+        or any(page_modes.get(p, args.strategy) == "layout" for p in args.pages)
     )
 
     print(f"Устройство: {'cuda' if torch.cuda.is_available() else 'cpu'}", file=sys.stderr)
@@ -349,8 +516,12 @@ def main():
         if strat == "full":
             body = ocr_full_page(img_ocr, psm=args.full_psm)
             body = "\n".join(clean_line(x) for x in body.splitlines() if x.strip())
-        else:
+        elif strat == "layout":
             body = parse_page(img_pil, lp_model, img_rgb, img_ocr)
+        else:
+            # auto
+            body = ocr_auto_page(img_pil, lp_model, img_rgb, img_ocr)
+        body = postprocess_body(body)
         if args.append_full_page and strat == "layout":
             extra = ocr_full_page(img_ocr, psm=args.full_psm)
             extra = "\n".join(clean_line(x) for x in extra.splitlines() if x.strip())
