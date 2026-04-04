@@ -231,6 +231,11 @@ __marimo__/
 
 # nn models
 # TODO: clean up that
-float-weaver/models/ 
+float-weaver/models/
 float-weaver/float-weaver/models
 ollama_data/
+
+# Node.js / student-faq
+student-faq/node_modules/
+student-faq/dist/
+student-faq/.vite/
