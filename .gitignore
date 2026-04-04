@@ -236,6 +236,12 @@ float-weaver/float-weaver/models
 ollama_data/
 
 # Node.js / student-faq
-student-faq/node_modules/
+student-faq/node_modules/*
 student-faq/dist/
 student-faq/.vite/
+
+# parsers
+python_scripts/.web_cache/*
+python_scripts/models/*
+python_scripts/pdf_files/*
+python_scripts/cache_texts.*
