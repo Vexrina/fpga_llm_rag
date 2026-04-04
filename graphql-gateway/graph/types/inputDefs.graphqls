@@ -1,0 +1,10 @@
+input MetadataInput {
+  key: String!
+  value: String!
+}
+
+input AddDocumentInput {
+  title: String!
+  content: String!
+  metadata: [MetadataInput!]
+}

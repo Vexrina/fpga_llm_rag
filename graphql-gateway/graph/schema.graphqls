@@ -1,0 +1,5 @@
+# GraphQL Schema for FPGA LLM RAG Gateway
+# This file serves as documentation - actual schema is defined in separate files
+
+# Import types
+# type Query, Mutation defined in query/ and mutation/ directories

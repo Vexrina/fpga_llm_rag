@@ -245,3 +245,6 @@ python_scripts/.web_cache/*
 python_scripts/models/*
 python_scripts/pdf_files/*
 python_scripts/cache_texts.*
+
+#binaries
+*/bin/*

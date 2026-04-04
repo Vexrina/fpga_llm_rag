@@ -1,0 +1,4 @@
+type Mutation {
+  addDocument(input: AddDocumentInput!): AddDocumentResult!
+  deleteDocument(id: String!): DeleteDocumentResult!
+}

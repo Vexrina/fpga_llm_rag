@@ -1,0 +1,35 @@
+type MetadataEntry {
+  key: String!
+  value: String!
+}
+
+type DocumentResult {
+  id: String!
+  title: String!
+  content: String!
+  similarityScore: Float!
+  metadata: [MetadataEntry!]!
+}
+
+type Document {
+  id: String!
+  title: String!
+  content: String!
+  metadata: [MetadataEntry!]!
+}
+
+type AddDocumentResult {
+  success: Boolean!
+  message: String!
+}
+
+type DeleteDocumentResult {
+  success: Boolean!
+  message: String!
+}
+
+type IndexStats {
+  totalDocuments: Int!
+  indexSizeBytes: Int!
+  lastUpdated: String!
+}

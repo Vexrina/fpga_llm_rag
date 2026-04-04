@@ -1,0 +1,6 @@
+type Query {
+  ask(question: String!): String!
+  searchDocuments(query: String!, limit: Int, threshold: Float): [DocumentResult!]!
+  getDocument(id: String!): Document
+  getIndexStats: IndexStats
+}

@@ -1,0 +1,20 @@
+schema:
+  - graph/schema.graphqls
+  - graph/types/*.graphqls
+  - graph/query/*.graphqls
+  - graph/mutation/*.graphqls
+  - graph/enums/*.graphqls
+
+exec:
+  filename: internal/app/generated/generated.go
+  package: generated
+
+model:
+  filename: internal/app/generated/models_gen.go
+  package: generated
+
+resolver:
+  layout: follow-schema
+  dir: graph/generated_stubs
+  package: stubs
+  filename_template: "{name}.resolver.go"
