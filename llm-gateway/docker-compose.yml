@@ -1,6 +1,6 @@
 services:
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:rocm
     ports:
       - "11434:11434"
     volumes:
@@ -8,6 +8,13 @@ services:
     restart: always
     environment:
       - OLLAMA_MODELS=phi3:latest
+      - HSA_OVERRIDE_GFX_VERSION=12.0.0
+    deploy:
+      resources:
+        devices:
+          - driver: amd.com
+            count: 1
+            capabilities: [gpu]
 
 volumes:
   ollama_data: 

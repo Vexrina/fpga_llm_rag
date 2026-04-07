@@ -31,7 +31,7 @@ func main() {
 
 	fmt.Println(ragServiceAddr)
 	// gRPC Clients
-	ragConn := getConn("localhost", "50051")
+	ragConn := getConn("rag", "50051")
 	defer ragConn.Close()
 
 	// Пробуем сделать первый вызов, чтобы проверить соединение:

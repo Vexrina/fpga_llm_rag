@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   postgres:
     image: pgvector/pgvector:pg15
@@ -16,6 +18,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - fpga-network
 
   migrate:
     image: migrate/migrate:latest
@@ -28,16 +32,16 @@ services:
     volumes:
       - ./rag/migrations:/migrations
     command: ["-path", "/migrations", "-database", "postgres://rag_user:rag_password@postgres:5432/rag_db?sslmode=disable", "up"]
+    networks:
+      - fpga-network
 
   tgi-mxbai:
     image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.7
     container_name: tgi-mxbai
     ports:
       - "8080:80"
-    volumes:
-      - ./float-weaver/models/mxbai-embed-large-v1:/data/model
     environment:
-      - MODEL_ID=/data/model
+      - MODEL_ID=BAAI/bge-large-en-v1.5
       - NUM_SHARD=1
       - MAX_BATCH_PREFILL_TOKENS=32768
       - MAX_INPUT_LENGTH=512
@@ -48,6 +52,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - fpga-network
 
   float-weaver:
     build: ./float-weaver
@@ -62,6 +68,8 @@ services:
       tgi-mxbai:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - fpga-network
 
   rag:
     build: ./rag
@@ -84,6 +92,60 @@ services:
       - "50051:50051"
     volumes:
       - ./rag/migrations:/app/migrations
+    networks:
+      - fpga-network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - fpga-network
+
+  llm-gateway:
+    build: ./llm-gateway
+    container_name: llm-gateway
+    depends_on:
+      rag:
+        condition: service_started
+      ollama:
+        condition: service_started
+    environment:
+      PORT: 8083
+      RAG_HOST: rag
+      RAG_PORT: 50051
+      OLLAMA_URL: ollama:11434
+      OLLAMA_MODEL: phi3
+    ports:
+      - "8083:8083"
+    networks:
+      - fpga-network
+
+  graphql-gateway:
+    build: ./graphql-gateway
+    container_name: graphql-gateway
+    depends_on:
+      llm-gateway:
+        condition: service_started
+      rag:
+        condition: service_started
+    environment:
+      LLM_GATEWAY_ADDR: llm-gateway:8083
+      RAG_SERVICE_ADDR: rag:50051
+      FLOAT_WEAVER_ADDR: float-weaver:8081
+      GRAPHQL_PORT: 8080
+    ports:
+      - "4000:8080"
+    networks:
+      - fpga-network
 
 volumes:
-  postgres_data: 
+  postgres_data:
+  ollama_data:
+
+networks:
+  fpga-network:
+    driver: bridge

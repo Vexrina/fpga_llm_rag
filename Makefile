@@ -1,9 +1,18 @@
 up:
-	docker-compose -f float-weaver/docker-compose.yml -f rag/docker-compose.yml up --build
+	docker-compose up --build
 
 down:
-	docker-compose -f float-weaver/docker-compose.yml -f rag/docker-compose.yml down
+	docker-compose down
 
 restart:
-	docker-compose -f float-weaver/docker-compose.yml -f rag/docker-compose.yml down
-	docker-compose -f float-weaver/docker-compose.yml -f rag/docker-compose.yml up --build 
+	docker-compose down
+	docker-compose up --build
+
+build-graphql:
+	docker-compose build graphql-gateway
+
+logs:
+	docker-compose logs -f
+
+logs-graphql:
+	docker-compose logs -f graphql-gateway

@@ -11,6 +11,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/playground"
 )
 
 func main() {
@@ -38,6 +39,7 @@ func main() {
 	log.Printf("GraphQL endpoint: http://localhost%s/graphql", addr)
 
 	http.Handle("/graphql", srv)
+	http.Handle("/", playground.Handler("GraphQL", "/graphql"))
 
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatalf("Server failed: %v", err)
