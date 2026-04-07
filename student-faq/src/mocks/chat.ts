@@ -10,35 +10,16 @@ const mockResponses: string[] = [
 
 let messageCounter = 0
 
-export async function sendMessage(content: string): Promise<Message> {
+export async function sendMessage(_content: string): Promise<Message> {
   await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 700))
 
-  const response = mockResponses[messageCounter % mockResponses.length]
+  const responseText = mockResponses[messageCounter % mockResponses.length]
   messageCounter++
 
   return {
     id: `msg-${Date.now()}`,
     role: 'assistant',
-    content,
+    content: responseText,
     timestamp: new Date(),
   }
-}
-
-export async function getChatHistory(): Promise<Message[]> {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
-  return [
-    {
-      id: 'msg-1',
-      role: 'user',
-      content: 'Как получить справку?',
-      timestamp: new Date(Date.now() - 3600000),
-    },
-    {
-      id: 'msg-2',
-      role: 'assistant',
-      content: mockResponses[0],
-      timestamp: new Date(Date.now() - 3500000),
-    },
-  ]
 }
