@@ -6,35 +6,78 @@ option go_package = "./rag";
 
 // RAG сервис для работы с документами и поиском
 service RagService {
-  // Добавить документ в индекс
-  rpc AddDocument(AddDocumentRequest) returns (AddDocumentResponse);
-  
+  // Предпросмотр: извлечь текст из PDF/URL без сохранения
+  rpc PreviewDocument(PreviewDocumentRequest) returns (PreviewDocumentResponse);
+   
+  // Сохранить документ с готовым текстом
+  rpc CommitDocument(CommitDocumentRequest) returns (CommitDocumentResponse);
+   
   // Поиск документов по запросу
   rpc SearchDocuments(SearchRequest) returns (SearchResponse);
-  
+   
   // Получить документ по ID
   rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
-  
+   
   // Удалить документ по ID
   rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse);
-  
+   
   // Получить статистику индекса
   rpc GetIndexStats(GetIndexStatsRequest) returns (GetIndexStatsResponse);
 }
 
-// Запрос на добавление документа
+// Тип источника документа
+enum DocumentSourceType {
+  SOURCE_TYPE_UNSPECIFIED = 0;
+  SOURCE_TYPE_TEXT = 1;
+  SOURCE_TYPE_URL = 2;
+  SOURCE_TYPE_PDF = 3;
+}
+
+// Запрос на добавление документа (legacy, для совместимости)
 message AddDocumentRequest {
   string id = 1;
   string content = 2;
   string title = 3;
   repeated float embedding = 4;
   map<string, string> metadata = 5;
+  DocumentSourceType source_type = 6;
+  string source_url = 7;
+  int32 url_max_depth = 8;
 }
 
 // Ответ на добавление документа
 message AddDocumentResponse {
   bool success = 1;
   string message = 2;
+}
+
+// Запрос на предпросмотр (извлечение текста без сохранения)
+message PreviewDocumentRequest {
+  string title = 1;
+  DocumentSourceType source_type = 2;
+  string source_url = 3;
+  string content_base64 = 4;  // PDF as base64
+  int32 url_max_depth = 5;
+}
+
+// Ответ на предпросмотр
+message PreviewDocumentResponse {
+  string extracted_text = 1;
+  int32 pages_extracted = 2;
+}
+
+// Запрос на коммит (сохранение отредактированного текста)
+message CommitDocumentRequest {
+  string title = 1;
+  string content = 2;
+  map<string, string> metadata = 3;
+}
+
+// Ответ на коммит
+message CommitDocumentResponse {
+  bool success = 1;
+  string message = 2;
+  string id = 3;
 }
 
 // Запрос на поиск документов

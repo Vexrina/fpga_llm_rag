@@ -19,6 +19,10 @@ import (
 	pb "rag/pkg/rag"
 )
 
+const (
+	defaultPDFTimeout = 5 * time.Minute
+)
+
 // some check
 func main() {
 	var ( // envs
@@ -52,8 +56,16 @@ func main() {
 	db := repository.NewVecDb(ctx, connStr)
 
 	var (
-		addDocumentUsecase    = usecases.NewAddDocumentUsecase(db, fw)
-		searchDocumentUsecase = usecases.NewSearchDocumentsUsecase(db, fw)
+		pdfProcessor = usecases.NewPDFProcessor(
+			"python3",
+			"python_scripts/kug_scrap.py",
+			[]string{},
+			defaultPDFTimeout,
+		)
+		addDocumentUsecase     = usecases.NewAddDocumentUsecase(db, fw, pdfProcessor, nil)
+		previewDocumentUsecase = usecases.NewPreviewDocumentUsecase(pdfProcessor, nil)
+		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, fw)
+		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw)
 	)
 
 	// Создаем TCP listener на порту 50051
@@ -62,13 +74,18 @@ func main() {
 		log.Fatalf("Не удалось создать listener: %v", err)
 	}
 
-	// Создаем gRPC сервер
-	s := grpc.NewServer()
+	// Создаем gRPC сервер с увеличенным лимитом для больших PDF (20MB * 1.33 ~= 27MB base64)
+	s := grpc.NewServer(
+		grpc.MaxRecvMsgSize(27*1024*1024),
+		grpc.MaxSendMsgSize(27*1024*1024),
+	)
 
 	// Регистрируем наш сервис
 	ragServer := app.NewRagServer(
 		db,
 		addDocumentUsecase,
+		previewDocumentUsecase,
+		commitDocumentUsecase,
 		searchDocumentUsecase,
 	)
 	pb.RegisterRagServiceServer(s, ragServer)

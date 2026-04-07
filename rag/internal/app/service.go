@@ -13,16 +13,24 @@ type (
 	RagServer struct {
 		pb.UnimplementedRagServiceServer
 
-		db                    *repository.VecDb
-		addDocumentUsecase    AddDocumentUsecase
-		getDocumentUsecase    GetDocumentUsecase
-		deleteDocumentUsecase DeleteDocumentsUsecase
-		searchDocumentUsecase SearchDocumentsUsecase
-		getIndexStatUsecase   GetIndexStatUsecase
+		db                     *repository.VecDb
+		addDocumentUsecase     AddDocumentUsecase
+		previewDocumentUsecase PreviewDocumentUsecase
+		commitDocumentUsecase  CommitDocumentUsecase
+		getDocumentUsecase     GetDocumentUsecase
+		deleteDocumentUsecase  DeleteDocumentsUsecase
+		searchDocumentUsecase  SearchDocumentsUsecase
+		getIndexStatUsecase    GetIndexStatUsecase
 	}
 
 	AddDocumentUsecase interface {
 		AddDocument(ctx context.Context, req *utils.AddDocumentDomain) error
+	}
+	PreviewDocumentUsecase interface {
+		Preview(ctx context.Context, req *utils.PreviewDocumentDomain) (*utils.PreviewResult, error)
+	}
+	CommitDocumentUsecase interface {
+		Commit(ctx context.Context, req *utils.CommitDocumentDomain) (string, error)
 	}
 	GetDocumentUsecase interface {
 		GetDocument(ctx context.Context, req *utils.GetDocumentDomain) (*pb.GetDocumentResponse, error)
@@ -42,11 +50,15 @@ type (
 func NewRagServer(
 	database *repository.VecDb,
 	addDocumentUsecase AddDocumentUsecase,
+	previewDocumentUsecase PreviewDocumentUsecase,
+	commitDocumentUsecase CommitDocumentUsecase,
 	searchDocumentUsecase SearchDocumentsUsecase,
 ) *RagServer {
 	return &RagServer{
-		db:                    database,
-		addDocumentUsecase:    addDocumentUsecase,
-		searchDocumentUsecase: searchDocumentUsecase,
+		db:                     database,
+		addDocumentUsecase:     addDocumentUsecase,
+		previewDocumentUsecase: previewDocumentUsecase,
+		commitDocumentUsecase:  commitDocumentUsecase,
+		searchDocumentUsecase:  searchDocumentUsecase,
 	}
 }
