@@ -18,9 +18,15 @@ type Document {
   metadata: [MetadataEntry!]!
 }
 
-type AddDocumentResult {
+type PreviewDocumentResult {
+  extractedText: String!
+  pagesExtracted: Int!
+}
+
+type CommitDocumentResult {
   success: Boolean!
   message: String!
+  id: String!
 }
 
 type DeleteDocumentResult {

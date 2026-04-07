@@ -1,4 +1,5 @@
 type Mutation {
-  addDocument(input: AddDocumentInput!): AddDocumentResult!
+  previewDocument(input: PreviewDocumentInput!): PreviewDocumentResult!
+  commitDocument(input: CommitDocumentInput!): CommitDocumentResult!
   deleteDocument(id: String!): DeleteDocumentResult!
 }

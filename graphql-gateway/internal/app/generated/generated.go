@@ -34,7 +34,8 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	AddDocumentResult struct {
+	CommitDocumentResult struct {
+		ID      func(childComplexity int) int
 		Message func(childComplexity int) int
 		Success func(childComplexity int) int
 	}
@@ -71,8 +72,14 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddDocument    func(childComplexity int, input AddDocumentInput) int
-		DeleteDocument func(childComplexity int, id string) int
+		CommitDocument  func(childComplexity int, input CommitDocumentInput) int
+		DeleteDocument  func(childComplexity int, id string) int
+		PreviewDocument func(childComplexity int, input PreviewDocumentInput) int
+	}
+
+	PreviewDocumentResult struct {
+		ExtractedText  func(childComplexity int) int
+		PagesExtracted func(childComplexity int) int
 	}
 
 	Query struct {
@@ -84,7 +91,8 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	AddDocument(ctx context.Context, input AddDocumentInput) (*AddDocumentResult, error)
+	PreviewDocument(ctx context.Context, input PreviewDocumentInput) (*PreviewDocumentResult, error)
+	CommitDocument(ctx context.Context, input CommitDocumentInput) (*CommitDocumentResult, error)
 	DeleteDocument(ctx context.Context, id string) (*DeleteDocumentResult, error)
 }
 type QueryResolver interface {
@@ -108,18 +116,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
-	case "AddDocumentResult.message":
-		if e.ComplexityRoot.AddDocumentResult.Message == nil {
+	case "CommitDocumentResult.id":
+		if e.ComplexityRoot.CommitDocumentResult.ID == nil {
 			break
 		}
 
-		return e.ComplexityRoot.AddDocumentResult.Message(childComplexity), true
-	case "AddDocumentResult.success":
-		if e.ComplexityRoot.AddDocumentResult.Success == nil {
+		return e.ComplexityRoot.CommitDocumentResult.ID(childComplexity), true
+	case "CommitDocumentResult.message":
+		if e.ComplexityRoot.CommitDocumentResult.Message == nil {
 			break
 		}
 
-		return e.ComplexityRoot.AddDocumentResult.Success(childComplexity), true
+		return e.ComplexityRoot.CommitDocumentResult.Message(childComplexity), true
+	case "CommitDocumentResult.success":
+		if e.ComplexityRoot.CommitDocumentResult.Success == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CommitDocumentResult.Success(childComplexity), true
 
 	case "DeleteDocumentResult.message":
 		if e.ComplexityRoot.DeleteDocumentResult.Message == nil {
@@ -222,17 +236,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.MetadataEntry.Value(childComplexity), true
 
-	case "Mutation.addDocument":
-		if e.ComplexityRoot.Mutation.AddDocument == nil {
+	case "Mutation.commitDocument":
+		if e.ComplexityRoot.Mutation.CommitDocument == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_addDocument_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_commitDocument_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.AddDocument(childComplexity, args["input"].(AddDocumentInput)), true
+		return e.ComplexityRoot.Mutation.CommitDocument(childComplexity, args["input"].(CommitDocumentInput)), true
 	case "Mutation.deleteDocument":
 		if e.ComplexityRoot.Mutation.DeleteDocument == nil {
 			break
@@ -244,6 +258,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteDocument(childComplexity, args["id"].(string)), true
+	case "Mutation.previewDocument":
+		if e.ComplexityRoot.Mutation.PreviewDocument == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_previewDocument_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.PreviewDocument(childComplexity, args["input"].(PreviewDocumentInput)), true
+
+	case "PreviewDocumentResult.extractedText":
+		if e.ComplexityRoot.PreviewDocumentResult.ExtractedText == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PreviewDocumentResult.ExtractedText(childComplexity), true
+	case "PreviewDocumentResult.pagesExtracted":
+		if e.ComplexityRoot.PreviewDocumentResult.PagesExtracted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PreviewDocumentResult.PagesExtracted(childComplexity), true
 
 	case "Query.ask":
 		if e.ComplexityRoot.Query.Ask == nil {
@@ -294,8 +332,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputAddDocumentInput,
+		ec.unmarshalInputCommitDocumentInput,
 		ec.unmarshalInputMetadataInput,
+		ec.unmarshalInputPreviewDocumentInput,
 	)
 	first := true
 
@@ -382,7 +421,15 @@ var sources = []*ast.Source{
   value: String!
 }
 
-input AddDocumentInput {
+input PreviewDocumentInput {
+  title: String!
+  sourceType: DocumentSourceType!
+  sourceUrl: String
+  contentBase64: String
+  urlMaxDepth: Int
+}
+
+input CommitDocumentInput {
   title: String!
   content: String!
   metadata: [MetadataInput!]
@@ -408,9 +455,15 @@ type Document {
   metadata: [MetadataEntry!]!
 }
 
-type AddDocumentResult {
+type PreviewDocumentResult {
+  extractedText: String!
+  pagesExtracted: Int!
+}
+
+type CommitDocumentResult {
   success: Boolean!
   message: String!
+  id: String!
 }
 
 type DeleteDocumentResult {
@@ -432,11 +485,17 @@ type IndexStats {
 }
 `, BuiltIn: false},
 	{Name: "../../../graph/mutation/mutationDefs.graphqls", Input: `type Mutation {
-  addDocument(input: AddDocumentInput!): AddDocumentResult!
+  previewDocument(input: PreviewDocumentInput!): PreviewDocumentResult!
+  commitDocument(input: CommitDocumentInput!): CommitDocumentResult!
   deleteDocument(id: String!): DeleteDocumentResult!
 }
 `, BuiltIn: false},
-	{Name: "../../../graph/enums/enumDefs.graphqls", Input: `# Enums can be defined here when needed
+	{Name: "../../../graph/enums/enumDefs.graphqls", Input: `enum DocumentSourceType {
+  UNSPECIFIED
+  TEXT
+  URL
+  PDF
+}
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -445,10 +504,10 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_addDocument_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_commitDocument_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNAddDocumentInput2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAddDocumentInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNCommitDocumentInput2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐCommitDocumentInput)
 	if err != nil {
 		return nil, err
 	}
@@ -464,6 +523,17 @@ func (ec *executionContext) field_Mutation_deleteDocument_args(ctx context.Conte
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_previewDocument_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNPreviewDocumentInput2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐPreviewDocumentInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -573,12 +643,12 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _AddDocumentResult_success(ctx context.Context, field graphql.CollectedField, obj *AddDocumentResult) (ret graphql.Marshaler) {
+func (ec *executionContext) _CommitDocumentResult_success(ctx context.Context, field graphql.CollectedField, obj *CommitDocumentResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_AddDocumentResult_success,
+		ec.fieldContext_CommitDocumentResult_success,
 		func(ctx context.Context) (any, error) {
 			return obj.Success, nil
 		},
@@ -589,9 +659,9 @@ func (ec *executionContext) _AddDocumentResult_success(ctx context.Context, fiel
 	)
 }
 
-func (ec *executionContext) fieldContext_AddDocumentResult_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CommitDocumentResult_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AddDocumentResult",
+		Object:     "CommitDocumentResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -602,12 +672,12 @@ func (ec *executionContext) fieldContext_AddDocumentResult_success(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _AddDocumentResult_message(ctx context.Context, field graphql.CollectedField, obj *AddDocumentResult) (ret graphql.Marshaler) {
+func (ec *executionContext) _CommitDocumentResult_message(ctx context.Context, field graphql.CollectedField, obj *CommitDocumentResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_AddDocumentResult_message,
+		ec.fieldContext_CommitDocumentResult_message,
 		func(ctx context.Context) (any, error) {
 			return obj.Message, nil
 		},
@@ -618,9 +688,38 @@ func (ec *executionContext) _AddDocumentResult_message(ctx context.Context, fiel
 	)
 }
 
-func (ec *executionContext) fieldContext_AddDocumentResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CommitDocumentResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AddDocumentResult",
+		Object:     "CommitDocumentResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommitDocumentResult_id(ctx context.Context, field graphql.CollectedField, obj *CommitDocumentResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CommitDocumentResult_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CommitDocumentResult_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommitDocumentResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1107,24 +1206,24 @@ func (ec *executionContext) fieldContext_MetadataEntry_value(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_addDocument(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_previewDocument(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Mutation_addDocument,
+		ec.fieldContext_Mutation_previewDocument,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().AddDocument(ctx, fc.Args["input"].(AddDocumentInput))
+			return ec.Resolvers.Mutation().PreviewDocument(ctx, fc.Args["input"].(PreviewDocumentInput))
 		},
 		nil,
-		ec.marshalNAddDocumentResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAddDocumentResult,
+		ec.marshalNPreviewDocumentResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐPreviewDocumentResult,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Mutation_addDocument(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_previewDocument(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1132,12 +1231,12 @@ func (ec *executionContext) fieldContext_Mutation_addDocument(ctx context.Contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "success":
-				return ec.fieldContext_AddDocumentResult_success(ctx, field)
-			case "message":
-				return ec.fieldContext_AddDocumentResult_message(ctx, field)
+			case "extractedText":
+				return ec.fieldContext_PreviewDocumentResult_extractedText(ctx, field)
+			case "pagesExtracted":
+				return ec.fieldContext_PreviewDocumentResult_pagesExtracted(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type AddDocumentResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type PreviewDocumentResult", field.Name)
 		},
 	}
 	defer func() {
@@ -1147,7 +1246,56 @@ func (ec *executionContext) fieldContext_Mutation_addDocument(ctx context.Contex
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_addDocument_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_previewDocument_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_commitDocument(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_commitDocument,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CommitDocument(ctx, fc.Args["input"].(CommitDocumentInput))
+		},
+		nil,
+		ec.marshalNCommitDocumentResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐCommitDocumentResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_commitDocument(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_CommitDocumentResult_success(ctx, field)
+			case "message":
+				return ec.fieldContext_CommitDocumentResult_message(ctx, field)
+			case "id":
+				return ec.fieldContext_CommitDocumentResult_id(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CommitDocumentResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_commitDocument_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1197,6 +1345,64 @@ func (ec *executionContext) fieldContext_Mutation_deleteDocument(ctx context.Con
 	if fc.Args, err = ec.field_Mutation_deleteDocument_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PreviewDocumentResult_extractedText(ctx context.Context, field graphql.CollectedField, obj *PreviewDocumentResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_PreviewDocumentResult_extractedText,
+		func(ctx context.Context) (any, error) {
+			return obj.ExtractedText, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_PreviewDocumentResult_extractedText(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PreviewDocumentResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PreviewDocumentResult_pagesExtracted(ctx context.Context, field graphql.CollectedField, obj *PreviewDocumentResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_PreviewDocumentResult_pagesExtracted,
+		func(ctx context.Context) (any, error) {
+			return obj.PagesExtracted, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_PreviewDocumentResult_pagesExtracted(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PreviewDocumentResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -2937,8 +3143,8 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputAddDocumentInput(ctx context.Context, obj any) (AddDocumentInput, error) {
-	var it AddDocumentInput
+func (ec *executionContext) unmarshalInputCommitDocumentInput(ctx context.Context, obj any) (CommitDocumentInput, error) {
+	var it CommitDocumentInput
 	if obj == nil {
 		return it, nil
 	}
@@ -3018,6 +3224,64 @@ func (ec *executionContext) unmarshalInputMetadataInput(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPreviewDocumentInput(ctx context.Context, obj any) (PreviewDocumentInput, error) {
+	var it PreviewDocumentInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"title", "sourceType", "sourceUrl", "contentBase64", "urlMaxDepth"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "sourceType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sourceType"))
+			data, err := ec.unmarshalNDocumentSourceType2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentSourceType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SourceType = data
+		case "sourceUrl":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sourceUrl"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SourceURL = data
+		case "contentBase64":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contentBase64"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentBase64 = data
+		case "urlMaxDepth":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlMaxDepth"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLMaxDepth = data
+		}
+	}
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3026,24 +3290,29 @@ func (ec *executionContext) unmarshalInputMetadataInput(ctx context.Context, obj
 
 // region    **************************** object.gotpl ****************************
 
-var addDocumentResultImplementors = []string{"AddDocumentResult"}
+var commitDocumentResultImplementors = []string{"CommitDocumentResult"}
 
-func (ec *executionContext) _AddDocumentResult(ctx context.Context, sel ast.SelectionSet, obj *AddDocumentResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, addDocumentResultImplementors)
+func (ec *executionContext) _CommitDocumentResult(ctx context.Context, sel ast.SelectionSet, obj *CommitDocumentResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, commitDocumentResultImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("AddDocumentResult")
+			out.Values[i] = graphql.MarshalString("CommitDocumentResult")
 		case "success":
-			out.Values[i] = ec._AddDocumentResult_success(ctx, field, obj)
+			out.Values[i] = ec._CommitDocumentResult_success(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "message":
-			out.Values[i] = ec._AddDocumentResult_message(ctx, field, obj)
+			out.Values[i] = ec._CommitDocumentResult_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "id":
+			out.Values[i] = ec._CommitDocumentResult_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3339,9 +3608,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "addDocument":
+		case "previewDocument":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_addDocument(ctx, field)
+				return ec._Mutation_previewDocument(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "commitDocument":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_commitDocument(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -3350,6 +3626,50 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteDocument(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var previewDocumentResultImplementors = []string{"PreviewDocumentResult"}
+
+func (ec *executionContext) _PreviewDocumentResult(ctx context.Context, sel ast.SelectionSet, obj *PreviewDocumentResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, previewDocumentResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PreviewDocumentResult")
+		case "extractedText":
+			out.Values[i] = ec._PreviewDocumentResult_extractedText(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pagesExtracted":
+			out.Values[i] = ec._PreviewDocumentResult_pagesExtracted(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3843,25 +4163,6 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNAddDocumentInput2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAddDocumentInput(ctx context.Context, v any) (AddDocumentInput, error) {
-	res, err := ec.unmarshalInputAddDocumentInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNAddDocumentResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAddDocumentResult(ctx context.Context, sel ast.SelectionSet, v AddDocumentResult) graphql.Marshaler {
-	return ec._AddDocumentResult(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNAddDocumentResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAddDocumentResult(ctx context.Context, sel ast.SelectionSet, v *AddDocumentResult) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._AddDocumentResult(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3876,6 +4177,25 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNCommitDocumentInput2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐCommitDocumentInput(ctx context.Context, v any) (CommitDocumentInput, error) {
+	res, err := ec.unmarshalInputCommitDocumentInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCommitDocumentResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐCommitDocumentResult(ctx context.Context, sel ast.SelectionSet, v CommitDocumentResult) graphql.Marshaler {
+	return ec._CommitDocumentResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCommitDocumentResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐCommitDocumentResult(ctx context.Context, sel ast.SelectionSet, v *CommitDocumentResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CommitDocumentResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNDeleteDocumentResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDeleteDocumentResult(ctx context.Context, sel ast.SelectionSet, v DeleteDocumentResult) graphql.Marshaler {
@@ -3916,6 +4236,16 @@ func (ec *executionContext) marshalNDocumentResult2ᚖgraphqlᚑgatewayᚋintern
 		return graphql.Null
 	}
 	return ec._DocumentResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNDocumentSourceType2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentSourceType(ctx context.Context, v any) (DocumentSourceType, error) {
+	var res DocumentSourceType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDocumentSourceType2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentSourceType(ctx context.Context, sel ast.SelectionSet, v DocumentSourceType) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
@@ -3979,6 +4309,25 @@ func (ec *executionContext) marshalNMetadataEntry2ᚖgraphqlᚑgatewayᚋinterna
 func (ec *executionContext) unmarshalNMetadataInput2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐMetadataInput(ctx context.Context, v any) (*MetadataInput, error) {
 	res, err := ec.unmarshalInputMetadataInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPreviewDocumentInput2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐPreviewDocumentInput(ctx context.Context, v any) (PreviewDocumentInput, error) {
+	res, err := ec.unmarshalInputPreviewDocumentInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPreviewDocumentResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐPreviewDocumentResult(ctx context.Context, sel ast.SelectionSet, v PreviewDocumentResult) graphql.Marshaler {
+	return ec._PreviewDocumentResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPreviewDocumentResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐPreviewDocumentResult(ctx context.Context, sel ast.SelectionSet, v *PreviewDocumentResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PreviewDocumentResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {

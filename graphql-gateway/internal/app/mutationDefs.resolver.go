@@ -11,18 +11,54 @@ import (
 	"graphql-gateway/internal/clients"
 )
 
-// AddDocument is the resolver for the addDocument field.
-func (r *mutationResolver) AddDocument(ctx context.Context, input generated.AddDocumentInput) (*generated.AddDocumentResult, error) {
+// PreviewDocument is the resolver for the previewDocument field.
+func (r *mutationResolver) PreviewDocument(ctx context.Context, input generated.PreviewDocumentInput) (*generated.PreviewDocumentResult, error) {
+	sourceURL := ""
+	if input.SourceURL != nil {
+		sourceURL = *input.SourceURL
+	}
+	contentBase64 := ""
+	if input.ContentBase64 != nil {
+		contentBase64 = *input.ContentBase64
+	}
+	urlMaxDepth := int32(0)
+	if input.URLMaxDepth != nil {
+		urlMaxDepth = int32(*input.URLMaxDepth)
+	}
+
+	result, err := r.RAGClient.PreviewDocument(
+		ctx,
+		input.Title,
+		clients.MapDocumentSourceType(string(input.SourceType)),
+		sourceURL,
+		contentBase64,
+		urlMaxDepth,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &generated.PreviewDocumentResult{
+		ExtractedText:  result.ExtractedText,
+		PagesExtracted: int(result.PagesExtracted),
+	}, nil
+}
+
+// CommitDocument is the resolver for the commitDocument field.
+func (r *mutationResolver) CommitDocument(ctx context.Context, input generated.CommitDocumentInput) (*generated.CommitDocumentResult, error) {
 	metadata := make([]clients.MetadataEntry, len(input.Metadata))
 	for i, m := range input.Metadata {
 		metadata[i] = clients.MetadataEntry{Key: m.Key, Value: m.Value}
 	}
 
-	success, message, err := r.RAGClient.AddDocument(ctx, input.Title, input.Content, metadata)
+	result, err := r.RAGClient.CommitDocument(ctx, input.Title, input.Content, metadata)
 	if err != nil {
 		return nil, err
 	}
-	return &generated.AddDocumentResult{Success: success, Message: message}, nil
+	return &generated.CommitDocumentResult{
+		Success: result.Success,
+		Message: result.Message,
+		ID:      result.ID,
+	}, nil
 }
 
 // DeleteDocument is the resolver for the deleteDocument field.

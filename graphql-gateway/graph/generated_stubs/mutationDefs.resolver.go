@@ -11,9 +11,14 @@ import (
 	"graphql-gateway/internal/app/generated"
 )
 
-// AddDocument is the resolver for the addDocument field.
-func (r *mutationResolver) AddDocument(ctx context.Context, input generated.AddDocumentInput) (*generated.AddDocumentResult, error) {
-	panic(fmt.Errorf("not implemented: AddDocument - addDocument"))
+// PreviewDocument is the resolver for the previewDocument field.
+func (r *mutationResolver) PreviewDocument(ctx context.Context, input generated.PreviewDocumentInput) (*generated.PreviewDocumentResult, error) {
+	panic(fmt.Errorf("not implemented: PreviewDocument - previewDocument"))
+}
+
+// CommitDocument is the resolver for the commitDocument field.
+func (r *mutationResolver) CommitDocument(ctx context.Context, input generated.CommitDocumentInput) (*generated.CommitDocumentResult, error) {
+	panic(fmt.Errorf("not implemented: CommitDocument - commitDocument"))
 }
 
 // DeleteDocument is the resolver for the deleteDocument field.

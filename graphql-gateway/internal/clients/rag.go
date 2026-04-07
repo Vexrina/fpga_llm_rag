@@ -95,23 +95,6 @@ func (c *RAGClient) GetDocument(ctx context.Context, id string) (*DocumentResult
 	}, true, nil
 }
 
-func (c *RAGClient) AddDocument(ctx context.Context, title, content string, metadata []MetadataEntry) (bool, string, error) {
-	metaMap := make(map[string]string)
-	for _, m := range metadata {
-		metaMap[m.Key] = m.Value
-	}
-
-	resp, err := c.client.AddDocument(ctx, &pb.AddDocumentRequest{
-		Title:    title,
-		Content:  content,
-		Metadata: metaMap,
-	})
-	if err != nil {
-		return false, "", fmt.Errorf("AddDocument RPC failed: %w", err)
-	}
-	return resp.Success, resp.Message, nil
-}
-
 func (c *RAGClient) DeleteDocument(ctx context.Context, id string) (bool, string, error) {
 	resp, err := c.client.DeleteDocument(ctx, &pb.DeleteDocumentRequest{Id: id})
 	if err != nil {
@@ -129,6 +112,68 @@ func (c *RAGClient) GetIndexStats(ctx context.Context) (*IndexStats, error) {
 		TotalDocuments: resp.TotalDocuments,
 		IndexSizeBytes: resp.IndexSizeBytes,
 		LastUpdated:    resp.LastUpdated,
+	}, nil
+}
+
+type PreviewResult struct {
+	ExtractedText  string
+	PagesExtracted int32
+}
+
+func MapDocumentSourceType(gqlType string) pb.DocumentSourceType {
+	switch gqlType {
+	case "TEXT":
+		return pb.DocumentSourceType_SOURCE_TYPE_TEXT
+	case "URL":
+		return pb.DocumentSourceType_SOURCE_TYPE_URL
+	case "PDF":
+		return pb.DocumentSourceType_SOURCE_TYPE_PDF
+	default:
+		return pb.DocumentSourceType_SOURCE_TYPE_UNSPECIFIED
+	}
+}
+
+func (c *RAGClient) PreviewDocument(ctx context.Context, title string, sourceType pb.DocumentSourceType, sourceURL, contentBase64 string, urlMaxDepth int32) (*PreviewResult, error) {
+	resp, err := c.client.PreviewDocument(ctx, &pb.PreviewDocumentRequest{
+		Title:         title,
+		SourceType:    sourceType,
+		SourceUrl:     sourceURL,
+		ContentBase64: contentBase64,
+		UrlMaxDepth:   urlMaxDepth,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("PreviewDocument RPC failed: %w", err)
+	}
+	return &PreviewResult{
+		ExtractedText:  resp.ExtractedText,
+		PagesExtracted: resp.PagesExtracted,
+	}, nil
+}
+
+type CommitResult struct {
+	Success bool
+	Message string
+	ID      string
+}
+
+func (c *RAGClient) CommitDocument(ctx context.Context, title, content string, metadata []MetadataEntry) (*CommitResult, error) {
+	metaMap := make(map[string]string)
+	for _, m := range metadata {
+		metaMap[m.Key] = m.Value
+	}
+
+	resp, err := c.client.CommitDocument(ctx, &pb.CommitDocumentRequest{
+		Title:    title,
+		Content:  content,
+		Metadata: metaMap,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("CommitDocument RPC failed: %w", err)
+	}
+	return &CommitResult{
+		Success: resp.Success,
+		Message: resp.Message,
+		ID:      resp.Id,
 	}, nil
 }
 

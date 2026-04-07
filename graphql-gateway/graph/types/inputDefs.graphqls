@@ -3,7 +3,15 @@ input MetadataInput {
   value: String!
 }
 
-input AddDocumentInput {
+input PreviewDocumentInput {
+  title: String!
+  sourceType: DocumentSourceType!
+  sourceUrl: String
+  contentBase64: String
+  urlMaxDepth: Int
+}
+
+input CommitDocumentInput {
   title: String!
   content: String!
   metadata: [MetadataInput!]

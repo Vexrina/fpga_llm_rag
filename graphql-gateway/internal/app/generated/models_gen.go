@@ -2,15 +2,23 @@
 
 package generated
 
-type AddDocumentInput struct {
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+)
+
+type CommitDocumentInput struct {
 	Title    string           `json:"title"`
 	Content  string           `json:"content"`
 	Metadata []*MetadataInput `json:"metadata,omitempty"`
 }
 
-type AddDocumentResult struct {
+type CommitDocumentResult struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
+	ID      string `json:"id"`
 }
 
 type DeleteDocumentResult struct {
@@ -52,5 +60,77 @@ type MetadataInput struct {
 type Mutation struct {
 }
 
+type PreviewDocumentInput struct {
+	Title         string             `json:"title"`
+	SourceType    DocumentSourceType `json:"sourceType"`
+	SourceURL     *string            `json:"sourceUrl,omitempty"`
+	ContentBase64 *string            `json:"contentBase64,omitempty"`
+	URLMaxDepth   *int               `json:"urlMaxDepth,omitempty"`
+}
+
+type PreviewDocumentResult struct {
+	ExtractedText  string `json:"extractedText"`
+	PagesExtracted int    `json:"pagesExtracted"`
+}
+
 type Query struct {
+}
+
+type DocumentSourceType string
+
+const (
+	DocumentSourceTypeUnspecified DocumentSourceType = "UNSPECIFIED"
+	DocumentSourceTypeText        DocumentSourceType = "TEXT"
+	DocumentSourceTypeURL         DocumentSourceType = "URL"
+	DocumentSourceTypePDF         DocumentSourceType = "PDF"
+)
+
+var AllDocumentSourceType = []DocumentSourceType{
+	DocumentSourceTypeUnspecified,
+	DocumentSourceTypeText,
+	DocumentSourceTypeURL,
+	DocumentSourceTypePDF,
+}
+
+func (e DocumentSourceType) IsValid() bool {
+	switch e {
+	case DocumentSourceTypeUnspecified, DocumentSourceTypeText, DocumentSourceTypeURL, DocumentSourceTypePDF:
+		return true
+	}
+	return false
+}
+
+func (e DocumentSourceType) String() string {
+	return string(e)
+}
+
+func (e *DocumentSourceType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = DocumentSourceType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid DocumentSourceType", str)
+	}
+	return nil
+}
+
+func (e DocumentSourceType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *DocumentSourceType) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e DocumentSourceType) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }
