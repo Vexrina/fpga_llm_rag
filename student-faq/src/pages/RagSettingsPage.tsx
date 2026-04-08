@@ -9,6 +9,7 @@ import {
   getDocuments,
   getDocument,
 } from '../mocks/rag'
+import { previewDocument, commitDocument } from '../api/graphql'
 import Tooltip from '../components/Tooltip'
 
 type Tab = 'settings' | 'history' | 'logs' | 'knowledge'
@@ -390,6 +391,31 @@ function KnowledgeTab() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDocLoading, setIsDocLoading] = useState(false)
 
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [newDocTitle, setNewDocTitle] = useState('')
+  const [newDocSourceType, setNewDocSourceType] = useState<'URL' | 'TEXT' | 'PDF'>('URL')
+  const [newDocSourceUrl, setNewDocSourceUrl] = useState('')
+  const [newDocFileBase64, setNewDocFileBase64] = useState('')
+  const [newDocContent, setNewDocContent] = useState('')
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+  const [previewDone, setPreviewDone] = useState(false)
+  const [isCommitting, setIsCommitting] = useState(false)
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      const base64 = result.split(',')[1]
+      setNewDocFileBase64(base64)
+      if (!newDocTitle.trim()) {
+        setNewDocTitle(file.name)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
   useEffect(() => {
     getDocuments()
       .then((data) => setDocs(data))
@@ -407,6 +433,96 @@ function KnowledgeTab() {
     }
   }
 
+  const handleOpenAddModal = () => {
+    setIsAddModalOpen(true)
+    setNewDocTitle('')
+    setNewDocSourceType('URL')
+    setNewDocSourceUrl('')
+    setNewDocFileBase64('')
+    setNewDocContent('')
+    setPreviewDone(false)
+  }
+
+  const handlePreview = async () => {
+    alert('handlePreview called')
+    console.log('handlePreview called', { newDocTitle, newDocSourceType, newDocSourceUrl, newDocContent: newDocContent?.slice(0, 50), newDocFileBase64: newDocFileBase64?.slice(0, 50) })
+    
+    if (!newDocTitle.trim()) {
+      alert('no title')
+      return
+    }
+    if (newDocSourceType === 'URL' && !newDocSourceUrl.trim()) {
+      alert('no url')
+      return
+    }
+    if (newDocSourceType === 'TEXT' && !newDocContent.trim()) {
+      alert('no text content')
+      return
+    }
+    if (newDocSourceType === 'PDF' && !newDocFileBase64.trim()) {
+      alert('no file base64')
+      return
+    }
+
+    setIsPreviewLoading(true)
+    try {
+      const input = {
+        title: newDocTitle,
+        sourceType: newDocSourceType as 'URL' | 'TEXT' | 'PDF',
+        sourceUrl: newDocSourceType === 'URL' ? newDocSourceUrl : undefined,
+        contentBase64: newDocSourceType === 'TEXT' ? btoa(newDocContent) : newDocSourceType === 'PDF' ? newDocFileBase64 : undefined,
+      }
+      alert('calling previewDocument with: ' + JSON.stringify(input))
+      console.log('calling previewDocument with:', input)
+      
+      const result = await previewDocument(input)
+      alert('result: ' + JSON.stringify(result))
+      console.log('previewDocument result:', result)
+      
+      setNewDocContent(result.previewDocument.extractedText)
+      setPreviewDone(true)
+    } catch (err) {
+      alert('error: ' + err)
+      console.error('previewDocument error:', err)
+    } finally {
+      setIsPreviewLoading(false)
+    }
+  }
+
+  const handleCancelAdd = () => {
+    setIsAddModalOpen(false)
+    setNewDocTitle('')
+    setNewDocSourceType('URL')
+    setNewDocSourceUrl('')
+    setNewDocFileBase64('')
+    setNewDocContent('')
+    setPreviewDone(false)
+  }
+
+  const handleConfirmAdd = async () => {
+    if (!newDocTitle.trim()) return
+    setIsCommitting(true)
+    try {
+      const result = await commitDocument({
+        title: newDocTitle,
+        content: newDocContent,
+      })
+      console.log('commitDocument result:', result)
+      if (!result.commitDocument.success) {
+        alert('Ошибка: ' + result.commitDocument.message)
+        return
+      }
+      setIsAddModalOpen(false)
+      const data = await getDocuments()
+      setDocs(data)
+    } catch (err) {
+      console.error(err)
+      alert('Ошибка при сохранении: ' + err)
+    } finally {
+      setIsCommitting(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="text-center py-16">
@@ -417,6 +533,15 @@ function KnowledgeTab() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <button
+          onClick={handleOpenAddModal}
+          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          Добавить документ
+        </button>
+      </div>
+
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
@@ -470,6 +595,131 @@ function KnowledgeTab() {
           </div>
           <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap max-h-96 overflow-y-auto">
             {isDocLoading ? 'Загрузка содержимого...' : selectedDoc.content || 'Содержимое отсутствует'}
+          </div>
+        </div>
+      )}
+
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Добавить документ</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Название документа
+                </label>
+                <input
+                  type="text"
+                  value={newDocTitle}
+                  onChange={(e) => setNewDocTitle(e.target.value)}
+                  disabled={previewDone}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder="Введите название документа"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Тип источника
+                </label>
+                <select
+                  value={newDocSourceType}
+                  onChange={(e) => setNewDocSourceType(e.target.value as 'URL' | 'TEXT' | 'PDF')}
+                  disabled={previewDone}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="URL">URL</option>
+                  <option value="TEXT">Текст</option>
+                  <option value="PDF">Файл (PDF)</option>
+                </select>
+              </div>
+
+              {newDocSourceType === 'URL' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    URL документа
+                  </label>
+                  <input
+                    type="text"
+                    value={newDocSourceUrl}
+                    onChange={(e) => setNewDocSourceUrl(e.target.value)}
+                    disabled={previewDone}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    placeholder="https://example.com/document"
+                  />
+                </div>
+              ) : newDocSourceType === 'TEXT' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Содержимое (Base64)
+                  </label>
+                  <textarea
+                    value={newDocContent}
+                    onChange={(e) => setNewDocContent(e.target.value)}
+                    disabled={previewDone}
+                    className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed font-mono"
+                    placeholder="Введите содержимое в Base64"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Загрузить файл (PDF)
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    disabled={previewDone}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                  />
+                  {newDocFileBase64 && (
+                    <p className="text-sm text-green-600 mt-1">Файл загружен</p>
+                  )}
+                </div>
+              )}
+
+              {!previewDone && (
+                <button
+                  onClick={handlePreview}
+                  disabled={!newDocTitle.trim() || isPreviewLoading}
+                  className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isPreviewLoading ? 'Загрузка превью...' : 'Получить превью'}
+                </button>
+              )}
+
+              {previewDone && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Содержимое документа (редактируемое)
+                  </label>
+                  <textarea
+                    value={newDocContent}
+                    onChange={(e) => setNewDocContent(e.target.value)}
+                    className="w-full h-64 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 whitespace-pre-wrap font-mono"
+                    placeholder="Содержимое документа"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={handleCancelAdd}
+                className="px-4 py-2 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Отменить добавление
+              </button>
+              <button
+                onClick={handleConfirmAdd}
+                disabled={!previewDone || !newDocContent.trim() || isCommitting}
+                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCommitting ? 'Сохранение...' : 'Подтвердить добавление'}
+              </button>
+            </div>
           </div>
         </div>
       )}

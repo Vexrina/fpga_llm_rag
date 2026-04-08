@@ -6,7 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"time"
 )
 
 type EmbedUsecase struct {
@@ -23,27 +26,39 @@ func NewEmbedUsecase(tgiUrl, tgiPort string) *EmbedUsecase {
 }
 
 func (u EmbedUsecase) EmbedContent(ctx context.Context, content string) ([][]float32, error) {
+	url := fmt.Sprintf("http://%s:%s/embed", u.tgiUrl, u.tgiPort)
+	log.Printf("DEBUG: Calling TGI at: %s with content length: %d", url, len(content))
+
 	reqBody, _ := json.Marshal(tgiRequest{Inputs: []string{content}})
-	resp, err := http.Post(
-		fmt.Sprintf("http://%s:%s/embed", u.tgiUrl, u.tgiPort),
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Post(
+		url,
 		"application/json",
 		bytes.NewBuffer(reqBody),
 	)
 	if err != nil {
-		return nil, err
+		log.Printf("DEBUG: HTTP POST error: %v", err)
+		return nil, fmt.Errorf("HTTP POST failed: %w", err)
 	}
 	defer resp.Body.Close()
 
+	log.Printf("DEBUG: TGI response status: %d", resp.StatusCode)
+	body, _ := io.ReadAll(resp.Body)
+	log.Printf("DEBUG: TGI response body length: %d, body: %s", len(body), string(body[:min(200, len(body))]))
+
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("ошибка при обращении к TGI")
+		return nil, fmt.Errorf("TGI returned status %d: %s", resp.StatusCode, string(body))
 	}
 
 	var embeddings [][]float32
-	if err := json.NewDecoder(resp.Body).Decode(&embeddings); err != nil {
+	if err := json.Unmarshal(body, &embeddings); err != nil {
+		log.Printf("DEBUG: JSON decode error: %v, body: %s", err, string(body))
 		return nil, err
 	}
 	if len(embeddings) == 0 {
 		return nil, errors.New("TGI не вернул эмбеддинг")
 	}
+	log.Printf("DEBUG: Got %d embeddings, dim: %d", len(embeddings), len(embeddings[0]))
 	return embeddings, nil
 }

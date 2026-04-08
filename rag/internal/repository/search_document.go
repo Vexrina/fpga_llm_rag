@@ -5,18 +5,29 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/pgvector/pgvector-go"
 )
 
-func (r *VecDb) SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []float32, limit int) ([]Item, error) {
-	// Используем нашу векторную обертку
+type SearchResult struct {
+	DocID     string
+	Title     string
+	Text      string
+	Metadata  map[string]string
+	Score     float32
+	ChunkInfo string
+}
+
+func (r *VecDb) SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []float32, limit int) ([]SearchResult, error) {
 	vectorValue := VectorFromFloat32(queryEmbedding)
 
-	// Используем обычный SQL для векторных операций
 	query := `
-		SELECT id, embedding, content, metadata
+		SELECT 
+			metadata->>'doc_id' as doc_id,
+			title,
+			content,
+			metadata,
+			(embedding <-> $1)::float8 as distance
 		FROM documents
-		WHERE embedding IS NOT NULL
+		WHERE embedding IS NOT NULL AND metadata ? 'doc_id'
 		ORDER BY embedding <-> $1
 		LIMIT $2
 	`
@@ -27,17 +38,21 @@ func (r *VecDb) SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []f
 	}
 	defer rows.Close()
 
-	var items []Item
+	var results []SearchResult
 	for rows.Next() {
-		var item Item
-		var embedding pgvector.Vector
-		readErr := rows.Scan(&item.ID, &embedding, &item.Text, &item.Metadata)
+		var result SearchResult
+		var distance float64
+		readErr := rows.Scan(&result.DocID, &result.Title, &result.Text, &result.Metadata, &distance)
 		if readErr != nil {
 			return nil, fmt.Errorf("не удалось считать строку: %w", readErr)
 		}
-		item.Embedding = embedding.Slice()
-		items = append(items, item)
+		result.Score = float32(1 - distance)
+		if idx, ok := result.Metadata["chunk_index"]; ok {
+			total := result.Metadata["chunk_total"]
+			result.ChunkInfo = fmt.Sprintf("часть %s/%s", idx, total)
+		}
+		results = append(results, result)
 	}
 
-	return items, nil
+	return results, nil
 }
