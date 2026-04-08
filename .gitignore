@@ -246,5 +246,12 @@ python_scripts/models/*
 python_scripts/pdf_files/*
 python_scripts/cache_texts.*
 
+rag/python_scripts/.web_cache/*
+rag/python_scripts/models/*
+rag/python_scripts/pdf_files/*
+rag/python_scripts/cache_texts.*
+
+
+
 #binaries
 */bin/*

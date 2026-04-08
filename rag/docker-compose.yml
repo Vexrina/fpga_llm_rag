@@ -48,6 +48,7 @@ services:
       - "50051:50051"
     volumes:
       - ./migrations:/app/migrations
+      - ./python_scripts:/app/python_scripts
 
 volumes:
   postgres_data: 

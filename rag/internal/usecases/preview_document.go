@@ -30,6 +30,16 @@ type PreviewResult struct {
 
 func (u *PreviewDocumentUsecase) Preview(ctx context.Context, domain *utils.PreviewDocumentDomain) (*utils.PreviewResult, error) {
 	switch domain.SourceType {
+	case utils.DocumentSourceTypeText:
+		text, err := base64.StdEncoding.DecodeString(domain.ContentBase64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode text from base64: %w", err)
+		}
+		return &utils.PreviewResult{
+			ExtractedText:  string(text),
+			PagesExtracted: 0,
+		}, nil
+
 	case utils.DocumentSourceTypeURL:
 		if u.urlProcessor == nil {
 			return nil, fmt.Errorf("url processor not configured")

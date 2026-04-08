@@ -92,6 +92,7 @@ services:
       - "50051:50051"
     volumes:
       - ./rag/migrations:/app/migrations
+      - ./rag/python_scripts:/app/python_scripts
     networks:
       - fpga-network
 

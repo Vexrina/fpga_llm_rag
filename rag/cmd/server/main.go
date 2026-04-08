@@ -58,7 +58,7 @@ func main() {
 	var (
 		pdfProcessor = usecases.NewPDFProcessor(
 			"python3",
-			"python_scripts/kug_scrap.py",
+			"/app/python_scripts/kug_scrap.py",
 			[]string{},
 			defaultPDFTimeout,
 		)

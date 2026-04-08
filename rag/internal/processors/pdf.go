@@ -47,12 +47,14 @@ func (p *KugScrapProcessor) ExtractTextFromPDF(pdfData []byte) (string, error) {
 		return "", fmt.Errorf("failed to write PDF: %w", err)
 	}
 
-	args := append([]string{p.pythonPath, p.scriptPath}, p.pythonArgs...)
+	args := append([]string{p.scriptPath}, p.pythonArgs...)
 	args = append(args, "--pdf", inputPath)
-	args = append(args, "--pages", "1") // all pages - will extract all
-	args = append(args, "-o", outputPath)
+	args = append(args, "--pages", "1")
+	args = append(args, "--dpi", "200")
+	args = append(args, "--strategy", "full")
+	args = append(args, "--out", outputPath)
 
-	cmd := exec.CommandContext(ctx, "python3", args...)
+	cmd := exec.CommandContext(ctx, p.pythonPath, args...)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
