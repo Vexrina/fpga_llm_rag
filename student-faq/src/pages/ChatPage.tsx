@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react'
 import type { Message, Chat } from '../types'
-import { sendMessage } from '../mocks/chat'
+import { askQuestion } from '../api/graphql'
 import { getChats, getOrCreateFirstChat, createChat, updateChat, deleteChat, initializeDemoChats } from '../mocks/chats'
 import Sidebar from '../components/Sidebar'
 
@@ -73,7 +73,13 @@ export default function ChatPage() {
     setIsLoading(true)
 
     try {
-      const response = await sendMessage(userMessage.content)
+      const answer = await askQuestion(userMessage.content)
+      const response: Message = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: answer,
+        timestamp: new Date(),
+      }
       const finalMessages = [...updatedMessages, response]
       setActiveChat({ ...activeChat, messages: finalMessages })
       updateChat(activeChat.id, finalMessages)

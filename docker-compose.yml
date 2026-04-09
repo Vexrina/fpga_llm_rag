@@ -119,7 +119,7 @@ services:
       RAG_HOST: rag
       RAG_PORT: 50051
       OLLAMA_URL: ollama:11434
-      OLLAMA_MODEL: phi3
+      OLLAMA_MODEL: llama3
     ports:
       - "8083:8083"
     networks:

@@ -26,7 +26,7 @@ func main() {
 	grpcPort := getEnv("GRPC_PORT", "8083")
 	ragServiceAddr := getEnv("RAG_SERVICE_ADDR", "localhost:50051")
 	// floatWeaverServiceAddr := getEnv("FLOAT_WEAVER_SERVICE_ADDR", "localhost:8081")
-	ollamaApiAddr := getEnv("OLLAMA_API_ADDR", "http://localhost:11434")
+	ollamaApiAddr := getEnv("OLLAMA_URL", getEnv("OLLAMA_API_ADDR", "http://localhost:11434"))
 	ollamaModel := getEnv("OLLAMA_MODEL", "phi3:latest")
 
 	fmt.Println(ragServiceAddr)

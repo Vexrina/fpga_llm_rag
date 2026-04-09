@@ -14,7 +14,13 @@ async function graphqlRequest<T>(query: string, variables?: Record<string, unkno
   const result = await response.json()
 
   if (result.errors) {
+    console.error('GraphQL errors:', result.errors)
     throw new Error(result.errors[0].message)
+  }
+
+  if (!result.data) {
+    console.error('No data in response:', result)
+    throw new Error('No data in response')
   }
 
   return result.data
@@ -72,4 +78,18 @@ export async function commitDocument(input: CommitDocumentInput): Promise<Commit
     }
   `
   return graphqlRequest<CommitResult>(query, { input: { title: input.title, content: input.content } })
+}
+
+export interface AskResult {
+  ask: string
+}
+
+export async function askQuestion(question: string): Promise<string> {
+  const query = `
+    query Ask($question: String!) {
+      ask(question: $question)
+    }
+  `
+  const result = await graphqlRequest<AskResult>(query, { question })
+  return result.ask
 }

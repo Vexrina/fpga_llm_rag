@@ -65,7 +65,8 @@ func main() {
 		addDocumentUsecase     = usecases.NewAddDocumentUsecase(db, fw, pdfProcessor, nil)
 		previewDocumentUsecase = usecases.NewPreviewDocumentUsecase(pdfProcessor, nil)
 		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, fw)
-		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw)
+		settingsUsecase        = usecases.NewSettingsUsecase(db)
+		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw, settingsUsecase)
 	)
 
 	// Создаем TCP listener на порту 50051
@@ -87,6 +88,7 @@ func main() {
 		previewDocumentUsecase,
 		commitDocumentUsecase,
 		searchDocumentUsecase,
+		settingsUsecase,
 	)
 	pb.RegisterRagServiceServer(s, ragServer)
 

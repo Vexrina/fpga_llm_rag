@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+
+	"rag/internal/utils"
 )
 
 type SearchResult struct {
@@ -16,21 +18,23 @@ type SearchResult struct {
 	ChunkInfo string
 }
 
-func (r *VecDb) SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []float32, limit int) ([]SearchResult, error) {
+func (r *VecDb) SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []float32, limit int, method utils.ComparisonMethod) ([]SearchResult, error) {
 	vectorValue := VectorFromFloat32(queryEmbedding)
 
-	query := `
+	operator, scoreFn := getOperatorAndScoreFn(method)
+
+	query := fmt.Sprintf(`
 		SELECT 
 			metadata->>'doc_id' as doc_id,
 			title,
 			content,
 			metadata,
-			(embedding <-> $1)::float8 as distance
+			(embedding %s $1)::float8 as distance
 		FROM documents
 		WHERE embedding IS NOT NULL AND metadata ? 'doc_id'
-		ORDER BY embedding <-> $1
+		ORDER BY embedding %s $1
 		LIMIT $2
-	`
+	`, operator, operator)
 
 	rows, err := tx.Query(ctx, query, vectorValue, limit)
 	if err != nil {
@@ -46,7 +50,7 @@ func (r *VecDb) SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []f
 		if readErr != nil {
 			return nil, fmt.Errorf("не удалось считать строку: %w", readErr)
 		}
-		result.Score = float32(1 - distance)
+		result.Score = scoreFn(distance)
 		if idx, ok := result.Metadata["chunk_index"]; ok {
 			total := result.Metadata["chunk_total"]
 			result.ChunkInfo = fmt.Sprintf("часть %s/%s", idx, total)
@@ -55,4 +59,17 @@ func (r *VecDb) SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []f
 	}
 
 	return results, nil
+}
+
+func getOperatorAndScoreFn(method utils.ComparisonMethod) (string, func(float64) float32) {
+	switch method {
+	case utils.ComparisonMethodEuclidean:
+		return "<->", func(d float64) float32 { return float32(1 / (1 + d)) }
+	case utils.ComparisonMethodDot:
+		return "<#>", func(d float64) float32 { return float32(-d) }
+	case utils.ComparisonMethodL1:
+		return "<+>", func(d float64) float32 { return float32(1 / (1 + d)) }
+	default:
+		return "<->", func(d float64) float32 { return float32(1 - d) }
+	}
 }

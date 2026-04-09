@@ -206,6 +206,7 @@ function SettingsTab() {
             <option value="cosine">Cosine similarity</option>
             <option value="dot">Dot product</option>
             <option value="euclidean">Euclidean distance</option>
+            <option value="l1">L1 distance (Manhattan)</option>
           </select>
         </Field>
 

@@ -9,6 +9,16 @@ const (
 	DocumentSourceTypePDF         DocumentSourceType = "pdf"
 )
 
+type ComparisonMethod string
+
+const (
+	ComparisonMethodUnspecified ComparisonMethod = ""
+	ComparisonMethodCosine      ComparisonMethod = "cosine"
+	ComparisonMethodDot         ComparisonMethod = "dot"
+	ComparisonMethodEuclidean   ComparisonMethod = "euclidean"
+	ComparisonMethodL1          ComparisonMethod = "l1"
+)
+
 type (
 	AddDocumentDomain struct {
 		Id          string
@@ -44,9 +54,10 @@ type (
 	}
 
 	SearchDocumentDomain struct {
-		Query         string
-		Limit         int32
-		SimilarityThs float32
+		Query            string
+		Limit            int32
+		SimilarityThs    float32
+		ComparisonMethod ComparisonMethod
 	}
 
 	PreviewResult struct {

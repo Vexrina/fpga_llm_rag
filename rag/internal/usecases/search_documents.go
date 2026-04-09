@@ -15,22 +15,29 @@ import (
 //go:generate mockgen -source=rag/internal/usecases/search_documents.go -destination=rag/internal/usecases/mocks/mock_search_documents_repository.go -package=mocks SearchDocumentsRepository
 
 type SearchDocumentsRepository interface {
-	SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []float32, limit int) ([]repository.SearchResult, error)
+	SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []float32, limit int, method utils.ComparisonMethod) ([]repository.SearchResult, error)
 	WithTransactional(ctx context.Context, fn func(tx pgx.Tx) error) error
+}
+
+type SettingsProvider interface {
+	GetComparisonMethod(ctx context.Context) (utils.ComparisonMethod, error)
 }
 
 type SearchDocumentsUsecase struct {
 	repository        SearchDocumentsRepository
 	floatWeaverClient floatweaver.EmbedServiceClient
+	settingsProvider  SettingsProvider
 }
 
 func NewSearchDocumentsUsecase(
 	repository SearchDocumentsRepository,
 	floatWeaverClient floatweaver.EmbedServiceClient,
+	settingsProvider SettingsProvider,
 ) *SearchDocumentsUsecase {
 	return &SearchDocumentsUsecase{
 		repository:        repository,
 		floatWeaverClient: floatWeaverClient,
+		settingsProvider:  settingsProvider,
 	}
 }
 
@@ -44,11 +51,19 @@ func (u *SearchDocumentsUsecase) SearchDocuments(ctx context.Context, domain *ut
 	}
 	queryEmbedding := embed.Embeddings[0].Values
 
+	method := domain.ComparisonMethod
+	if method == utils.ComparisonMethodUnspecified && u.settingsProvider != nil {
+		method, _ = u.settingsProvider.GetComparisonMethod(ctx)
+	}
+	if method == utils.ComparisonMethodUnspecified {
+		method = utils.ComparisonMethodCosine
+	}
+
 	var results []*pb.DocumentResult
 	var totalFound int32
 
 	err = u.repository.WithTransactional(ctx, func(tx pgx.Tx) error {
-		items, err := u.repository.SearchSimilar(ctx, tx, queryEmbedding, int(domain.Limit))
+		items, err := u.repository.SearchSimilar(ctx, tx, queryEmbedding, int(domain.Limit), method)
 		if err != nil {
 			return err
 		}

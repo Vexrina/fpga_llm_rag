@@ -74,6 +74,62 @@ func (DocumentSourceType) EnumDescriptor() ([]byte, []int) {
 	return file_api_rag_proto_rawDescGZIP(), []int{0}
 }
 
+// Тип метода сравнения векторов
+type ComparisonMethod int32
+
+const (
+	ComparisonMethod_COMPARISON_METHOD_UNSPECIFIED ComparisonMethod = 0
+	ComparisonMethod_COMPARISON_METHOD_COSINE      ComparisonMethod = 1 // Косинусное сходство
+	ComparisonMethod_COMPARISON_METHOD_DOT         ComparisonMethod = 2 // Скалярное произведение
+	ComparisonMethod_COMPARISON_METHOD_EUCLIDEAN   ComparisonMethod = 3 // Евклидово расстояние
+	ComparisonMethod_COMPARISON_METHOD_L1          ComparisonMethod = 4 // Манхэттенское расстояние (L1)
+)
+
+// Enum value maps for ComparisonMethod.
+var (
+	ComparisonMethod_name = map[int32]string{
+		0: "COMPARISON_METHOD_UNSPECIFIED",
+		1: "COMPARISON_METHOD_COSINE",
+		2: "COMPARISON_METHOD_DOT",
+		3: "COMPARISON_METHOD_EUCLIDEAN",
+		4: "COMPARISON_METHOD_L1",
+	}
+	ComparisonMethod_value = map[string]int32{
+		"COMPARISON_METHOD_UNSPECIFIED": 0,
+		"COMPARISON_METHOD_COSINE":      1,
+		"COMPARISON_METHOD_DOT":         2,
+		"COMPARISON_METHOD_EUCLIDEAN":   3,
+		"COMPARISON_METHOD_L1":          4,
+	}
+)
+
+func (x ComparisonMethod) Enum() *ComparisonMethod {
+	p := new(ComparisonMethod)
+	*p = x
+	return p
+}
+
+func (x ComparisonMethod) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ComparisonMethod) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_rag_proto_enumTypes[1].Descriptor()
+}
+
+func (ComparisonMethod) Type() protoreflect.EnumType {
+	return &file_api_rag_proto_enumTypes[1]
+}
+
+func (x ComparisonMethod) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ComparisonMethod.Descriptor instead.
+func (ComparisonMethod) EnumDescriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{1}
+}
+
 // Запрос на добавление документа (legacy, для совместимости)
 type AddDocumentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -486,6 +542,7 @@ type SearchRequest struct {
 	Query               string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
 	Limit               int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	SimilarityThreshold float32                `protobuf:"fixed32,3,opt,name=similarity_threshold,json=similarityThreshold,proto3" json:"similarity_threshold,omitempty"`
+	ComparisonMethod    ComparisonMethod       `protobuf:"varint,4,opt,name=comparison_method,json=comparisonMethod,proto3,enum=rag.ComparisonMethod" json:"comparison_method,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -539,6 +596,13 @@ func (x *SearchRequest) GetSimilarityThreshold() float32 {
 		return x.SimilarityThreshold
 	}
 	return 0
+}
+
+func (x *SearchRequest) GetComparisonMethod() ComparisonMethod {
+	if x != nil {
+		return x.ComparisonMethod
+	}
+	return ComparisonMethod_COMPARISON_METHOD_UNSPECIFIED
 }
 
 // Ответ на поиск документов
@@ -965,6 +1029,377 @@ func (x *GetIndexStatsResponse) GetLastUpdated() string {
 	return ""
 }
 
+// Запрос на получение настроек RAG
+type GetRagSettingsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRagSettingsRequest) Reset() {
+	*x = GetRagSettingsRequest{}
+	mi := &file_api_rag_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRagSettingsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRagSettingsRequest) ProtoMessage() {}
+
+func (x *GetRagSettingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRagSettingsRequest.ProtoReflect.Descriptor instead.
+func (*GetRagSettingsRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{15}
+}
+
+// Ответ с настройками RAG
+type GetRagSettingsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Settings      map[string]string      `protobuf:"bytes,1,rep,name=settings,proto3" json:"settings,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRagSettingsResponse) Reset() {
+	*x = GetRagSettingsResponse{}
+	mi := &file_api_rag_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRagSettingsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRagSettingsResponse) ProtoMessage() {}
+
+func (x *GetRagSettingsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRagSettingsResponse.ProtoReflect.Descriptor instead.
+func (*GetRagSettingsResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetRagSettingsResponse) GetSettings() map[string]string {
+	if x != nil {
+		return x.Settings
+	}
+	return nil
+}
+
+// Запрос на обновление настройки RAG
+type UpdateRagSettingsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value         string                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	ChangedBy     string                 `protobuf:"bytes,3,opt,name=changed_by,json=changedBy,proto3" json:"changed_by,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateRagSettingsRequest) Reset() {
+	*x = UpdateRagSettingsRequest{}
+	mi := &file_api_rag_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateRagSettingsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateRagSettingsRequest) ProtoMessage() {}
+
+func (x *UpdateRagSettingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateRagSettingsRequest.ProtoReflect.Descriptor instead.
+func (*UpdateRagSettingsRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *UpdateRagSettingsRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *UpdateRagSettingsRequest) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+func (x *UpdateRagSettingsRequest) GetChangedBy() string {
+	if x != nil {
+		return x.ChangedBy
+	}
+	return ""
+}
+
+// Ответ на обновление настройки
+type UpdateRagSettingsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateRagSettingsResponse) Reset() {
+	*x = UpdateRagSettingsResponse{}
+	mi := &file_api_rag_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateRagSettingsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateRagSettingsResponse) ProtoMessage() {}
+
+func (x *UpdateRagSettingsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateRagSettingsResponse.ProtoReflect.Descriptor instead.
+func (*UpdateRagSettingsResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UpdateRagSettingsResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *UpdateRagSettingsResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// Запрос на получение истории настроек
+type GetRagSettingsHistoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRagSettingsHistoryRequest) Reset() {
+	*x = GetRagSettingsHistoryRequest{}
+	mi := &file_api_rag_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRagSettingsHistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRagSettingsHistoryRequest) ProtoMessage() {}
+
+func (x *GetRagSettingsHistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRagSettingsHistoryRequest.ProtoReflect.Descriptor instead.
+func (*GetRagSettingsHistoryRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *GetRagSettingsHistoryRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+// Ответ с историей настроек
+type GetRagSettingsHistoryResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Entries       []*SettingsHistoryEntry `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRagSettingsHistoryResponse) Reset() {
+	*x = GetRagSettingsHistoryResponse{}
+	mi := &file_api_rag_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRagSettingsHistoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRagSettingsHistoryResponse) ProtoMessage() {}
+
+func (x *GetRagSettingsHistoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRagSettingsHistoryResponse.ProtoReflect.Descriptor instead.
+func (*GetRagSettingsHistoryResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *GetRagSettingsHistoryResponse) GetEntries() []*SettingsHistoryEntry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+// Запись истории изменения настройки
+type SettingsHistoryEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	SettingKey    string                 `protobuf:"bytes,2,opt,name=setting_key,json=settingKey,proto3" json:"setting_key,omitempty"`
+	OldValue      string                 `protobuf:"bytes,3,opt,name=old_value,json=oldValue,proto3" json:"old_value,omitempty"`
+	NewValue      string                 `protobuf:"bytes,4,opt,name=new_value,json=newValue,proto3" json:"new_value,omitempty"`
+	ChangedBy     string                 `protobuf:"bytes,5,opt,name=changed_by,json=changedBy,proto3" json:"changed_by,omitempty"`
+	ChangedAt     string                 `protobuf:"bytes,6,opt,name=changed_at,json=changedAt,proto3" json:"changed_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SettingsHistoryEntry) Reset() {
+	*x = SettingsHistoryEntry{}
+	mi := &file_api_rag_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SettingsHistoryEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SettingsHistoryEntry) ProtoMessage() {}
+
+func (x *SettingsHistoryEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SettingsHistoryEntry.ProtoReflect.Descriptor instead.
+func (*SettingsHistoryEntry) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *SettingsHistoryEntry) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *SettingsHistoryEntry) GetSettingKey() string {
+	if x != nil {
+		return x.SettingKey
+	}
+	return ""
+}
+
+func (x *SettingsHistoryEntry) GetOldValue() string {
+	if x != nil {
+		return x.OldValue
+	}
+	return ""
+}
+
+func (x *SettingsHistoryEntry) GetNewValue() string {
+	if x != nil {
+		return x.NewValue
+	}
+	return ""
+}
+
+func (x *SettingsHistoryEntry) GetChangedBy() string {
+	if x != nil {
+		return x.ChangedBy
+	}
+	return ""
+}
+
+func (x *SettingsHistoryEntry) GetChangedAt() string {
+	if x != nil {
+		return x.ChangedAt
+	}
+	return ""
+}
+
 var File_api_rag_proto protoreflect.FileDescriptor
 
 const file_api_rag_proto_rawDesc = "" +
@@ -1008,11 +1443,12 @@ const file_api_rag_proto_rawDesc = "" +
 	"\x16CommitDocumentResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x0e\n" +
-	"\x02id\x18\x03 \x01(\tR\x02id\"n\n" +
+	"\x02id\x18\x03 \x01(\tR\x02id\"\xb2\x01\n" +
 	"\rSearchRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x121\n" +
-	"\x14similarity_threshold\x18\x03 \x01(\x02R\x13similarityThreshold\"`\n" +
+	"\x14similarity_threshold\x18\x03 \x01(\x02R\x13similarityThreshold\x12B\n" +
+	"\x11comparison_method\x18\x04 \x01(\x0e2\x15.rag.ComparisonMethodR\x10comparisonMethod\"`\n" +
 	"\x0eSearchResponse\x12-\n" +
 	"\aresults\x18\x01 \x03(\v2\x13.rag.DocumentResultR\aresults\x12\x1f\n" +
 	"\vtotal_found\x18\x02 \x01(\x05R\n" +
@@ -1040,12 +1476,46 @@ const file_api_rag_proto_rawDesc = "" +
 	"\x15GetIndexStatsResponse\x12'\n" +
 	"\x0ftotal_documents\x18\x01 \x01(\x05R\x0etotalDocuments\x12(\n" +
 	"\x10index_size_bytes\x18\x02 \x01(\x03R\x0eindexSizeBytes\x12!\n" +
-	"\flast_updated\x18\x03 \x01(\tR\vlastUpdated*q\n" +
+	"\flast_updated\x18\x03 \x01(\tR\vlastUpdated\"\x17\n" +
+	"\x15GetRagSettingsRequest\"\x9c\x01\n" +
+	"\x16GetRagSettingsResponse\x12E\n" +
+	"\bsettings\x18\x01 \x03(\v2).rag.GetRagSettingsResponse.SettingsEntryR\bsettings\x1a;\n" +
+	"\rSettingsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"a\n" +
+	"\x18UpdateRagSettingsRequest\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value\x12\x1d\n" +
+	"\n" +
+	"changed_by\x18\x03 \x01(\tR\tchangedBy\"O\n" +
+	"\x19UpdateRagSettingsResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"4\n" +
+	"\x1cGetRagSettingsHistoryRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\"T\n" +
+	"\x1dGetRagSettingsHistoryResponse\x123\n" +
+	"\aentries\x18\x01 \x03(\v2\x19.rag.SettingsHistoryEntryR\aentries\"\xbf\x01\n" +
+	"\x14SettingsHistoryEntry\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1f\n" +
+	"\vsetting_key\x18\x02 \x01(\tR\n" +
+	"settingKey\x12\x1b\n" +
+	"\told_value\x18\x03 \x01(\tR\boldValue\x12\x1b\n" +
+	"\tnew_value\x18\x04 \x01(\tR\bnewValue\x12\x1d\n" +
+	"\n" +
+	"changed_by\x18\x05 \x01(\tR\tchangedBy\x12\x1d\n" +
+	"\n" +
+	"changed_at\x18\x06 \x01(\tR\tchangedAt*q\n" +
 	"\x12DocumentSourceType\x12\x1b\n" +
 	"\x17SOURCE_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10SOURCE_TYPE_TEXT\x10\x01\x12\x13\n" +
 	"\x0fSOURCE_TYPE_URL\x10\x02\x12\x13\n" +
-	"\x0fSOURCE_TYPE_PDF\x10\x032\xb6\x03\n" +
+	"\x0fSOURCE_TYPE_PDF\x10\x03*\xa9\x01\n" +
+	"\x10ComparisonMethod\x12!\n" +
+	"\x1dCOMPARISON_METHOD_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18COMPARISON_METHOD_COSINE\x10\x01\x12\x19\n" +
+	"\x15COMPARISON_METHOD_DOT\x10\x02\x12\x1f\n" +
+	"\x1bCOMPARISON_METHOD_EUCLIDEAN\x10\x03\x12\x18\n" +
+	"\x14COMPARISON_METHOD_L1\x10\x042\xb5\x05\n" +
 	"\n" +
 	"RagService\x12L\n" +
 	"\x0fPreviewDocument\x12\x1b.rag.PreviewDocumentRequest\x1a\x1c.rag.PreviewDocumentResponse\x12I\n" +
@@ -1053,7 +1523,10 @@ const file_api_rag_proto_rawDesc = "" +
 	"\x0fSearchDocuments\x12\x12.rag.SearchRequest\x1a\x13.rag.SearchResponse\x12@\n" +
 	"\vGetDocument\x12\x17.rag.GetDocumentRequest\x1a\x18.rag.GetDocumentResponse\x12I\n" +
 	"\x0eDeleteDocument\x12\x1a.rag.DeleteDocumentRequest\x1a\x1b.rag.DeleteDocumentResponse\x12F\n" +
-	"\rGetIndexStats\x12\x19.rag.GetIndexStatsRequest\x1a\x1a.rag.GetIndexStatsResponseB\aZ\x05./ragb\x06proto3"
+	"\rGetIndexStats\x12\x19.rag.GetIndexStatsRequest\x1a\x1a.rag.GetIndexStatsResponse\x12I\n" +
+	"\x0eGetRagSettings\x12\x1a.rag.GetRagSettingsRequest\x1a\x1b.rag.GetRagSettingsResponse\x12R\n" +
+	"\x11UpdateRagSettings\x12\x1d.rag.UpdateRagSettingsRequest\x1a\x1e.rag.UpdateRagSettingsResponse\x12^\n" +
+	"\x15GetRagSettingsHistory\x12!.rag.GetRagSettingsHistoryRequest\x1a\".rag.GetRagSettingsHistoryResponseB\aZ\x05./ragb\x06proto3"
 
 var (
 	file_api_rag_proto_rawDescOnce sync.Once
@@ -1067,54 +1540,72 @@ func file_api_rag_proto_rawDescGZIP() []byte {
 	return file_api_rag_proto_rawDescData
 }
 
-var file_api_rag_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_api_rag_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_api_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_api_rag_proto_goTypes = []any{
-	(DocumentSourceType)(0),         // 0: rag.DocumentSourceType
-	(*AddDocumentRequest)(nil),      // 1: rag.AddDocumentRequest
-	(*AddDocumentResponse)(nil),     // 2: rag.AddDocumentResponse
-	(*PreviewDocumentRequest)(nil),  // 3: rag.PreviewDocumentRequest
-	(*PreviewDocumentResponse)(nil), // 4: rag.PreviewDocumentResponse
-	(*CommitDocumentRequest)(nil),   // 5: rag.CommitDocumentRequest
-	(*CommitDocumentResponse)(nil),  // 6: rag.CommitDocumentResponse
-	(*SearchRequest)(nil),           // 7: rag.SearchRequest
-	(*SearchResponse)(nil),          // 8: rag.SearchResponse
-	(*DocumentResult)(nil),          // 9: rag.DocumentResult
-	(*GetDocumentRequest)(nil),      // 10: rag.GetDocumentRequest
-	(*GetDocumentResponse)(nil),     // 11: rag.GetDocumentResponse
-	(*DeleteDocumentRequest)(nil),   // 12: rag.DeleteDocumentRequest
-	(*DeleteDocumentResponse)(nil),  // 13: rag.DeleteDocumentResponse
-	(*GetIndexStatsRequest)(nil),    // 14: rag.GetIndexStatsRequest
-	(*GetIndexStatsResponse)(nil),   // 15: rag.GetIndexStatsResponse
-	nil,                             // 16: rag.AddDocumentRequest.MetadataEntry
-	nil,                             // 17: rag.CommitDocumentRequest.MetadataEntry
-	nil,                             // 18: rag.DocumentResult.MetadataEntry
+	(DocumentSourceType)(0),               // 0: rag.DocumentSourceType
+	(ComparisonMethod)(0),                 // 1: rag.ComparisonMethod
+	(*AddDocumentRequest)(nil),            // 2: rag.AddDocumentRequest
+	(*AddDocumentResponse)(nil),           // 3: rag.AddDocumentResponse
+	(*PreviewDocumentRequest)(nil),        // 4: rag.PreviewDocumentRequest
+	(*PreviewDocumentResponse)(nil),       // 5: rag.PreviewDocumentResponse
+	(*CommitDocumentRequest)(nil),         // 6: rag.CommitDocumentRequest
+	(*CommitDocumentResponse)(nil),        // 7: rag.CommitDocumentResponse
+	(*SearchRequest)(nil),                 // 8: rag.SearchRequest
+	(*SearchResponse)(nil),                // 9: rag.SearchResponse
+	(*DocumentResult)(nil),                // 10: rag.DocumentResult
+	(*GetDocumentRequest)(nil),            // 11: rag.GetDocumentRequest
+	(*GetDocumentResponse)(nil),           // 12: rag.GetDocumentResponse
+	(*DeleteDocumentRequest)(nil),         // 13: rag.DeleteDocumentRequest
+	(*DeleteDocumentResponse)(nil),        // 14: rag.DeleteDocumentResponse
+	(*GetIndexStatsRequest)(nil),          // 15: rag.GetIndexStatsRequest
+	(*GetIndexStatsResponse)(nil),         // 16: rag.GetIndexStatsResponse
+	(*GetRagSettingsRequest)(nil),         // 17: rag.GetRagSettingsRequest
+	(*GetRagSettingsResponse)(nil),        // 18: rag.GetRagSettingsResponse
+	(*UpdateRagSettingsRequest)(nil),      // 19: rag.UpdateRagSettingsRequest
+	(*UpdateRagSettingsResponse)(nil),     // 20: rag.UpdateRagSettingsResponse
+	(*GetRagSettingsHistoryRequest)(nil),  // 21: rag.GetRagSettingsHistoryRequest
+	(*GetRagSettingsHistoryResponse)(nil), // 22: rag.GetRagSettingsHistoryResponse
+	(*SettingsHistoryEntry)(nil),          // 23: rag.SettingsHistoryEntry
+	nil,                                   // 24: rag.AddDocumentRequest.MetadataEntry
+	nil,                                   // 25: rag.CommitDocumentRequest.MetadataEntry
+	nil,                                   // 26: rag.DocumentResult.MetadataEntry
+	nil,                                   // 27: rag.GetRagSettingsResponse.SettingsEntry
 }
 var file_api_rag_proto_depIdxs = []int32{
-	16, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
+	24, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
 	0,  // 1: rag.AddDocumentRequest.source_type:type_name -> rag.DocumentSourceType
 	0,  // 2: rag.PreviewDocumentRequest.source_type:type_name -> rag.DocumentSourceType
-	17, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
-	9,  // 4: rag.SearchResponse.results:type_name -> rag.DocumentResult
-	18, // 5: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
-	9,  // 6: rag.GetDocumentResponse.document:type_name -> rag.DocumentResult
-	3,  // 7: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
-	5,  // 8: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
-	7,  // 9: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
-	10, // 10: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
-	12, // 11: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
-	14, // 12: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
-	4,  // 13: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
-	6,  // 14: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
-	8,  // 15: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
-	11, // 16: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
-	13, // 17: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
-	15, // 18: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
-	13, // [13:19] is the sub-list for method output_type
-	7,  // [7:13] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	25, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
+	1,  // 4: rag.SearchRequest.comparison_method:type_name -> rag.ComparisonMethod
+	10, // 5: rag.SearchResponse.results:type_name -> rag.DocumentResult
+	26, // 6: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
+	10, // 7: rag.GetDocumentResponse.document:type_name -> rag.DocumentResult
+	27, // 8: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
+	23, // 9: rag.GetRagSettingsHistoryResponse.entries:type_name -> rag.SettingsHistoryEntry
+	4,  // 10: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
+	6,  // 11: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
+	8,  // 12: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
+	11, // 13: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
+	13, // 14: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
+	15, // 15: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
+	17, // 16: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
+	19, // 17: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
+	21, // 18: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
+	5,  // 19: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
+	7,  // 20: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
+	9,  // 21: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
+	12, // 22: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
+	14, // 23: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
+	16, // 24: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
+	18, // 25: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
+	20, // 26: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
+	22, // 27: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
+	19, // [19:28] is the sub-list for method output_type
+	10, // [10:19] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_api_rag_proto_init() }
@@ -1127,8 +1618,8 @@ func file_api_rag_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_rag_proto_rawDesc), len(file_api_rag_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   18,
+			NumEnums:      2,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

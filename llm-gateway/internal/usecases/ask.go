@@ -13,14 +13,21 @@ import (
 	rag "llm-gateway/pkg/rag"
 )
 
-const promptTemplate = `Используй только следующий контекст, чтобы ответить на вопрос. Если в контексте нет ответа, скажи, что не знаешь.
+func ensureHTTPrefix(s string) string {
+	if !strings.HasPrefix(s, "http://") && !strings.HasPrefix(s, "https://") {
+		return "http://" + s
+	}
+	return s
+}
+
+const promptTemplate = `Отвечай на русском языке. Используй только следующий контекст, чтобы ответить на вопрос. Если в контексте нет ответа, скажи, что не знаешь.
 
 Контекст:
 ---
 %s
 ---
 
-Вопрос: %s`
+Вопрос (ответь на русском): %s`
 
 type RagClient interface {
 	SearchDocuments(ctx context.Context, in *rag.SearchRequest) (*rag.SearchResponse, error)
@@ -35,7 +42,7 @@ type OllamaClient struct {
 func NewOllamaClient(host string) *OllamaClient {
 	return &OllamaClient{
 		httpClient: http.Client{Timeout: 60 * time.Second},
-		host:       host,
+		host:       ensureHTTPrefix(host),
 	}
 }
 

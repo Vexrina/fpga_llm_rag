@@ -15,6 +15,21 @@ func documentSourceTypeFromPB(t pb.DocumentSourceType) DocumentSourceType {
 	}
 }
 
+func comparisonMethodFromPB(t pb.ComparisonMethod) ComparisonMethod {
+	switch t {
+	case pb.ComparisonMethod_COMPARISON_METHOD_COSINE:
+		return ComparisonMethodCosine
+	case pb.ComparisonMethod_COMPARISON_METHOD_DOT:
+		return ComparisonMethodDot
+	case pb.ComparisonMethod_COMPARISON_METHOD_EUCLIDEAN:
+		return ComparisonMethodEuclidean
+	case pb.ComparisonMethod_COMPARISON_METHOD_L1:
+		return ComparisonMethodL1
+	default:
+		return ComparisonMethodCosine
+	}
+}
+
 func AddDocumentFromGRPCToDomain(req *pb.AddDocumentRequest) *AddDocumentDomain {
 	return &AddDocumentDomain{
 		Content:     req.GetContent(),
@@ -87,9 +102,10 @@ func DeleteDocumentFromDomainToGRPC() *pb.DeleteDocumentResponse {
 func SearchDocumentFromGRPCToDomain(req *pb.SearchRequest) *SearchDocumentDomain {
 
 	return &SearchDocumentDomain{
-		Query:         req.GetQuery(),
-		Limit:         req.GetLimit(),
-		SimilarityThs: req.GetSimilarityThreshold(),
+		Query:            req.GetQuery(),
+		Limit:            req.GetLimit(),
+		SimilarityThs:    req.GetSimilarityThreshold(),
+		ComparisonMethod: comparisonMethodFromPB(req.GetComparisonMethod()),
 	}
 }
 

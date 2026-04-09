@@ -8,21 +8,30 @@ option go_package = "./rag";
 service RagService {
   // Предпросмотр: извлечь текст из PDF/URL без сохранения
   rpc PreviewDocument(PreviewDocumentRequest) returns (PreviewDocumentResponse);
-   
+    
   // Сохранить документ с готовым текстом
   rpc CommitDocument(CommitDocumentRequest) returns (CommitDocumentResponse);
-   
+    
   // Поиск документов по запросу
   rpc SearchDocuments(SearchRequest) returns (SearchResponse);
-   
+    
   // Получить документ по ID
   rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
-   
+    
   // Удалить документ по ID
   rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse);
-   
+    
   // Получить статистику индекса
   rpc GetIndexStats(GetIndexStatsRequest) returns (GetIndexStatsResponse);
+
+  // Получить все настройки RAG
+  rpc GetRagSettings(GetRagSettingsRequest) returns (GetRagSettingsResponse);
+
+  // Обновить настройку RAG
+  rpc UpdateRagSettings(UpdateRagSettingsRequest) returns (UpdateRagSettingsResponse);
+
+  // Получить историю изменений настроек
+  rpc GetRagSettingsHistory(GetRagSettingsHistoryRequest) returns (GetRagSettingsHistoryResponse);
 }
 
 // Тип источника документа
@@ -80,11 +89,21 @@ message CommitDocumentResponse {
   string id = 3;
 }
 
+// Тип метода сравнения векторов
+enum ComparisonMethod {
+  COMPARISON_METHOD_UNSPECIFIED = 0;
+  COMPARISON_METHOD_COSINE = 1;     // Косинусное сходство
+  COMPARISON_METHOD_DOT = 2;        // Скалярное произведение
+  COMPARISON_METHOD_EUCLIDEAN = 3;   // Евклидово расстояние
+  COMPARISON_METHOD_L1 = 4;          // Манхэттенское расстояние (L1)
+}
+
 // Запрос на поиск документов
 message SearchRequest {
   string query = 1;
   int32 limit = 2;
   float similarity_threshold = 3;
+  ComparisonMethod comparison_method = 4;
 }
 
 // Ответ на поиск документов
@@ -132,4 +151,45 @@ message GetIndexStatsResponse {
   int32 total_documents = 1;
   int64 index_size_bytes = 2;
   string last_updated = 3;
+}
+
+// Запрос на получение настроек RAG
+message GetRagSettingsRequest {}
+
+// Ответ с настройками RAG
+message GetRagSettingsResponse {
+  map<string, string> settings = 1;
+}
+
+// Запрос на обновление настройки RAG
+message UpdateRagSettingsRequest {
+  string key = 1;
+  string value = 2;
+  string changed_by = 3;
+}
+
+// Ответ на обновление настройки
+message UpdateRagSettingsResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Запрос на получение истории настроек
+message GetRagSettingsHistoryRequest {
+  int32 limit = 1;
+}
+
+// Ответ с историей настроек
+message GetRagSettingsHistoryResponse {
+  repeated SettingsHistoryEntry entries = 1;
+}
+
+// Запись истории изменения настройки
+message SettingsHistoryEntry {
+  int32 id = 1;
+  string setting_key = 2;
+  string old_value = 3;
+  string new_value = 4;
+  string changed_by = 5;
+  string changed_at = 6;
 } 
