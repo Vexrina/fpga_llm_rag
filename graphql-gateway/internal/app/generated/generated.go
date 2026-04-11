@@ -72,9 +72,10 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CommitDocument  func(childComplexity int, input CommitDocumentInput) int
-		DeleteDocument  func(childComplexity int, id string) int
-		PreviewDocument func(childComplexity int, input PreviewDocumentInput) int
+		CommitDocument   func(childComplexity int, input CommitDocumentInput) int
+		DeleteDocument   func(childComplexity int, id string) int
+		PreviewDocument  func(childComplexity int, input PreviewDocumentInput) int
+		UpdateRagSetting func(childComplexity int, key string, value string, changedBy *string) int
 	}
 
 	PreviewDocumentResult struct {
@@ -86,7 +87,18 @@ type ComplexityRoot struct {
 		Ask             func(childComplexity int, question string) int
 		GetDocument     func(childComplexity int, id string) int
 		GetIndexStats   func(childComplexity int) int
+		GetRagSettings  func(childComplexity int) int
 		SearchDocuments func(childComplexity int, query string, limit *int, threshold *float64) int
+	}
+
+	SettingEntry struct {
+		Key   func(childComplexity int) int
+		Value func(childComplexity int) int
+	}
+
+	UpdateSettingsResult struct {
+		Message func(childComplexity int) int
+		Success func(childComplexity int) int
 	}
 }
 
@@ -94,12 +106,14 @@ type MutationResolver interface {
 	PreviewDocument(ctx context.Context, input PreviewDocumentInput) (*PreviewDocumentResult, error)
 	CommitDocument(ctx context.Context, input CommitDocumentInput) (*CommitDocumentResult, error)
 	DeleteDocument(ctx context.Context, id string) (*DeleteDocumentResult, error)
+	UpdateRagSetting(ctx context.Context, key string, value string, changedBy *string) (*UpdateSettingsResult, error)
 }
 type QueryResolver interface {
 	Ask(ctx context.Context, question string) (string, error)
 	SearchDocuments(ctx context.Context, query string, limit *int, threshold *float64) ([]*DocumentResult, error)
 	GetDocument(ctx context.Context, id string) (*Document, error)
 	GetIndexStats(ctx context.Context) (*IndexStats, error)
+	GetRagSettings(ctx context.Context) ([]*SettingEntry, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -269,6 +283,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.PreviewDocument(childComplexity, args["input"].(PreviewDocumentInput)), true
+	case "Mutation.updateRagSetting":
+		if e.ComplexityRoot.Mutation.UpdateRagSetting == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateRagSetting_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateRagSetting(childComplexity, args["key"].(string), args["value"].(string), args["changedBy"].(*string)), true
 
 	case "PreviewDocumentResult.extractedText":
 		if e.ComplexityRoot.PreviewDocumentResult.ExtractedText == nil {
@@ -311,6 +336,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.GetIndexStats(childComplexity), true
+	case "Query.getRagSettings":
+		if e.ComplexityRoot.Query.GetRagSettings == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.GetRagSettings(childComplexity), true
 
 	case "Query.searchDocuments":
 		if e.ComplexityRoot.Query.SearchDocuments == nil {
@@ -323,6 +354,32 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.SearchDocuments(childComplexity, args["query"].(string), args["limit"].(*int), args["threshold"].(*float64)), true
+
+	case "SettingEntry.key":
+		if e.ComplexityRoot.SettingEntry.Key == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SettingEntry.Key(childComplexity), true
+	case "SettingEntry.value":
+		if e.ComplexityRoot.SettingEntry.Value == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SettingEntry.Value(childComplexity), true
+
+	case "UpdateSettingsResult.message":
+		if e.ComplexityRoot.UpdateSettingsResult.Message == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateSettingsResult.Message(childComplexity), true
+	case "UpdateSettingsResult.success":
+		if e.ComplexityRoot.UpdateSettingsResult.Success == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateSettingsResult.Success(childComplexity), true
 
 	}
 	return 0, false
@@ -476,18 +533,30 @@ type IndexStats {
   indexSizeBytes: Int!
   lastUpdated: String!
 }
+
+type UpdateSettingsResult {
+  success: Boolean!
+  message: String!
+}
 `, BuiltIn: false},
 	{Name: "../../../graph/query/queryDefs.graphqls", Input: `type Query {
   ask(question: String!): String!
   searchDocuments(query: String!, limit: Int, threshold: Float): [DocumentResult!]!
   getDocument(id: String!): Document
   getIndexStats: IndexStats
+  getRagSettings: [SettingEntry!]!
+}
+
+type SettingEntry {
+  key: String!
+  value: String!
 }
 `, BuiltIn: false},
 	{Name: "../../../graph/mutation/mutationDefs.graphqls", Input: `type Mutation {
   previewDocument(input: PreviewDocumentInput!): PreviewDocumentResult!
   commitDocument(input: CommitDocumentInput!): CommitDocumentResult!
   deleteDocument(id: String!): DeleteDocumentResult!
+  updateRagSetting(key: String!, value: String!, changedBy: String): UpdateSettingsResult!
 }
 `, BuiltIn: false},
 	{Name: "../../../graph/enums/enumDefs.graphqls", Input: `enum DocumentSourceType {
@@ -534,6 +603,27 @@ func (ec *executionContext) field_Mutation_previewDocument_args(ctx context.Cont
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateRagSetting_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "key", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["key"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "value", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["value"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "changedBy", ec.unmarshalOString2ᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["changedBy"] = arg2
 	return args, nil
 }
 
@@ -1349,6 +1439,53 @@ func (ec *executionContext) fieldContext_Mutation_deleteDocument(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_updateRagSetting(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_updateRagSetting,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateRagSetting(ctx, fc.Args["key"].(string), fc.Args["value"].(string), fc.Args["changedBy"].(*string))
+		},
+		nil,
+		ec.marshalNUpdateSettingsResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐUpdateSettingsResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateRagSetting(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_UpdateSettingsResult_success(ctx, field)
+			case "message":
+				return ec.fieldContext_UpdateSettingsResult_message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UpdateSettingsResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateRagSetting_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PreviewDocumentResult_extractedText(ctx context.Context, field graphql.CollectedField, obj *PreviewDocumentResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1589,6 +1726,41 @@ func (ec *executionContext) fieldContext_Query_getIndexStats(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_getRagSettings(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_getRagSettings,
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().GetRagSettings(ctx)
+		},
+		nil,
+		ec.marshalNSettingEntry2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingEntryᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_getRagSettings(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_SettingEntry_key(ctx, field)
+			case "value":
+				return ec.fieldContext_SettingEntry_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SettingEntry", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1692,6 +1864,122 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SettingEntry_key(ctx context.Context, field graphql.CollectedField, obj *SettingEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SettingEntry_key,
+		func(ctx context.Context) (any, error) {
+			return obj.Key, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SettingEntry_key(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SettingEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SettingEntry_value(ctx context.Context, field graphql.CollectedField, obj *SettingEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SettingEntry_value,
+		func(ctx context.Context) (any, error) {
+			return obj.Value, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SettingEntry_value(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SettingEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpdateSettingsResult_success(ctx context.Context, field graphql.CollectedField, obj *UpdateSettingsResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_UpdateSettingsResult_success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_UpdateSettingsResult_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdateSettingsResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpdateSettingsResult_message(ctx context.Context, field graphql.CollectedField, obj *UpdateSettingsResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_UpdateSettingsResult_message,
+		func(ctx context.Context) (any, error) {
+			return obj.Message, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_UpdateSettingsResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdateSettingsResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3629,6 +3917,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "updateRagSetting":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateRagSetting(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3797,6 +4092,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getRagSettings":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getRagSettings(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -3805,6 +4122,94 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var settingEntryImplementors = []string{"SettingEntry"}
+
+func (ec *executionContext) _SettingEntry(ctx context.Context, sel ast.SelectionSet, obj *SettingEntry) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, settingEntryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SettingEntry")
+		case "key":
+			out.Values[i] = ec._SettingEntry_key(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "value":
+			out.Values[i] = ec._SettingEntry_value(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var updateSettingsResultImplementors = []string{"UpdateSettingsResult"}
+
+func (ec *executionContext) _UpdateSettingsResult(ctx context.Context, sel ast.SelectionSet, obj *UpdateSettingsResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, updateSettingsResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UpdateSettingsResult")
+		case "success":
+			out.Values[i] = ec._UpdateSettingsResult_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "message":
+			out.Values[i] = ec._UpdateSettingsResult_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4330,6 +4735,32 @@ func (ec *executionContext) marshalNPreviewDocumentResult2ᚖgraphqlᚑgateway�
 	return ec._PreviewDocumentResult(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNSettingEntry2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingEntryᚄ(ctx context.Context, sel ast.SelectionSet, v []*SettingEntry) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNSettingEntry2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingEntry(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSettingEntry2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingEntry(ctx context.Context, sel ast.SelectionSet, v *SettingEntry) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SettingEntry(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4344,6 +4775,20 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUpdateSettingsResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐUpdateSettingsResult(ctx context.Context, sel ast.SelectionSet, v UpdateSettingsResult) graphql.Marshaler {
+	return ec._UpdateSettingsResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUpdateSettingsResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐUpdateSettingsResult(ctx context.Context, sel ast.SelectionSet, v *UpdateSettingsResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UpdateSettingsResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

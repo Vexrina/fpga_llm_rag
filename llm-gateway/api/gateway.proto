@@ -6,6 +6,8 @@ option go_package = "./llm-gateway";
 
 service GatewayService {
     rpc Ask(AskRequest) returns (AskResponse) {}
+    rpc UpdateBasePrompt(UpdateBasePromptRequest) returns (UpdateBasePromptResponse) {}
+    rpc GetBasePrompt(GetBasePromptRequest) returns (GetBasePromptResponse) {}
 }
 
 message AskRequest {
@@ -14,4 +16,18 @@ message AskRequest {
 
 message AskResponse {
     string answer = 1;
+}
+
+message UpdateBasePromptRequest {
+    string prompt = 1;
+}
+
+message UpdateBasePromptResponse {
+    bool success = 1;
+}
+
+message GetBasePromptRequest {}
+
+message GetBasePromptResponse {
+    string prompt = 1;
 } 

@@ -54,12 +54,10 @@ func (r *VecDb) UpdateSetting(ctx context.Context, key, value, changedBy string)
 	}
 	defer tx.Rollback(ctx)
 
-	var oldValue *string
-	err = tx.QueryRow(ctx, "SELECT value FROM rag_settings WHERE key = $1 FOR UPDATE", key).Scan(oldValue)
-	if err != nil {
-		if err.Error() != "no rows in result set" {
-			oldValue = nil
-		}
+	var oldValuePtr *string
+	err = tx.QueryRow(ctx, "SELECT value FROM rag_settings WHERE key = $1 FOR UPDATE", key).Scan(&oldValuePtr)
+	if err != nil && err.Error() != "no rows in result set" {
+		return fmt.Errorf("failed to get old value: %w", err)
 	}
 
 	_, err = tx.Exec(ctx, `
@@ -71,8 +69,8 @@ func (r *VecDb) UpdateSetting(ctx context.Context, key, value, changedBy string)
 	}
 
 	oldVal := ""
-	if oldValue != nil {
-		oldVal = *oldValue
+	if oldValuePtr != nil {
+		oldVal = *oldValuePtr
 	}
 
 	_, err = tx.Exec(ctx, `

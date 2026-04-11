@@ -39,3 +39,8 @@ type IndexStats {
   indexSizeBytes: Int!
   lastUpdated: String!
 }
+
+type UpdateSettingsResult {
+  success: Boolean!
+  message: String!
+}

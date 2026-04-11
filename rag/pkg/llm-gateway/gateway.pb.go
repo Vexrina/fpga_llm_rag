@@ -197,86 +197,6 @@ func (x *UpdateBasePromptResponse) GetSuccess() bool {
 	return false
 }
 
-type GetBasePromptRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetBasePromptRequest) Reset() {
-	*x = GetBasePromptRequest{}
-	mi := &file_api_gateway_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetBasePromptRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetBasePromptRequest) ProtoMessage() {}
-
-func (x *GetBasePromptRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_gateway_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetBasePromptRequest.ProtoReflect.Descriptor instead.
-func (*GetBasePromptRequest) Descriptor() ([]byte, []int) {
-	return file_api_gateway_proto_rawDescGZIP(), []int{4}
-}
-
-type GetBasePromptResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Prompt        string                 `protobuf:"bytes,1,opt,name=prompt,proto3" json:"prompt,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetBasePromptResponse) Reset() {
-	*x = GetBasePromptResponse{}
-	mi := &file_api_gateway_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetBasePromptResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetBasePromptResponse) ProtoMessage() {}
-
-func (x *GetBasePromptResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_gateway_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetBasePromptResponse.ProtoReflect.Descriptor instead.
-func (*GetBasePromptResponse) Descriptor() ([]byte, []int) {
-	return file_api_gateway_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *GetBasePromptResponse) GetPrompt() string {
-	if x != nil {
-		return x.Prompt
-	}
-	return ""
-}
-
 var File_api_gateway_proto protoreflect.FileDescriptor
 
 const file_api_gateway_proto_rawDesc = "" +
@@ -290,14 +210,10 @@ const file_api_gateway_proto_rawDesc = "" +
 	"\x17UpdateBasePromptRequest\x12\x16\n" +
 	"\x06prompt\x18\x01 \x01(\tR\x06prompt\"4\n" +
 	"\x18UpdateBasePromptResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x16\n" +
-	"\x14GetBasePromptRequest\"/\n" +
-	"\x15GetBasePromptResponse\x12\x16\n" +
-	"\x06prompt\x18\x01 \x01(\tR\x06prompt2\xf1\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x9f\x01\n" +
 	"\x0eGatewayService\x122\n" +
 	"\x03Ask\x12\x13.gateway.AskRequest\x1a\x14.gateway.AskResponse\"\x00\x12Y\n" +
-	"\x10UpdateBasePrompt\x12 .gateway.UpdateBasePromptRequest\x1a!.gateway.UpdateBasePromptResponse\"\x00\x12P\n" +
-	"\rGetBasePrompt\x12\x1d.gateway.GetBasePromptRequest\x1a\x1e.gateway.GetBasePromptResponse\"\x00B\x0fZ\r./llm-gatewayb\x06proto3"
+	"\x10UpdateBasePrompt\x12 .gateway.UpdateBasePromptRequest\x1a!.gateway.UpdateBasePromptResponse\"\x00B\x0fZ\r./llm-gatewayb\x06proto3"
 
 var (
 	file_api_gateway_proto_rawDescOnce sync.Once
@@ -311,24 +227,20 @@ func file_api_gateway_proto_rawDescGZIP() []byte {
 	return file_api_gateway_proto_rawDescData
 }
 
-var file_api_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_api_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_api_gateway_proto_goTypes = []any{
 	(*AskRequest)(nil),               // 0: gateway.AskRequest
 	(*AskResponse)(nil),              // 1: gateway.AskResponse
 	(*UpdateBasePromptRequest)(nil),  // 2: gateway.UpdateBasePromptRequest
 	(*UpdateBasePromptResponse)(nil), // 3: gateway.UpdateBasePromptResponse
-	(*GetBasePromptRequest)(nil),     // 4: gateway.GetBasePromptRequest
-	(*GetBasePromptResponse)(nil),    // 5: gateway.GetBasePromptResponse
 }
 var file_api_gateway_proto_depIdxs = []int32{
 	0, // 0: gateway.GatewayService.Ask:input_type -> gateway.AskRequest
 	2, // 1: gateway.GatewayService.UpdateBasePrompt:input_type -> gateway.UpdateBasePromptRequest
-	4, // 2: gateway.GatewayService.GetBasePrompt:input_type -> gateway.GetBasePromptRequest
-	1, // 3: gateway.GatewayService.Ask:output_type -> gateway.AskResponse
-	3, // 4: gateway.GatewayService.UpdateBasePrompt:output_type -> gateway.UpdateBasePromptResponse
-	5, // 5: gateway.GatewayService.GetBasePrompt:output_type -> gateway.GetBasePromptResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	1, // 2: gateway.GatewayService.Ask:output_type -> gateway.AskResponse
+	3, // 3: gateway.GatewayService.UpdateBasePrompt:output_type -> gateway.UpdateBasePromptResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -345,7 +257,7 @@ func file_api_gateway_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_gateway_proto_rawDesc), len(file_api_gateway_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

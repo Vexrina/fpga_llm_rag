@@ -83,6 +83,19 @@ func (r *queryResolver) GetIndexStats(ctx context.Context) (*generated.IndexStat
 	}, nil
 }
 
+// GetRagSettings is the resolver for the getRagSettings field.
+func (r *queryResolver) GetRagSettings(ctx context.Context) ([]*generated.SettingEntry, error) {
+	settings, err := r.RAGClient.GetRagSettings(ctx)
+	if err != nil {
+		return nil, err
+	}
+	entries := make([]*generated.SettingEntry, 0, len(settings))
+	for k, v := range settings {
+		entries = append(entries, &generated.SettingEntry{Key: k, Value: v})
+	}
+	return entries, nil
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

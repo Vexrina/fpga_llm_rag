@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	rag "llm-gateway/pkg/rag"
@@ -91,18 +92,34 @@ type AskUsecase struct {
 	ragClient    RagClient
 	ollamaClient *OllamaClient
 	ollamaModel  string
+	basePrompt   string
+	mu           sync.RWMutex
 }
 
 func NewAskUsecase(
 	ragClient RagClient,
 	ollamaClient *OllamaClient,
 	ollamaModel string,
+	basePrompt string,
 ) *AskUsecase {
 	return &AskUsecase{
 		ragClient:    ragClient,
 		ollamaClient: ollamaClient,
 		ollamaModel:  ollamaModel,
+		basePrompt:   basePrompt,
 	}
+}
+
+func (u *AskUsecase) UpdateBasePrompt(newPrompt string) {
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	u.basePrompt = newPrompt
+}
+
+func (u *AskUsecase) GetBasePrompt() string {
+	u.mu.RLock()
+	defer u.mu.RUnlock()
+	return u.basePrompt
 }
 
 func (u *AskUsecase) Ask(ctx context.Context, question string) (string, error) {
@@ -121,7 +138,8 @@ func (u *AskUsecase) Ask(ctx context.Context, question string) (string, error) {
 		contextBuilder.WriteString("\n\n")
 	}
 
-	finalPrompt := fmt.Sprintf(promptTemplate, contextBuilder.String(), question)
+	basePrompt := u.GetBasePrompt()
+	finalPrompt := fmt.Sprintf("%s\n\nКонтекст:\n---\n%s\n---\n\nВопрос: %s", basePrompt, contextBuilder.String(), question)
 
 	fmt.Printf("[OLLAMA] model: '%s'\n", u.ollamaModel)
 

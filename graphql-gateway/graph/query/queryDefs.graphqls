@@ -3,4 +3,10 @@ type Query {
   searchDocuments(query: String!, limit: Int, threshold: Float): [DocumentResult!]!
   getDocument(id: String!): Document
   getIndexStats: IndexStats
+  getRagSettings: [SettingEntry!]!
+}
+
+type SettingEntry {
+  key: String!
+  value: String!
 }

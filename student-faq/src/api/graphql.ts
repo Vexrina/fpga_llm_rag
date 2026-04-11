@@ -93,3 +93,49 @@ export async function askQuestion(question: string): Promise<string> {
   const result = await graphqlRequest<AskResult>(query, { question })
   return result.ask
 }
+
+export interface SettingEntry {
+  key: string
+  value: string
+}
+
+export interface GetSettingsResult {
+  getRagSettings: SettingEntry[]
+}
+
+export interface UpdateSettingResult {
+  updateRagSetting: {
+    success: boolean
+    message: string
+  }
+}
+
+export async function getRagSettingsAPI(): Promise<Record<string, string>> {
+  const query = `
+    query GetRagSettings {
+      getRagSettings {
+        key
+        value
+      }
+    }
+  `
+  const result = await graphqlRequest<GetSettingsResult>(query)
+  const settings: Record<string, string> = {}
+  for (const entry of result.getRagSettings) {
+    settings[entry.key] = entry.value
+  }
+  return settings
+}
+
+export async function updateRagSettingAPI(key: string, value: string, changedBy?: string): Promise<boolean> {
+  const query = `
+    mutation UpdateRagSetting($key: String!, $value: String!, $changedBy: String) {
+      updateRagSetting(key: $key, value: $value, changedBy: $changedBy) {
+        success
+        message
+      }
+    }
+  `
+  const result = await graphqlRequest<UpdateSettingResult>(query, { key, value, changedBy })
+  return result.updateRagSetting.success
+}

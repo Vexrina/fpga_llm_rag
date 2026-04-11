@@ -2,4 +2,5 @@ type Mutation {
   previewDocument(input: PreviewDocumentInput!): PreviewDocumentResult!
   commitDocument(input: CommitDocumentInput!): CommitDocumentResult!
   deleteDocument(id: String!): DeleteDocumentResult!
+  updateRagSetting(key: String!, value: String!, changedBy: String): UpdateSettingsResult!
 }

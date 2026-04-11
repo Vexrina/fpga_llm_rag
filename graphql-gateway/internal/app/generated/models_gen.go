@@ -76,6 +76,16 @@ type PreviewDocumentResult struct {
 type Query struct {
 }
 
+type SettingEntry struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type UpdateSettingsResult struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 type DocumentSourceType string
 
 const (

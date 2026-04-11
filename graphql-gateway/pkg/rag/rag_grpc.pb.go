@@ -19,12 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	RagService_PreviewDocument_FullMethodName = "/rag.RagService/PreviewDocument"
-	RagService_CommitDocument_FullMethodName  = "/rag.RagService/CommitDocument"
-	RagService_SearchDocuments_FullMethodName = "/rag.RagService/SearchDocuments"
-	RagService_GetDocument_FullMethodName     = "/rag.RagService/GetDocument"
-	RagService_DeleteDocument_FullMethodName  = "/rag.RagService/DeleteDocument"
-	RagService_GetIndexStats_FullMethodName   = "/rag.RagService/GetIndexStats"
+	RagService_PreviewDocument_FullMethodName       = "/rag.RagService/PreviewDocument"
+	RagService_CommitDocument_FullMethodName        = "/rag.RagService/CommitDocument"
+	RagService_SearchDocuments_FullMethodName       = "/rag.RagService/SearchDocuments"
+	RagService_GetDocument_FullMethodName           = "/rag.RagService/GetDocument"
+	RagService_DeleteDocument_FullMethodName        = "/rag.RagService/DeleteDocument"
+	RagService_GetIndexStats_FullMethodName         = "/rag.RagService/GetIndexStats"
+	RagService_GetRagSettings_FullMethodName        = "/rag.RagService/GetRagSettings"
+	RagService_UpdateRagSettings_FullMethodName     = "/rag.RagService/UpdateRagSettings"
+	RagService_GetRagSettingsHistory_FullMethodName = "/rag.RagService/GetRagSettingsHistory"
 )
 
 // RagServiceClient is the client API for RagService service.
@@ -45,6 +48,12 @@ type RagServiceClient interface {
 	DeleteDocument(ctx context.Context, in *DeleteDocumentRequest, opts ...grpc.CallOption) (*DeleteDocumentResponse, error)
 	// Получить статистику индекса
 	GetIndexStats(ctx context.Context, in *GetIndexStatsRequest, opts ...grpc.CallOption) (*GetIndexStatsResponse, error)
+	// Получить все настройки RAG
+	GetRagSettings(ctx context.Context, in *GetRagSettingsRequest, opts ...grpc.CallOption) (*GetRagSettingsResponse, error)
+	// Обновить настройку RAG
+	UpdateRagSettings(ctx context.Context, in *UpdateRagSettingsRequest, opts ...grpc.CallOption) (*UpdateRagSettingsResponse, error)
+	// Получить историю изменений настроек
+	GetRagSettingsHistory(ctx context.Context, in *GetRagSettingsHistoryRequest, opts ...grpc.CallOption) (*GetRagSettingsHistoryResponse, error)
 }
 
 type ragServiceClient struct {
@@ -115,6 +124,36 @@ func (c *ragServiceClient) GetIndexStats(ctx context.Context, in *GetIndexStatsR
 	return out, nil
 }
 
+func (c *ragServiceClient) GetRagSettings(ctx context.Context, in *GetRagSettingsRequest, opts ...grpc.CallOption) (*GetRagSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRagSettingsResponse)
+	err := c.cc.Invoke(ctx, RagService_GetRagSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ragServiceClient) UpdateRagSettings(ctx context.Context, in *UpdateRagSettingsRequest, opts ...grpc.CallOption) (*UpdateRagSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateRagSettingsResponse)
+	err := c.cc.Invoke(ctx, RagService_UpdateRagSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ragServiceClient) GetRagSettingsHistory(ctx context.Context, in *GetRagSettingsHistoryRequest, opts ...grpc.CallOption) (*GetRagSettingsHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRagSettingsHistoryResponse)
+	err := c.cc.Invoke(ctx, RagService_GetRagSettingsHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RagServiceServer is the server API for RagService service.
 // All implementations must embed UnimplementedRagServiceServer
 // for forward compatibility.
@@ -133,6 +172,12 @@ type RagServiceServer interface {
 	DeleteDocument(context.Context, *DeleteDocumentRequest) (*DeleteDocumentResponse, error)
 	// Получить статистику индекса
 	GetIndexStats(context.Context, *GetIndexStatsRequest) (*GetIndexStatsResponse, error)
+	// Получить все настройки RAG
+	GetRagSettings(context.Context, *GetRagSettingsRequest) (*GetRagSettingsResponse, error)
+	// Обновить настройку RAG
+	UpdateRagSettings(context.Context, *UpdateRagSettingsRequest) (*UpdateRagSettingsResponse, error)
+	// Получить историю изменений настроек
+	GetRagSettingsHistory(context.Context, *GetRagSettingsHistoryRequest) (*GetRagSettingsHistoryResponse, error)
 	mustEmbedUnimplementedRagServiceServer()
 }
 
@@ -160,6 +205,15 @@ func (UnimplementedRagServiceServer) DeleteDocument(context.Context, *DeleteDocu
 }
 func (UnimplementedRagServiceServer) GetIndexStats(context.Context, *GetIndexStatsRequest) (*GetIndexStatsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetIndexStats not implemented")
+}
+func (UnimplementedRagServiceServer) GetRagSettings(context.Context, *GetRagSettingsRequest) (*GetRagSettingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRagSettings not implemented")
+}
+func (UnimplementedRagServiceServer) UpdateRagSettings(context.Context, *UpdateRagSettingsRequest) (*UpdateRagSettingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateRagSettings not implemented")
+}
+func (UnimplementedRagServiceServer) GetRagSettingsHistory(context.Context, *GetRagSettingsHistoryRequest) (*GetRagSettingsHistoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRagSettingsHistory not implemented")
 }
 func (UnimplementedRagServiceServer) mustEmbedUnimplementedRagServiceServer() {}
 func (UnimplementedRagServiceServer) testEmbeddedByValue()                    {}
@@ -290,6 +344,60 @@ func _RagService_GetIndexStats_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RagService_GetRagSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRagSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).GetRagSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_GetRagSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).GetRagSettings(ctx, req.(*GetRagSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RagService_UpdateRagSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRagSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).UpdateRagSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_UpdateRagSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).UpdateRagSettings(ctx, req.(*UpdateRagSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RagService_GetRagSettingsHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRagSettingsHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).GetRagSettingsHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_GetRagSettingsHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).GetRagSettingsHistory(ctx, req.(*GetRagSettingsHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RagService_ServiceDesc is the grpc.ServiceDesc for RagService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -320,6 +428,18 @@ var RagService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetIndexStats",
 			Handler:    _RagService_GetIndexStats_Handler,
+		},
+		{
+			MethodName: "GetRagSettings",
+			Handler:    _RagService_GetRagSettings_Handler,
+		},
+		{
+			MethodName: "UpdateRagSettings",
+			Handler:    _RagService_UpdateRagSettings_Handler,
+		},
+		{
+			MethodName: "GetRagSettingsHistory",
+			Handler:    _RagService_GetRagSettingsHistory_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

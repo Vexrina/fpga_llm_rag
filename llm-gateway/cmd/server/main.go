@@ -45,6 +45,24 @@ func main() {
 
 	ragClient := utils.NewRagGetter(ragClientGrpc)
 
+	// Fetch basePrompt from RAG on startup
+	basePrompt := "Отвечай на русском языке. Используй только следующий контекст, чтобы ответить на вопрос. Если в контексте нет ответа, скажи, что не знаешь."
+	settingsResp, err := ragClientGrpc.GetRagSettings(ctx, &rag.GetRagSettingsRequest{})
+	if err == nil {
+		if prompt, ok := settingsResp.Settings["basePrompt"]; ok && prompt != "" {
+			basePrompt = prompt
+			log.Printf("Loaded basePrompt from RAG: %s", prompt)
+		}
+	} else {
+		log.Printf("Could not fetch basePrompt from RAG, using default: %v", err)
+	}
+
+	// Ollama Client
+	ollamaClient := usecases.NewOllamaClient(ollamaApiAddr)
+
+	// Usecase
+	askUsecase := usecases.NewAskUsecase(ragClient, ollamaClient, ollamaModel, basePrompt)
+
 	// fwConn, err := grpc.NewClient(floatWeaverServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	// if err != nil {
 	// 	log.Fatalf("failed to connect to float-weaver service: %v", err)
@@ -52,14 +70,8 @@ func main() {
 	// defer fwConn.Close()
 	// fwClient := floatweaver.NewEmbedServiceClient(fwConn)
 
-	// Ollama Client
-	ollamaClient := usecases.NewOllamaClient(ollamaApiAddr)
-
-	// Usecase
-	askUsecase := usecases.NewAskUsecase(ragClient, ollamaClient, ollamaModel)
-
 	// gRPC Server
-	service := app.NewService(askUsecase)
+	service := app.NewServiceWithUpdater(askUsecase, askUsecase)
 	server := grpc.NewServer()
 	llm_gateway.RegisterGatewayServiceServer(server, service)
 	reflection.Register(server)

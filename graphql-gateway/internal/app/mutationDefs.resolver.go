@@ -70,6 +70,22 @@ func (r *mutationResolver) DeleteDocument(ctx context.Context, id string) (*gene
 	return &generated.DeleteDocumentResult{Success: success, Message: message}, nil
 }
 
+// UpdateRagSetting is the resolver for the updateRagSetting field.
+func (r *mutationResolver) UpdateRagSetting(ctx context.Context, key string, value string, changedBy *string) (*generated.UpdateSettingsResult, error) {
+	changed := "admin"
+	if changedBy != nil && *changedBy != "" {
+		changed = *changedBy
+	}
+	result, err := r.RAGClient.UpdateRagSetting(ctx, key, value, changed)
+	if err != nil {
+		return nil, err
+	}
+	return &generated.UpdateSettingsResult{
+		Success: result.Success,
+		Message: result.Message,
+	}, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

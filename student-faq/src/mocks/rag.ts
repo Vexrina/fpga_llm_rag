@@ -1,4 +1,5 @@
 import type { RagSettings, HistoryEntry, LogEntry, KnowledgeDoc } from '../types'
+import { getRagSettingsAPI, updateRagSettingAPI } from '../api/graphql'
 
 const defaultSettings: RagSettings = {
   topK: 5,
@@ -134,11 +135,28 @@ const mockDocs: KnowledgeDoc[] = [
 
 export async function getRagSettings(): Promise<RagSettings> {
   await new Promise((resolve) => setTimeout(resolve, 300))
-  return { ...defaultSettings }
+  try {
+    const settings = await getRagSettingsAPI()
+    return {
+      topK: parseInt(settings.topK || '5', 10),
+      similarityThreshold: parseFloat(settings.similarityThreshold || '0.75'),
+      model: settings.model || 'mxbai-embed-large',
+      chunkSize: parseInt(settings.chunkSize || '512', 10),
+      chunkOverlap: parseInt(settings.chunkOverlap || '64', 10),
+      basePrompt: settings.basePrompt || defaultSettings.basePrompt,
+      comparisonMethod: (settings.comparisonMethod as RagSettings['comparisonMethod']) || 'cosine',
+    }
+  } catch {
+    return { ...defaultSettings }
+  }
 }
 
 export async function saveRagSettings(settings: RagSettings): Promise<RagSettings> {
-  await new Promise((resolve) => setTimeout(resolve, 500))
+  const fields: (keyof RagSettings)[] = ['topK', 'similarityThreshold', 'chunkSize', 'chunkOverlap', 'basePrompt', 'comparisonMethod', 'model']
+  for (const key of fields) {
+    const value = key === 'basePrompt' ? settings[key] : String(settings[key])
+    await updateRagSettingAPI(key, value, 'admin')
+  }
   return { ...settings }
 }
 

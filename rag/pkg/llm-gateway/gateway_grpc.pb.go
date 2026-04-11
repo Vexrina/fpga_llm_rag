@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	GatewayService_Ask_FullMethodName              = "/gateway.GatewayService/Ask"
 	GatewayService_UpdateBasePrompt_FullMethodName = "/gateway.GatewayService/UpdateBasePrompt"
-	GatewayService_GetBasePrompt_FullMethodName    = "/gateway.GatewayService/GetBasePrompt"
 )
 
 // GatewayServiceClient is the client API for GatewayService service.
@@ -30,7 +29,6 @@ const (
 type GatewayServiceClient interface {
 	Ask(ctx context.Context, in *AskRequest, opts ...grpc.CallOption) (*AskResponse, error)
 	UpdateBasePrompt(ctx context.Context, in *UpdateBasePromptRequest, opts ...grpc.CallOption) (*UpdateBasePromptResponse, error)
-	GetBasePrompt(ctx context.Context, in *GetBasePromptRequest, opts ...grpc.CallOption) (*GetBasePromptResponse, error)
 }
 
 type gatewayServiceClient struct {
@@ -61,23 +59,12 @@ func (c *gatewayServiceClient) UpdateBasePrompt(ctx context.Context, in *UpdateB
 	return out, nil
 }
 
-func (c *gatewayServiceClient) GetBasePrompt(ctx context.Context, in *GetBasePromptRequest, opts ...grpc.CallOption) (*GetBasePromptResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetBasePromptResponse)
-	err := c.cc.Invoke(ctx, GatewayService_GetBasePrompt_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // GatewayServiceServer is the server API for GatewayService service.
 // All implementations must embed UnimplementedGatewayServiceServer
 // for forward compatibility.
 type GatewayServiceServer interface {
 	Ask(context.Context, *AskRequest) (*AskResponse, error)
 	UpdateBasePrompt(context.Context, *UpdateBasePromptRequest) (*UpdateBasePromptResponse, error)
-	GetBasePrompt(context.Context, *GetBasePromptRequest) (*GetBasePromptResponse, error)
 	mustEmbedUnimplementedGatewayServiceServer()
 }
 
@@ -93,9 +80,6 @@ func (UnimplementedGatewayServiceServer) Ask(context.Context, *AskRequest) (*Ask
 }
 func (UnimplementedGatewayServiceServer) UpdateBasePrompt(context.Context, *UpdateBasePromptRequest) (*UpdateBasePromptResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateBasePrompt not implemented")
-}
-func (UnimplementedGatewayServiceServer) GetBasePrompt(context.Context, *GetBasePromptRequest) (*GetBasePromptResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetBasePrompt not implemented")
 }
 func (UnimplementedGatewayServiceServer) mustEmbedUnimplementedGatewayServiceServer() {}
 func (UnimplementedGatewayServiceServer) testEmbeddedByValue()                        {}
@@ -154,24 +138,6 @@ func _GatewayService_UpdateBasePrompt_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GatewayService_GetBasePrompt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetBasePromptRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GatewayServiceServer).GetBasePrompt(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: GatewayService_GetBasePrompt_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GatewayServiceServer).GetBasePrompt(ctx, req.(*GetBasePromptRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // GatewayService_ServiceDesc is the grpc.ServiceDesc for GatewayService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -186,10 +152,6 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateBasePrompt",
 			Handler:    _GatewayService_UpdateBasePrompt_Handler,
-		},
-		{
-			MethodName: "GetBasePrompt",
-			Handler:    _GatewayService_GetBasePrompt_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

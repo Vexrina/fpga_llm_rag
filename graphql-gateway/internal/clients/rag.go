@@ -180,3 +180,31 @@ func (c *RAGClient) CommitDocument(ctx context.Context, title, content string, m
 func (c *RAGClient) Close() error {
 	return c.conn.Close()
 }
+
+type UpdateSettingsResult struct {
+	Success bool
+	Message string
+}
+
+func (c *RAGClient) UpdateRagSetting(ctx context.Context, key, value, changedBy string) (*UpdateSettingsResult, error) {
+	resp, err := c.client.UpdateRagSettings(ctx, &pb.UpdateRagSettingsRequest{
+		Key:       key,
+		Value:     value,
+		ChangedBy: changedBy,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("UpdateRagSettings RPC failed: %w", err)
+	}
+	return &UpdateSettingsResult{
+		Success: resp.Success,
+		Message: resp.Message,
+	}, nil
+}
+
+func (c *RAGClient) GetRagSettings(ctx context.Context) (map[string]string, error) {
+	resp, err := c.client.GetRagSettings(ctx, &pb.GetRagSettingsRequest{})
+	if err != nil {
+		return nil, fmt.Errorf("GetRagSettings RPC failed: %w", err)
+	}
+	return resp.Settings, nil
+}

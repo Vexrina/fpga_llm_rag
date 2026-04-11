@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"rag/internal/repository"
 	"rag/internal/utils"
@@ -17,12 +18,17 @@ type SettingsRepository interface {
 	GetSettingsHistory(ctx context.Context, limit int) ([]repository.RagSettingHistory, error)
 }
 
-type SettingsUsecase struct {
-	repository SettingsRepository
+type WebhookNotifier interface {
+	NotifyBasePromptUpdate(newPrompt string)
 }
 
-func NewSettingsUsecase(repository SettingsRepository) *SettingsUsecase {
-	return &SettingsUsecase{repository: repository}
+type SettingsUsecase struct {
+	repository SettingsRepository
+	webhook    WebhookNotifier
+}
+
+func NewSettingsUsecase(repository SettingsRepository, webhook WebhookNotifier) *SettingsUsecase {
+	return &SettingsUsecase{repository: repository, webhook: webhook}
 }
 
 func (u *SettingsUsecase) GetRagSettings(ctx context.Context) (map[string]string, error) {
@@ -30,6 +36,14 @@ func (u *SettingsUsecase) GetRagSettings(ctx context.Context) (map[string]string
 }
 
 func (u *SettingsUsecase) UpdateRagSetting(ctx context.Context, key, value, changedBy string) error {
+	if key == "basePrompt" {
+		lower := strings.ToLower(value)
+		hasContext := strings.Contains(lower, "контекст") || strings.Contains(lower, "context")
+		hasQuestion := strings.Contains(lower, "вопрос") || strings.Contains(lower, "question")
+		if !hasContext || !hasQuestion {
+			return fmt.Errorf("basePrompt must contain words like 'контекст' and 'вопрос' to ensure LLM uses retrieved documents")
+		}
+	}
 	switch key {
 	case "topK", "chunkSize", "chunkOverlap":
 		if _, err := strconv.Atoi(value); err != nil {
@@ -51,7 +65,14 @@ func (u *SettingsUsecase) UpdateRagSetting(ctx context.Context, key, value, chan
 			return fmt.Errorf("invalid comparison method: %s", value)
 		}
 	}
-	return u.repository.UpdateSetting(ctx, key, value, changedBy)
+	err := u.repository.UpdateSetting(ctx, key, value, changedBy)
+	if err != nil {
+		return err
+	}
+	if key == "basePrompt" && u.webhook != nil {
+		u.webhook.NotifyBasePromptUpdate(value)
+	}
+	return nil
 }
 
 func (u *SettingsUsecase) GetSettingsHistory(ctx context.Context, limit int) ([]*pb.SettingsHistoryEntry, error) {

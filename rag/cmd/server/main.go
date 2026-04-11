@@ -16,12 +16,49 @@ import (
 
 	"rag/internal/app"
 	"rag/pkg/floatweaver/floatweaver"
+	llm_gateway "rag/pkg/llm-gateway"
 	pb "rag/pkg/rag"
 )
 
 const (
 	defaultPDFTimeout = 5 * time.Minute
 )
+
+type LLMGatewayClient struct {
+	conn *grpc.ClientConn
+}
+
+func NewLLMGatewayClient(addr string) (*LLMGatewayClient, error) {
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to llm-gateway: %w", err)
+	}
+	return &LLMGatewayClient{conn: conn}, nil
+}
+
+func (c *LLMGatewayClient) NotifyBasePromptUpdate(newPrompt string) {
+	if c.conn == nil {
+		return
+	}
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		client := llm_gateway.NewGatewayServiceClient(c.conn)
+		_, err := client.UpdateBasePrompt(ctx, &llm_gateway.UpdateBasePromptRequest{Prompt: newPrompt})
+		if err != nil {
+			log.Printf("Failed to push basePrompt to LLM Gateway: %v", err)
+		} else {
+			log.Printf("Successfully pushed basePrompt update to LLM Gateway")
+		}
+	}()
+}
+
+func (c *LLMGatewayClient) Close() error {
+	if c.conn != nil {
+		return c.conn.Close()
+	}
+	return nil
+}
 
 // some check
 func main() {
@@ -36,6 +73,7 @@ func main() {
 			"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 			dbUser, dbPassword, dbHost, dbPort, dbName,
 		)
+		llmGatewayAddr = getEnv("LLM_GATEWAY_ADDR", "llm-gateway:8083")
 	)
 
 	var ( // conns
@@ -55,6 +93,15 @@ func main() {
 	defer cancel()
 	db := repository.NewVecDb(ctx, connStr)
 
+	// LLM Gateway client for push notifications
+	llmClient, err := NewLLMGatewayClient(llmGatewayAddr)
+	if err != nil {
+		log.Printf("Warning: Could not connect to LLM Gateway for push notifications: %v", err)
+	}
+	if llmClient != nil {
+		defer llmClient.Close()
+	}
+
 	var (
 		pdfProcessor = usecases.NewPDFProcessor(
 			"python3",
@@ -65,7 +112,7 @@ func main() {
 		addDocumentUsecase     = usecases.NewAddDocumentUsecase(db, fw, pdfProcessor, nil)
 		previewDocumentUsecase = usecases.NewPreviewDocumentUsecase(pdfProcessor, nil)
 		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, fw)
-		settingsUsecase        = usecases.NewSettingsUsecase(db)
+		settingsUsecase        = usecases.NewSettingsUsecase(db, llmClient)
 		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw, settingsUsecase)
 	)
 
