@@ -139,3 +139,33 @@ export async function updateRagSettingAPI(key: string, value: string, changedBy?
   const result = await graphqlRequest<UpdateSettingResult>(query, { key, value, changedBy })
   return result.updateRagSetting.success
 }
+
+export interface SettingsHistoryEntry {
+  id: number
+  settingKey: string
+  oldValue: string
+  newValue: string
+  changedBy: string
+  changedAt?: string
+}
+
+export interface GetSettingsHistoryResult {
+  getRagSettingsHistory: SettingsHistoryEntry[]
+}
+
+export async function getRagSettingsHistoryAPI(limit?: number): Promise<SettingsHistoryEntry[]> {
+  const query = `
+    query GetRagSettingsHistory($limit: Int) {
+      getRagSettingsHistory(limit: $limit) {
+        id
+        settingKey
+        oldValue
+        newValue
+        changedBy
+        changedAt
+      }
+    }
+  `
+  const result = await graphqlRequest<GetSettingsHistoryResult>(query, { limit })
+  return result.getRagSettingsHistory
+}

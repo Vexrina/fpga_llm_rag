@@ -44,3 +44,12 @@ type UpdateSettingsResult {
   success: Boolean!
   message: String!
 }
+
+type SettingsHistoryEntry {
+  id: Int!
+  settingKey: String!
+  oldValue: String!
+  newValue: String!
+  changedBy: String!
+  changedAt: String!
+}

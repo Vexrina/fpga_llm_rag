@@ -81,6 +81,15 @@ type SettingEntry struct {
 	Value string `json:"value"`
 }
 
+type SettingsHistoryEntry struct {
+	ID         int    `json:"id"`
+	SettingKey string `json:"settingKey"`
+	OldValue   string `json:"oldValue"`
+	NewValue   string `json:"newValue"`
+	ChangedBy  string `json:"changedBy"`
+	ChangedAt  string `json:"changedAt"`
+}
+
 type UpdateSettingsResult struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`

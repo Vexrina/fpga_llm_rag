@@ -84,16 +84,26 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Ask             func(childComplexity int, question string) int
-		GetDocument     func(childComplexity int, id string) int
-		GetIndexStats   func(childComplexity int) int
-		GetRagSettings  func(childComplexity int) int
-		SearchDocuments func(childComplexity int, query string, limit *int, threshold *float64) int
+		Ask                   func(childComplexity int, question string) int
+		GetDocument           func(childComplexity int, id string) int
+		GetIndexStats         func(childComplexity int) int
+		GetRagSettings        func(childComplexity int) int
+		GetRagSettingsHistory func(childComplexity int, limit *int) int
+		SearchDocuments       func(childComplexity int, query string, limit *int, threshold *float64) int
 	}
 
 	SettingEntry struct {
 		Key   func(childComplexity int) int
 		Value func(childComplexity int) int
+	}
+
+	SettingsHistoryEntry struct {
+		ChangedAt  func(childComplexity int) int
+		ChangedBy  func(childComplexity int) int
+		ID         func(childComplexity int) int
+		NewValue   func(childComplexity int) int
+		OldValue   func(childComplexity int) int
+		SettingKey func(childComplexity int) int
 	}
 
 	UpdateSettingsResult struct {
@@ -114,6 +124,7 @@ type QueryResolver interface {
 	GetDocument(ctx context.Context, id string) (*Document, error)
 	GetIndexStats(ctx context.Context) (*IndexStats, error)
 	GetRagSettings(ctx context.Context) ([]*SettingEntry, error)
+	GetRagSettingsHistory(ctx context.Context, limit *int) ([]*SettingsHistoryEntry, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -342,6 +353,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.GetRagSettings(childComplexity), true
+	case "Query.getRagSettingsHistory":
+		if e.ComplexityRoot.Query.GetRagSettingsHistory == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getRagSettingsHistory_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.GetRagSettingsHistory(childComplexity, args["limit"].(*int)), true
 
 	case "Query.searchDocuments":
 		if e.ComplexityRoot.Query.SearchDocuments == nil {
@@ -367,6 +389,43 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.SettingEntry.Value(childComplexity), true
+
+	case "SettingsHistoryEntry.changedAt":
+		if e.ComplexityRoot.SettingsHistoryEntry.ChangedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SettingsHistoryEntry.ChangedAt(childComplexity), true
+	case "SettingsHistoryEntry.changedBy":
+		if e.ComplexityRoot.SettingsHistoryEntry.ChangedBy == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SettingsHistoryEntry.ChangedBy(childComplexity), true
+	case "SettingsHistoryEntry.id":
+		if e.ComplexityRoot.SettingsHistoryEntry.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SettingsHistoryEntry.ID(childComplexity), true
+	case "SettingsHistoryEntry.newValue":
+		if e.ComplexityRoot.SettingsHistoryEntry.NewValue == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SettingsHistoryEntry.NewValue(childComplexity), true
+	case "SettingsHistoryEntry.oldValue":
+		if e.ComplexityRoot.SettingsHistoryEntry.OldValue == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SettingsHistoryEntry.OldValue(childComplexity), true
+	case "SettingsHistoryEntry.settingKey":
+		if e.ComplexityRoot.SettingsHistoryEntry.SettingKey == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SettingsHistoryEntry.SettingKey(childComplexity), true
 
 	case "UpdateSettingsResult.message":
 		if e.ComplexityRoot.UpdateSettingsResult.Message == nil {
@@ -538,6 +597,15 @@ type UpdateSettingsResult {
   success: Boolean!
   message: String!
 }
+
+type SettingsHistoryEntry {
+  id: Int!
+  settingKey: String!
+  oldValue: String!
+  newValue: String!
+  changedBy: String!
+  changedAt: String!
+}
 `, BuiltIn: false},
 	{Name: "../../../graph/query/queryDefs.graphqls", Input: `type Query {
   ask(question: String!): String!
@@ -545,6 +613,7 @@ type UpdateSettingsResult {
   getDocument(id: String!): Document
   getIndexStats: IndexStats
   getRagSettings: [SettingEntry!]!
+  getRagSettingsHistory(limit: Int): [SettingsHistoryEntry!]!
 }
 
 type SettingEntry {
@@ -657,6 +726,17 @@ func (ec *executionContext) field_Query_getDocument_args(ctx context.Context, ra
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getRagSettingsHistory_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "limit", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg0
 	return args, nil
 }
 
@@ -1761,6 +1841,61 @@ func (ec *executionContext) fieldContext_Query_getRagSettings(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_getRagSettingsHistory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_getRagSettingsHistory,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().GetRagSettingsHistory(ctx, fc.Args["limit"].(*int))
+		},
+		nil,
+		ec.marshalNSettingsHistoryEntry2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingsHistoryEntryᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_getRagSettingsHistory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_SettingsHistoryEntry_id(ctx, field)
+			case "settingKey":
+				return ec.fieldContext_SettingsHistoryEntry_settingKey(ctx, field)
+			case "oldValue":
+				return ec.fieldContext_SettingsHistoryEntry_oldValue(ctx, field)
+			case "newValue":
+				return ec.fieldContext_SettingsHistoryEntry_newValue(ctx, field)
+			case "changedBy":
+				return ec.fieldContext_SettingsHistoryEntry_changedBy(ctx, field)
+			case "changedAt":
+				return ec.fieldContext_SettingsHistoryEntry_changedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SettingsHistoryEntry", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getRagSettingsHistory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1917,6 +2052,180 @@ func (ec *executionContext) _SettingEntry_value(ctx context.Context, field graph
 func (ec *executionContext) fieldContext_SettingEntry_value(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SettingEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SettingsHistoryEntry_id(ctx context.Context, field graphql.CollectedField, obj *SettingsHistoryEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SettingsHistoryEntry_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SettingsHistoryEntry_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SettingsHistoryEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SettingsHistoryEntry_settingKey(ctx context.Context, field graphql.CollectedField, obj *SettingsHistoryEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SettingsHistoryEntry_settingKey,
+		func(ctx context.Context) (any, error) {
+			return obj.SettingKey, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SettingsHistoryEntry_settingKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SettingsHistoryEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SettingsHistoryEntry_oldValue(ctx context.Context, field graphql.CollectedField, obj *SettingsHistoryEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SettingsHistoryEntry_oldValue,
+		func(ctx context.Context) (any, error) {
+			return obj.OldValue, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SettingsHistoryEntry_oldValue(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SettingsHistoryEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SettingsHistoryEntry_newValue(ctx context.Context, field graphql.CollectedField, obj *SettingsHistoryEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SettingsHistoryEntry_newValue,
+		func(ctx context.Context) (any, error) {
+			return obj.NewValue, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SettingsHistoryEntry_newValue(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SettingsHistoryEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SettingsHistoryEntry_changedBy(ctx context.Context, field graphql.CollectedField, obj *SettingsHistoryEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SettingsHistoryEntry_changedBy,
+		func(ctx context.Context) (any, error) {
+			return obj.ChangedBy, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SettingsHistoryEntry_changedBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SettingsHistoryEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SettingsHistoryEntry_changedAt(ctx context.Context, field graphql.CollectedField, obj *SettingsHistoryEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SettingsHistoryEntry_changedAt,
+		func(ctx context.Context) (any, error) {
+			return obj.ChangedAt, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SettingsHistoryEntry_changedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SettingsHistoryEntry",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -4114,6 +4423,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getRagSettingsHistory":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getRagSettingsHistory(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -4163,6 +4494,70 @@ func (ec *executionContext) _SettingEntry(ctx context.Context, sel ast.Selection
 			}
 		case "value":
 			out.Values[i] = ec._SettingEntry_value(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var settingsHistoryEntryImplementors = []string{"SettingsHistoryEntry"}
+
+func (ec *executionContext) _SettingsHistoryEntry(ctx context.Context, sel ast.SelectionSet, obj *SettingsHistoryEntry) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, settingsHistoryEntryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SettingsHistoryEntry")
+		case "id":
+			out.Values[i] = ec._SettingsHistoryEntry_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "settingKey":
+			out.Values[i] = ec._SettingsHistoryEntry_settingKey(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "oldValue":
+			out.Values[i] = ec._SettingsHistoryEntry_oldValue(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "newValue":
+			out.Values[i] = ec._SettingsHistoryEntry_newValue(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "changedBy":
+			out.Values[i] = ec._SettingsHistoryEntry_changedBy(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "changedAt":
+			out.Values[i] = ec._SettingsHistoryEntry_changedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4759,6 +5154,32 @@ func (ec *executionContext) marshalNSettingEntry2ᚖgraphqlᚑgatewayᚋinternal
 		return graphql.Null
 	}
 	return ec._SettingEntry(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSettingsHistoryEntry2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingsHistoryEntryᚄ(ctx context.Context, sel ast.SelectionSet, v []*SettingsHistoryEntry) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNSettingsHistoryEntry2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingsHistoryEntry(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSettingsHistoryEntry2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingsHistoryEntry(ctx context.Context, sel ast.SelectionSet, v *SettingsHistoryEntry) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SettingsHistoryEntry(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {

@@ -4,6 +4,7 @@ type Query {
   getDocument(id: String!): Document
   getIndexStats: IndexStats
   getRagSettings: [SettingEntry!]!
+  getRagSettingsHistory(limit: Int): [SettingsHistoryEntry!]!
 }
 
 type SettingEntry {

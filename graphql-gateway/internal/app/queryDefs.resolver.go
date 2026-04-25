@@ -96,6 +96,29 @@ func (r *queryResolver) GetRagSettings(ctx context.Context) ([]*generated.Settin
 	return entries, nil
 }
 
+// GetRagSettingsHistory is the resolver for the getRagSettingsHistory field.
+func (r *queryResolver) GetRagSettingsHistory(ctx context.Context, limit *int) ([]*generated.SettingsHistoryEntry, error) {
+	l := int32(20)
+	if limit != nil {
+		l = int32(*limit)
+	}
+	history, err := r.RAGClient.GetRagSettingsHistory(ctx, l)
+	if err != nil {
+		return nil, err
+	}
+	entries := make([]*generated.SettingsHistoryEntry, 0, len(history))
+	for _, h := range history {
+		entries = append(entries, &generated.SettingsHistoryEntry{
+			ID:         int(h.Id),
+			SettingKey: h.SettingKey,
+			OldValue:   h.OldValue,
+			NewValue:   h.NewValue,
+			ChangedBy:  h.ChangedBy,
+		})
+	}
+	return entries, nil
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

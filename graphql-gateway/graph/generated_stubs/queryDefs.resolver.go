@@ -36,6 +36,11 @@ func (r *queryResolver) GetRagSettings(ctx context.Context) ([]*generated.Settin
 	panic(fmt.Errorf("not implemented: GetRagSettings - getRagSettings"))
 }
 
+// GetRagSettingsHistory is the resolver for the getRagSettingsHistory field.
+func (r *queryResolver) GetRagSettingsHistory(ctx context.Context, limit *int) ([]*generated.SettingsHistoryEntry, error) {
+	panic(fmt.Errorf("not implemented: GetRagSettingsHistory - getRagSettingsHistory"))
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

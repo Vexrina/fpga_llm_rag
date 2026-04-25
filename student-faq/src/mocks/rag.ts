@@ -1,5 +1,5 @@
 import type { RagSettings, HistoryEntry, LogEntry, KnowledgeDoc } from '../types'
-import { getRagSettingsAPI, updateRagSettingAPI } from '../api/graphql'
+import { getRagSettingsAPI, updateRagSettingAPI, getRagSettingsHistoryAPI } from '../api/graphql'
 
 const defaultSettings: RagSettings = {
   topK: 5,
@@ -10,41 +10,6 @@ const defaultSettings: RagSettings = {
   basePrompt: 'Вы — помощник для ответов на вопросы студентов университета. Отвечайте кратко и по делу.',
   comparisonMethod: 'cosine',
 }
-
-const mockHistory: HistoryEntry[] = [
-  {
-    id: 'h-1',
-    timestamp: new Date(Date.now() - 3600000 * 2),
-    user: 'admin',
-    field: 'topK',
-    oldValue: '3',
-    newValue: '5',
-  },
-  {
-    id: 'h-2',
-    timestamp: new Date(Date.now() - 3600000 * 5),
-    user: 'admin',
-    field: 'similarityThreshold',
-    oldValue: '0.7',
-    newValue: '0.75',
-  },
-  {
-    id: 'h-3',
-    timestamp: new Date(Date.now() - 3600000 * 24),
-    user: 'admin',
-    field: 'model',
-    oldValue: 'all-MiniLM-L6-v2',
-    newValue: 'mxbai-embed-large',
-  },
-  {
-    id: 'h-4',
-    timestamp: new Date(Date.now() - 3600000 * 48),
-    user: 'admin',
-    field: 'chunkSize',
-    oldValue: '256',
-    newValue: '512',
-  },
-]
 
 const mockLogs: LogEntry[] = [
   {
@@ -166,8 +131,21 @@ export async function testRagConnection(): Promise<{ ok: boolean; message: strin
 }
 
 export async function getHistory(): Promise<HistoryEntry[]> {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-  return [...mockHistory]
+  try {
+    const history = await getRagSettingsHistoryAPI(20)
+    return history
+      .filter((h) => h.oldValue !== h.newValue)
+      .map((h) => ({
+        id: String(h.id),
+        timestamp: h.changedAt ? new Date(h.changedAt) : new Date(),
+        user: h.changedBy,
+        field: h.settingKey,
+        oldValue: h.oldValue,
+        newValue: h.newValue,
+      }))
+  } catch {
+    return []
+  }
 }
 
 export async function getLogs(): Promise<LogEntry[]> {

@@ -208,3 +208,32 @@ func (c *RAGClient) GetRagSettings(ctx context.Context) (map[string]string, erro
 	}
 	return resp.Settings, nil
 }
+
+type SettingsHistoryEntry struct {
+	Id         int32
+	SettingKey string
+	OldValue   string
+	NewValue   string
+	ChangedBy  string
+	ChangedAt  string
+}
+
+func (c *RAGClient) GetRagSettingsHistory(ctx context.Context, limit int32) ([]SettingsHistoryEntry, error) {
+	resp, err := c.client.GetRagSettingsHistory(ctx, &pb.GetRagSettingsHistoryRequest{Limit: limit})
+	if err != nil {
+		return nil, fmt.Errorf("GetRagSettingsHistory RPC failed: %w", err)
+	}
+
+	entries := make([]SettingsHistoryEntry, 0, len(resp.Entries))
+	for _, e := range resp.Entries {
+		entries = append(entries, SettingsHistoryEntry{
+			Id:         e.Id,
+			SettingKey: e.SettingKey,
+			OldValue:   e.OldValue,
+			NewValue:   e.NewValue,
+			ChangedBy:  e.ChangedBy,
+			ChangedAt:  e.ChangedAt,
+		})
+	}
+	return entries, nil
+}
