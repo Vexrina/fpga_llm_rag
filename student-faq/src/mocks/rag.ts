@@ -1,5 +1,5 @@
-import type { RagSettings, HistoryEntry, LogEntry, KnowledgeDoc } from '../types'
-import { getRagSettingsAPI, updateRagSettingAPI, getRagSettingsHistoryAPI } from '../api/graphql'
+import type { RagSettings, HistoryEntry, LogEntry, KnowledgeDoc, DocumentVersion } from '../types'
+import { getRagSettingsAPI, updateRagSettingAPI, getRagSettingsHistoryAPI, getDocumentHistoryAPI, rollbackDocumentAPI, getAllDocumentsAPI, getDocumentByIdAPI } from '../api/graphql'
 
 const defaultSettings: RagSettings = {
   topK: 5,
@@ -154,11 +154,92 @@ export async function getLogs(): Promise<LogEntry[]> {
 }
 
 export async function getDocuments(): Promise<KnowledgeDoc[]> {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-  return [...mockDocs]
+  try {
+    const docs = await getAllDocumentsAPI()
+    return docs.map(d => ({
+      id: d.id,
+      title: d.title,
+      updatedAt: new Date(d.updatedAt),
+      indexed: d.indexed,
+      size: d.size,
+      chunks: d.chunks,
+      content: '',
+    }))
+  } catch (e) {
+    console.error('getDocuments API failed:', e)
+    return [...mockDocs]
+  }
 }
 
 export async function getDocument(id: string): Promise<KnowledgeDoc | null> {
-  await new Promise((resolve) => setTimeout(resolve, 200))
-  return mockDocs.find((d) => d.id === id) ?? null
+  try {
+    const doc = await getDocumentByIdAPI(id)
+    if (!doc) return null
+    return {
+      id: doc.id,
+      title: doc.title,
+      content: doc.content,
+      updatedAt: new Date(),
+      indexed: true,
+      size: doc.content.length * 2,
+      chunks: 1,
+    }
+  } catch (e) {
+    console.error('getDocument API failed:', e)
+    return mockDocs.find((d) => d.id === id) ?? null
+  }
+}
+
+const mockDocumentHistory: Record<string, DocumentVersion[]> = {
+  'doc-1': [
+    {
+      id: 3,
+      documentId: 'doc-1',
+      title: 'Справочник студента 2026.pdf',
+      content: 'Справочник студента содержит основную информацию о правилах обучения, оформления документов, расписании, библиотеке и других аспектах университетской жизни.\n\nРаздел 1: Общие положения\nСтудент университета имеет право на получение образования в соответствии с федеральными государственными образовательными стандартами.\n\nРаздел 2: Оформление документов\nДля получения справки об обучении необходимо обратиться в деканат с письменным заявлением.\n\nРаздел 3: Библиотека\nБиблиотека университета работает с понедельника по пятницу с 9:00 до 20:00, в субботу с 10:00 до 17:00.',
+      versionNumber: 3,
+      createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+      createdBy: 'admin',
+      action: 'update',
+    },
+    {
+      id: 2,
+      documentId: 'doc-1',
+      title: 'Справочник студента 2026.pdf',
+      content: 'Справочник студента содержит основную информацию о правилах обучения, оформления документов и расписании.\n\nРаздел 1: Общие положения\nСтудент имеет право на образование.\n\nРаздел 2: Оформление документов\nДля получения справки обратитесь в деканат.',
+      versionNumber: 2,
+      createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+      createdBy: 'admin',
+      action: 'update',
+    },
+    {
+      id: 1,
+      documentId: 'doc-1',
+      title: 'Справочник студента 2026.pdf',
+      content: 'Справочник студента - начальная версия',
+      versionNumber: 1,
+      createdAt: new Date(Date.now() - 3600000 * 168).toISOString(),
+      createdBy: 'admin',
+      action: 'create',
+    },
+  ],
+}
+
+export async function getDocumentHistory(id: string): Promise<DocumentVersion[]> {
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  try {
+    return await getDocumentHistoryAPI(id)
+  } catch {
+    return mockDocumentHistory[id] || []
+  }
+}
+
+export async function rollbackDocument(documentId: string, versionId: number): Promise<{ success: boolean; message: string }> {
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  try {
+    const result = await rollbackDocumentAPI(documentId, versionId)
+    return { success: result.success, message: result.message }
+  } catch (e) {
+    return { success: false, message: String(e) }
+  }
 }

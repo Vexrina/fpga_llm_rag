@@ -41,6 +41,16 @@ func (r *queryResolver) GetRagSettingsHistory(ctx context.Context, limit *int) (
 	panic(fmt.Errorf("not implemented: GetRagSettingsHistory - getRagSettingsHistory"))
 }
 
+// GetDocumentHistory is the resolver for the getDocumentHistory field.
+func (r *queryResolver) GetDocumentHistory(ctx context.Context, documentID string, limit *int) ([]*generated.DocumentVersion, error) {
+	panic(fmt.Errorf("not implemented: GetDocumentHistory - getDocumentHistory"))
+}
+
+// GetDocuments is the resolver for the getDocuments field.
+func (r *queryResolver) GetDocuments(ctx context.Context) ([]*generated.DocumentListItem, error) {
+	panic(fmt.Errorf("not implemented: GetDocuments - getDocuments"))
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

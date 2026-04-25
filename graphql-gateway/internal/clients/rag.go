@@ -237,3 +237,90 @@ func (c *RAGClient) GetRagSettingsHistory(ctx context.Context, limit int32) ([]S
 	}
 	return entries, nil
 }
+
+type DocumentVersionEntry struct {
+	ID            int32
+	DocumentID    string
+	Title         string
+	Content       string
+	VersionNumber int32
+	CreatedAt     string
+	CreatedBy     string
+	Action        string
+}
+
+func (c *RAGClient) GetDocumentHistory(ctx context.Context, documentID string, limit int32) ([]DocumentVersionEntry, error) {
+	resp, err := c.client.GetDocumentHistory(ctx, &pb.GetDocumentHistoryRequest{
+		DocumentId: documentID,
+		Limit:      limit,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("GetDocumentHistory RPC failed: %w", err)
+	}
+
+	versions := make([]DocumentVersionEntry, 0, len(resp.Versions))
+	for _, v := range resp.Versions {
+		versions = append(versions, DocumentVersionEntry{
+			ID:            v.Id,
+			DocumentID:    v.DocumentId,
+			Title:         v.Title,
+			Content:       v.Content,
+			VersionNumber: v.VersionNumber,
+			CreatedAt:     v.CreatedAt,
+			CreatedBy:     v.CreatedBy,
+			Action:        v.Action,
+		})
+	}
+	return versions, nil
+}
+
+type DocumentListItem struct {
+	ID        string
+	Title     string
+	UpdatedAt string
+	Indexed   bool
+	Size      int32
+	Chunks    int32
+}
+
+func (c *RAGClient) GetDocuments(ctx context.Context) ([]DocumentListItem, error) {
+	resp, err := c.client.GetAllDocuments(ctx, &pb.GetAllDocumentsRequest{})
+	if err != nil {
+		return nil, fmt.Errorf("GetAllDocuments RPC failed: %w", err)
+	}
+
+	items := make([]DocumentListItem, 0, len(resp.Documents))
+	for _, d := range resp.Documents {
+		items = append(items, DocumentListItem{
+			ID:        d.Id,
+			Title:     d.Title,
+			UpdatedAt: d.UpdatedAt,
+			Indexed:   d.Indexed,
+			Size:      d.SizeBytes,
+			Chunks:    d.Chunks,
+		})
+	}
+	return items, nil
+}
+
+type RollbackResult struct {
+	Success      bool
+	Message      string
+	NewVersionID string
+}
+
+func (c *RAGClient) RollbackDocument(ctx context.Context, documentID string, versionID int32, rollbackBy string) (*RollbackResult, error) {
+	resp, err := c.client.RollbackDocument(ctx, &pb.RollbackDocumentRequest{
+		DocumentId: documentID,
+		VersionId:  versionID,
+		RollbackBy: rollbackBy,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("RollbackDocument RPC failed: %w", err)
+	}
+	return &RollbackResult{
+		Success:      resp.Success,
+		Message:      resp.Message,
+		NewVersionID: resp.NewVersionId,
+	}, nil
+}

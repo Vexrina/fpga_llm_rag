@@ -119,6 +119,52 @@ func (r *queryResolver) GetRagSettingsHistory(ctx context.Context, limit *int) (
 	return entries, nil
 }
 
+// GetDocumentHistory is the resolver for the getDocumentHistory field.
+func (r *queryResolver) GetDocumentHistory(ctx context.Context, documentID string, limit *int) ([]*generated.DocumentVersion, error) {
+	l := int32(20)
+	if limit != nil {
+		l = int32(*limit)
+	}
+	versions, err := r.RAGClient.GetDocumentHistory(ctx, documentID, l)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*generated.DocumentVersion, 0, len(versions))
+	for _, v := range versions {
+		result = append(result, &generated.DocumentVersion{
+			ID:            int(v.ID),
+			DocumentID:    v.DocumentID,
+			Title:         v.Title,
+			Content:       v.Content,
+			VersionNumber: int(v.VersionNumber),
+			CreatedAt:     v.CreatedAt,
+			CreatedBy:     v.CreatedBy,
+			Action:        v.Action,
+		})
+	}
+	return result, nil
+}
+
+// GetDocuments is the resolver for the getDocuments field.
+func (r *queryResolver) GetDocuments(ctx context.Context) ([]*generated.DocumentListItem, error) {
+	docs, err := r.RAGClient.GetDocuments(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*generated.DocumentListItem, 0, len(docs))
+	for _, d := range docs {
+		result = append(result, &generated.DocumentListItem{
+			ID:        d.ID,
+			Title:     d.Title,
+			UpdatedAt: d.UpdatedAt,
+			Indexed:   d.Indexed,
+			Size:      int(d.Size),
+			Chunks:    int(d.Chunks),
+		})
+	}
+	return result, nil
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

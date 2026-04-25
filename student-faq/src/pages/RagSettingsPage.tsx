@@ -1,5 +1,5 @@
 import { useState, useEffect, type ChangeEvent } from 'react'
-import type { RagSettings, HistoryEntry, LogEntry, KnowledgeDoc } from '../types'
+import type { RagSettings, HistoryEntry, LogEntry, KnowledgeDoc, DocumentVersion } from '../types'
 import {
   getRagSettings,
   saveRagSettings,
@@ -8,6 +8,8 @@ import {
   getLogs,
   getDocuments,
   getDocument,
+  getDocumentHistory,
+  rollbackDocument,
 } from '../mocks/rag'
 import { previewDocument, commitDocument } from '../api/graphql'
 import Tooltip from '../components/Tooltip'
@@ -392,6 +394,10 @@ function KnowledgeTab() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDocLoading, setIsDocLoading] = useState(false)
 
+  const [docHistory, setDocHistory] = useState<DocumentVersion[]>([])
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false)
+  const [isRollingBack, setIsRollingBack] = useState<number | null>(null)
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [newDocTitle, setNewDocTitle] = useState('')
   const [newDocSourceType, setNewDocSourceType] = useState<'URL' | 'TEXT' | 'PDF'>('URL')
@@ -426,11 +432,36 @@ function KnowledgeTab() {
   const handleSelectDoc = async (doc: KnowledgeDoc) => {
     setSelectedDoc(doc)
     setIsDocLoading(true)
+    setDocHistory([])
     try {
       const full = await getDocument(doc.id)
       if (full) setSelectedDoc(full)
+      
+      const history = await getDocumentHistory(doc.id)
+      setDocHistory(history)
     } finally {
       setIsDocLoading(false)
+    }
+  }
+
+  const handleRollback = async (versionId: number) => {
+    if (!selectedDoc) return
+    if (!confirm(`Вы уверены, что хотите откатить документ к версии ${versionId}?`)) return
+    
+    setIsRollingBack(versionId)
+    try {
+      const result = await rollbackDocument(selectedDoc.id, versionId)
+      if (result.success) {
+        alert('Документ успешно откачен')
+        const full = await getDocument(selectedDoc.id)
+        if (full) setSelectedDoc(full)
+        const history = await getDocumentHistory(selectedDoc.id)
+        setDocHistory(history)
+      } else {
+        alert('Ошибка: ' + result.message)
+      }
+    } finally {
+      setIsRollingBack(null)
     }
   }
 
@@ -597,6 +628,66 @@ function KnowledgeTab() {
           <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap max-h-96 overflow-y-auto">
             {isDocLoading ? 'Загрузка содержимого...' : selectedDoc.content || 'Содержимое отсутствует'}
           </div>
+        </div>
+      )}
+
+      {selectedDoc && docHistory.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
+            <h3 className="text-lg font-semibold text-gray-900">История версий</h3>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Версия</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Дата</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Автор</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Действие</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Содержимое</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {docHistory.map((version) => (
+                <tr key={version.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <span className="inline-block bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-medium">
+                      v{version.versionNumber}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                    {new Date(version.createdAt).toLocaleString('ru-RU')}
+                  </td>
+                  <td className="px-4 py-3">{version.createdBy}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                        version.action === 'create'
+                          ? 'bg-green-50 text-green-700'
+                          : version.action === 'rollback'
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {version.action === 'create' ? 'Создан' : version.action === 'rollback' ? 'Откат' : 'Изменён'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 max-w-xs truncate" title={version.content}>
+                    {version.content.slice(0, 80)}...
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => handleRollback(version.id)}
+                      disabled={isRollingBack === version.id}
+                      className="text-indigo-600 hover:text-indigo-800 text-sm font-medium disabled:opacity-50"
+                    >
+                      {isRollingBack === version.id ? 'Откат...' : 'Откатить'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

@@ -33,12 +33,36 @@ type Document struct {
 	Metadata []*MetadataEntry `json:"metadata"`
 }
 
+type DocumentHistoryResult struct {
+	Versions []*DocumentVersion `json:"versions"`
+}
+
+type DocumentListItem struct {
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	UpdatedAt string `json:"updatedAt"`
+	Indexed   bool   `json:"indexed"`
+	Size      int    `json:"size"`
+	Chunks    int    `json:"chunks"`
+}
+
 type DocumentResult struct {
 	ID              string           `json:"id"`
 	Title           string           `json:"title"`
 	Content         string           `json:"content"`
 	SimilarityScore float64          `json:"similarityScore"`
 	Metadata        []*MetadataEntry `json:"metadata"`
+}
+
+type DocumentVersion struct {
+	ID            int    `json:"id"`
+	DocumentID    string `json:"documentId"`
+	Title         string `json:"title"`
+	Content       string `json:"content"`
+	VersionNumber int    `json:"versionNumber"`
+	CreatedAt     string `json:"createdAt"`
+	CreatedBy     string `json:"createdBy"`
+	Action        string `json:"action"`
 }
 
 type IndexStats struct {
@@ -74,6 +98,12 @@ type PreviewDocumentResult struct {
 }
 
 type Query struct {
+}
+
+type RollbackResult struct {
+	Success      bool    `json:"success"`
+	Message      string  `json:"message"`
+	NewVersionID *string `json:"newVersionId,omitempty"`
 }
 
 type SettingEntry struct {

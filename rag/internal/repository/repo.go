@@ -63,3 +63,7 @@ func (r *VecDb) WithTransactional(ctx context.Context, fn func(tx pgx.Tx) error)
 	}
 	return tx.Commit(ctx)
 }
+
+func (r *VecDb) Pool() *pgxpool.Pool {
+	return r.conn
+}

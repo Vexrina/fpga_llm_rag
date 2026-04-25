@@ -3,6 +3,15 @@ type MetadataEntry {
   value: String!
 }
 
+type DocumentListItem {
+  id: String!
+  title: String!
+  updatedAt: String!
+  indexed: Boolean!
+  size: Int!
+  chunks: Int!
+}
+
 type DocumentResult {
   id: String!
   title: String!
@@ -52,4 +61,25 @@ type SettingsHistoryEntry {
   newValue: String!
   changedBy: String!
   changedAt: String!
+}
+
+type DocumentVersion {
+  id: Int!
+  documentId: String!
+  title: String!
+  content: String!
+  versionNumber: Int!
+  createdAt: String!
+  createdBy: String!
+  action: String!
+}
+
+type DocumentHistoryResult {
+  versions: [DocumentVersion!]!
+}
+
+type RollbackResult {
+  success: Boolean!
+  message: String!
+  newVersionId: String
 }

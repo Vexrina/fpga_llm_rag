@@ -169,3 +169,115 @@ export async function getRagSettingsHistoryAPI(limit?: number): Promise<Settings
   const result = await graphqlRequest<GetSettingsHistoryResult>(query, { limit })
   return result.getRagSettingsHistory
 }
+
+export interface DocumentVersion {
+  id: number
+  documentId: string
+  title: string
+  content: string
+  versionNumber: number
+  createdAt: string
+  createdBy: string
+  action: string
+}
+
+export interface GetDocumentHistoryResult {
+  getDocumentHistory: DocumentVersion[]
+}
+
+export async function getDocumentHistoryAPI(documentId: string, limit?: number): Promise<DocumentVersion[]> {
+  const query = `
+    query GetDocumentHistory($documentId: String!, $limit: Int) {
+      getDocumentHistory(documentId: $documentId, limit: $limit) {
+        id
+        documentId
+        title
+        content
+        versionNumber
+        createdAt
+        createdBy
+        action
+      }
+    }
+  `
+  const result = await graphqlRequest<GetDocumentHistoryResult>(query, { documentId, limit })
+  return result.getDocumentHistory
+}
+
+export interface RollbackResult {
+  success: boolean
+  message: string
+  newVersionId: string
+}
+
+export interface RollbackDocumentResult {
+  rollbackDocument: RollbackResult
+}
+
+export async function rollbackDocumentAPI(documentId: string, versionId: number, rollbackBy?: string): Promise<RollbackResult> {
+  const query = `
+    mutation RollbackDocument($documentId: String!, $versionId: Int!, $rollbackBy: String) {
+      rollbackDocument(documentId: $documentId, versionId: $versionId, rollbackBy: $rollbackBy) {
+        success
+        message
+        newVersionId
+      }
+    }
+  `
+  const result = await graphqlRequest<RollbackDocumentResult>(query, { documentId, versionId, rollbackBy })
+  return result.rollbackDocument
+}
+
+export interface DocumentListItem {
+  id: string
+  title: string
+  updatedAt: string
+  indexed: boolean
+  size: number
+  chunks: number
+}
+
+export interface GetDocumentsResult {
+  getDocuments: DocumentListItem[]
+}
+
+export async function getAllDocumentsAPI(): Promise<DocumentListItem[]> {
+  const query = `
+    query GetDocuments {
+      getDocuments {
+        id
+        title
+        updatedAt
+        indexed
+        size
+        chunks
+      }
+    }
+  `
+  const result = await graphqlRequest<GetDocumentsResult>(query)
+  return result.getDocuments
+}
+
+export interface DocumentDetail {
+  id: string
+  title: string
+  content: string
+}
+
+export interface GetDocumentResult {
+  getDocument: DocumentDetail
+}
+
+export async function getDocumentByIdAPI(id: string): Promise<DocumentDetail | null> {
+  const query = `
+    query GetDocument($id: String!) {
+      getDocument(id: $id) {
+        id
+        title
+        content
+      }
+    }
+  `
+  const result = await graphqlRequest<GetDocumentResult>(query, { id })
+  return result.getDocument
+}

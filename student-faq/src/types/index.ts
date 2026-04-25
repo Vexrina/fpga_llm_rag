@@ -56,3 +56,14 @@ export interface KnowledgeDoc {
   chunks: number
   content: string
 }
+
+export interface DocumentVersion {
+  id: number
+  documentId: string
+  title: string
+  content: string
+  versionNumber: number
+  createdAt: string
+  createdBy: string
+  action: string
+}

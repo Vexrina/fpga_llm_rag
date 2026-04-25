@@ -64,4 +64,10 @@ type (
 		ExtractedText  string
 		PagesExtracted int32
 	}
+
+	RollbackDocumentDomain struct {
+		DocumentID string
+		VersionID  int32
+		RollbackBy string
+	}
 )

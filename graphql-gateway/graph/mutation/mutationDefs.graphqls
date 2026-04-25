@@ -3,4 +3,5 @@ type Mutation {
   commitDocument(input: CommitDocumentInput!): CommitDocumentResult!
   deleteDocument(id: String!): DeleteDocumentResult!
   updateRagSetting(key: String!, value: String!, changedBy: String): UpdateSettingsResult!
+  rollbackDocument(documentId: String!, versionId: Int!, rollbackBy: String): RollbackResult!
 }

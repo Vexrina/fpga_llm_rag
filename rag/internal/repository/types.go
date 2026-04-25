@@ -23,3 +23,10 @@ type VectorRepository interface {
 	SearchSimilar(ctx context.Context, queryEmbedding []float32, limit int) ([]Item, error)
 	DeleteItem(ctx context.Context, id int) error
 }
+
+type DocumentVersionRepository interface {
+	GetDocumentVersions(ctx context.Context, documentID string, limit int) ([]DocumentVersion, error)
+	GetDocumentVersion(ctx context.Context, versionID int) (*DocumentVersion, error)
+	RollbackToVersion(ctx context.Context, documentID string, versionID int, rollbackBy string) (int, error)
+	GetAllDocuments(ctx context.Context) ([]AllDocumentItem, error)
+}

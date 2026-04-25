@@ -31,6 +31,11 @@ func (r *mutationResolver) UpdateRagSetting(ctx context.Context, key string, val
 	panic(fmt.Errorf("not implemented: UpdateRagSetting - updateRagSetting"))
 }
 
+// RollbackDocument is the resolver for the rollbackDocument field.
+func (r *mutationResolver) RollbackDocument(ctx context.Context, documentID string, versionID int, rollbackBy *string) (*generated.RollbackResult, error) {
+	panic(fmt.Errorf("not implemented: RollbackDocument - rollbackDocument"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

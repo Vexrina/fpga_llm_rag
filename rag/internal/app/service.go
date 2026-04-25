@@ -22,6 +22,7 @@ type (
 		searchDocumentUsecase  SearchDocumentsUsecase
 		getIndexStatUsecase    GetIndexStatUsecase
 		settingsUsecase        SettingsUsecase
+		documentHistoryUsecase DocumentHistoryUsecase
 	}
 
 	AddDocumentUsecase interface {
@@ -51,6 +52,11 @@ type (
 		GetSettingsHistory(ctx context.Context, limit int) ([]*pb.SettingsHistoryEntry, error)
 		GetComparisonMethod(ctx context.Context) (utils.ComparisonMethod, error)
 	}
+	DocumentHistoryUsecase interface {
+		GetDocumentHistory(ctx context.Context, documentID string, limit int) ([]*pb.DocumentVersion, error)
+		RollbackDocument(ctx context.Context, req *utils.RollbackDocumentDomain) (*pb.RollbackDocumentResponse, error)
+		GetAllDocuments(ctx context.Context) ([]*pb.DocumentListItem, error)
+	}
 )
 
 // NewRagServer создает новый экземпляр RagServer
@@ -61,6 +67,7 @@ func NewRagServer(
 	commitDocumentUsecase CommitDocumentUsecase,
 	searchDocumentUsecase SearchDocumentsUsecase,
 	settingsUsecase SettingsUsecase,
+	documentHistoryUsecase DocumentHistoryUsecase,
 ) *RagServer {
 	return &RagServer{
 		db:                     database,
@@ -69,5 +76,6 @@ func NewRagServer(
 		commitDocumentUsecase:  commitDocumentUsecase,
 		searchDocumentUsecase:  searchDocumentUsecase,
 		settingsUsecase:        settingsUsecase,
+		documentHistoryUsecase: documentHistoryUsecase,
 	}
 }

@@ -86,6 +86,23 @@ func (r *mutationResolver) UpdateRagSetting(ctx context.Context, key string, val
 	}, nil
 }
 
+// RollbackDocument is the resolver for the rollbackDocument field.
+func (r *mutationResolver) RollbackDocument(ctx context.Context, documentID string, versionID int, rollbackBy *string) (*generated.RollbackResult, error) {
+	by := "admin"
+	if rollbackBy != nil && *rollbackBy != "" {
+		by = *rollbackBy
+	}
+	result, err := r.RAGClient.RollbackDocument(ctx, documentID, int32(versionID), by)
+	if err != nil {
+		return nil, err
+	}
+	return &generated.RollbackResult{
+		Success:      result.Success,
+		Message:      result.Message,
+		NewVersionID: &result.NewVersionID,
+	}, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

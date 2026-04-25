@@ -52,12 +52,36 @@ type ComplexityRoot struct {
 		Title    func(childComplexity int) int
 	}
 
+	DocumentHistoryResult struct {
+		Versions func(childComplexity int) int
+	}
+
+	DocumentListItem struct {
+		Chunks    func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Indexed   func(childComplexity int) int
+		Size      func(childComplexity int) int
+		Title     func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+	}
+
 	DocumentResult struct {
 		Content         func(childComplexity int) int
 		ID              func(childComplexity int) int
 		Metadata        func(childComplexity int) int
 		SimilarityScore func(childComplexity int) int
 		Title           func(childComplexity int) int
+	}
+
+	DocumentVersion struct {
+		Action        func(childComplexity int) int
+		Content       func(childComplexity int) int
+		CreatedAt     func(childComplexity int) int
+		CreatedBy     func(childComplexity int) int
+		DocumentID    func(childComplexity int) int
+		ID            func(childComplexity int) int
+		Title         func(childComplexity int) int
+		VersionNumber func(childComplexity int) int
 	}
 
 	IndexStats struct {
@@ -75,6 +99,7 @@ type ComplexityRoot struct {
 		CommitDocument   func(childComplexity int, input CommitDocumentInput) int
 		DeleteDocument   func(childComplexity int, id string) int
 		PreviewDocument  func(childComplexity int, input PreviewDocumentInput) int
+		RollbackDocument func(childComplexity int, documentID string, versionID int, rollbackBy *string) int
 		UpdateRagSetting func(childComplexity int, key string, value string, changedBy *string) int
 	}
 
@@ -86,10 +111,18 @@ type ComplexityRoot struct {
 	Query struct {
 		Ask                   func(childComplexity int, question string) int
 		GetDocument           func(childComplexity int, id string) int
+		GetDocumentHistory    func(childComplexity int, documentID string, limit *int) int
+		GetDocuments          func(childComplexity int) int
 		GetIndexStats         func(childComplexity int) int
 		GetRagSettings        func(childComplexity int) int
 		GetRagSettingsHistory func(childComplexity int, limit *int) int
 		SearchDocuments       func(childComplexity int, query string, limit *int, threshold *float64) int
+	}
+
+	RollbackResult struct {
+		Message      func(childComplexity int) int
+		NewVersionID func(childComplexity int) int
+		Success      func(childComplexity int) int
 	}
 
 	SettingEntry struct {
@@ -117,6 +150,7 @@ type MutationResolver interface {
 	CommitDocument(ctx context.Context, input CommitDocumentInput) (*CommitDocumentResult, error)
 	DeleteDocument(ctx context.Context, id string) (*DeleteDocumentResult, error)
 	UpdateRagSetting(ctx context.Context, key string, value string, changedBy *string) (*UpdateSettingsResult, error)
+	RollbackDocument(ctx context.Context, documentID string, versionID int, rollbackBy *string) (*RollbackResult, error)
 }
 type QueryResolver interface {
 	Ask(ctx context.Context, question string) (string, error)
@@ -125,6 +159,8 @@ type QueryResolver interface {
 	GetIndexStats(ctx context.Context) (*IndexStats, error)
 	GetRagSettings(ctx context.Context) ([]*SettingEntry, error)
 	GetRagSettingsHistory(ctx context.Context, limit *int) ([]*SettingsHistoryEntry, error)
+	GetDocumentHistory(ctx context.Context, documentID string, limit *int) ([]*DocumentVersion, error)
+	GetDocuments(ctx context.Context) ([]*DocumentListItem, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -198,6 +234,50 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Document.Title(childComplexity), true
 
+	case "DocumentHistoryResult.versions":
+		if e.ComplexityRoot.DocumentHistoryResult.Versions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentHistoryResult.Versions(childComplexity), true
+
+	case "DocumentListItem.chunks":
+		if e.ComplexityRoot.DocumentListItem.Chunks == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentListItem.Chunks(childComplexity), true
+	case "DocumentListItem.id":
+		if e.ComplexityRoot.DocumentListItem.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentListItem.ID(childComplexity), true
+	case "DocumentListItem.indexed":
+		if e.ComplexityRoot.DocumentListItem.Indexed == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentListItem.Indexed(childComplexity), true
+	case "DocumentListItem.size":
+		if e.ComplexityRoot.DocumentListItem.Size == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentListItem.Size(childComplexity), true
+	case "DocumentListItem.title":
+		if e.ComplexityRoot.DocumentListItem.Title == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentListItem.Title(childComplexity), true
+	case "DocumentListItem.updatedAt":
+		if e.ComplexityRoot.DocumentListItem.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentListItem.UpdatedAt(childComplexity), true
+
 	case "DocumentResult.content":
 		if e.ComplexityRoot.DocumentResult.Content == nil {
 			break
@@ -228,6 +308,55 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.DocumentResult.Title(childComplexity), true
+
+	case "DocumentVersion.action":
+		if e.ComplexityRoot.DocumentVersion.Action == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentVersion.Action(childComplexity), true
+	case "DocumentVersion.content":
+		if e.ComplexityRoot.DocumentVersion.Content == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentVersion.Content(childComplexity), true
+	case "DocumentVersion.createdAt":
+		if e.ComplexityRoot.DocumentVersion.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentVersion.CreatedAt(childComplexity), true
+	case "DocumentVersion.createdBy":
+		if e.ComplexityRoot.DocumentVersion.CreatedBy == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentVersion.CreatedBy(childComplexity), true
+	case "DocumentVersion.documentId":
+		if e.ComplexityRoot.DocumentVersion.DocumentID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentVersion.DocumentID(childComplexity), true
+	case "DocumentVersion.id":
+		if e.ComplexityRoot.DocumentVersion.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentVersion.ID(childComplexity), true
+	case "DocumentVersion.title":
+		if e.ComplexityRoot.DocumentVersion.Title == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentVersion.Title(childComplexity), true
+	case "DocumentVersion.versionNumber":
+		if e.ComplexityRoot.DocumentVersion.VersionNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DocumentVersion.VersionNumber(childComplexity), true
 
 	case "IndexStats.indexSizeBytes":
 		if e.ComplexityRoot.IndexStats.IndexSizeBytes == nil {
@@ -294,6 +423,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.PreviewDocument(childComplexity, args["input"].(PreviewDocumentInput)), true
+	case "Mutation.rollbackDocument":
+		if e.ComplexityRoot.Mutation.RollbackDocument == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_rollbackDocument_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RollbackDocument(childComplexity, args["documentId"].(string), args["versionId"].(int), args["rollbackBy"].(*string)), true
 	case "Mutation.updateRagSetting":
 		if e.ComplexityRoot.Mutation.UpdateRagSetting == nil {
 			break
@@ -341,6 +481,23 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.GetDocument(childComplexity, args["id"].(string)), true
+	case "Query.getDocumentHistory":
+		if e.ComplexityRoot.Query.GetDocumentHistory == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getDocumentHistory_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.GetDocumentHistory(childComplexity, args["documentId"].(string), args["limit"].(*int)), true
+	case "Query.getDocuments":
+		if e.ComplexityRoot.Query.GetDocuments == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.GetDocuments(childComplexity), true
 	case "Query.getIndexStats":
 		if e.ComplexityRoot.Query.GetIndexStats == nil {
 			break
@@ -376,6 +533,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.SearchDocuments(childComplexity, args["query"].(string), args["limit"].(*int), args["threshold"].(*float64)), true
+
+	case "RollbackResult.message":
+		if e.ComplexityRoot.RollbackResult.Message == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RollbackResult.Message(childComplexity), true
+	case "RollbackResult.newVersionId":
+		if e.ComplexityRoot.RollbackResult.NewVersionID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RollbackResult.NewVersionID(childComplexity), true
+	case "RollbackResult.success":
+		if e.ComplexityRoot.RollbackResult.Success == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RollbackResult.Success(childComplexity), true
 
 	case "SettingEntry.key":
 		if e.ComplexityRoot.SettingEntry.Key == nil {
@@ -556,6 +732,15 @@ input CommitDocumentInput {
   value: String!
 }
 
+type DocumentListItem {
+  id: String!
+  title: String!
+  updatedAt: String!
+  indexed: Boolean!
+  size: Int!
+  chunks: Int!
+}
+
 type DocumentResult {
   id: String!
   title: String!
@@ -606,6 +791,27 @@ type SettingsHistoryEntry {
   changedBy: String!
   changedAt: String!
 }
+
+type DocumentVersion {
+  id: Int!
+  documentId: String!
+  title: String!
+  content: String!
+  versionNumber: Int!
+  createdAt: String!
+  createdBy: String!
+  action: String!
+}
+
+type DocumentHistoryResult {
+  versions: [DocumentVersion!]!
+}
+
+type RollbackResult {
+  success: Boolean!
+  message: String!
+  newVersionId: String
+}
 `, BuiltIn: false},
 	{Name: "../../../graph/query/queryDefs.graphqls", Input: `type Query {
   ask(question: String!): String!
@@ -614,6 +820,8 @@ type SettingsHistoryEntry {
   getIndexStats: IndexStats
   getRagSettings: [SettingEntry!]!
   getRagSettingsHistory(limit: Int): [SettingsHistoryEntry!]!
+  getDocumentHistory(documentId: String!, limit: Int): [DocumentVersion!]!
+  getDocuments: [DocumentListItem!]!
 }
 
 type SettingEntry {
@@ -626,6 +834,7 @@ type SettingEntry {
   commitDocument(input: CommitDocumentInput!): CommitDocumentResult!
   deleteDocument(id: String!): DeleteDocumentResult!
   updateRagSetting(key: String!, value: String!, changedBy: String): UpdateSettingsResult!
+  rollbackDocument(documentId: String!, versionId: Int!, rollbackBy: String): RollbackResult!
 }
 `, BuiltIn: false},
 	{Name: "../../../graph/enums/enumDefs.graphqls", Input: `enum DocumentSourceType {
@@ -675,6 +884,27 @@ func (ec *executionContext) field_Mutation_previewDocument_args(ctx context.Cont
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_rollbackDocument_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "documentId", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["documentId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "versionId", ec.unmarshalNInt2int)
+	if err != nil {
+		return nil, err
+	}
+	args["versionId"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "rollbackBy", ec.unmarshalOString2ᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["rollbackBy"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateRagSetting_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -715,6 +945,22 @@ func (ec *executionContext) field_Query_ask_args(ctx context.Context, rawArgs ma
 		return nil, err
 	}
 	args["question"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getDocumentHistory_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "documentId", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["documentId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "limit", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg1
 	return args, nil
 }
 
@@ -1080,6 +1326,227 @@ func (ec *executionContext) fieldContext_Document_metadata(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _DocumentHistoryResult_versions(ctx context.Context, field graphql.CollectedField, obj *DocumentHistoryResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentHistoryResult_versions,
+		func(ctx context.Context) (any, error) {
+			return obj.Versions, nil
+		},
+		nil,
+		ec.marshalNDocumentVersion2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentVersionᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentHistoryResult_versions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentHistoryResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_DocumentVersion_id(ctx, field)
+			case "documentId":
+				return ec.fieldContext_DocumentVersion_documentId(ctx, field)
+			case "title":
+				return ec.fieldContext_DocumentVersion_title(ctx, field)
+			case "content":
+				return ec.fieldContext_DocumentVersion_content(ctx, field)
+			case "versionNumber":
+				return ec.fieldContext_DocumentVersion_versionNumber(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_DocumentVersion_createdAt(ctx, field)
+			case "createdBy":
+				return ec.fieldContext_DocumentVersion_createdBy(ctx, field)
+			case "action":
+				return ec.fieldContext_DocumentVersion_action(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DocumentVersion", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentListItem_id(ctx context.Context, field graphql.CollectedField, obj *DocumentListItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentListItem_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentListItem_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentListItem",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentListItem_title(ctx context.Context, field graphql.CollectedField, obj *DocumentListItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentListItem_title,
+		func(ctx context.Context) (any, error) {
+			return obj.Title, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentListItem_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentListItem",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentListItem_updatedAt(ctx context.Context, field graphql.CollectedField, obj *DocumentListItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentListItem_updatedAt,
+		func(ctx context.Context) (any, error) {
+			return obj.UpdatedAt, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentListItem_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentListItem",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentListItem_indexed(ctx context.Context, field graphql.CollectedField, obj *DocumentListItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentListItem_indexed,
+		func(ctx context.Context) (any, error) {
+			return obj.Indexed, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentListItem_indexed(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentListItem",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentListItem_size(ctx context.Context, field graphql.CollectedField, obj *DocumentListItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentListItem_size,
+		func(ctx context.Context) (any, error) {
+			return obj.Size, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentListItem_size(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentListItem",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentListItem_chunks(ctx context.Context, field graphql.CollectedField, obj *DocumentListItem) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentListItem_chunks,
+		func(ctx context.Context) (any, error) {
+			return obj.Chunks, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentListItem_chunks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentListItem",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DocumentResult_id(ctx context.Context, field graphql.CollectedField, obj *DocumentResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1226,6 +1693,238 @@ func (ec *executionContext) fieldContext_DocumentResult_metadata(_ context.Conte
 				return ec.fieldContext_MetadataEntry_value(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type MetadataEntry", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentVersion_id(ctx context.Context, field graphql.CollectedField, obj *DocumentVersion) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentVersion_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentVersion_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentVersion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentVersion_documentId(ctx context.Context, field graphql.CollectedField, obj *DocumentVersion) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentVersion_documentId,
+		func(ctx context.Context) (any, error) {
+			return obj.DocumentID, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentVersion_documentId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentVersion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentVersion_title(ctx context.Context, field graphql.CollectedField, obj *DocumentVersion) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentVersion_title,
+		func(ctx context.Context) (any, error) {
+			return obj.Title, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentVersion_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentVersion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentVersion_content(ctx context.Context, field graphql.CollectedField, obj *DocumentVersion) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentVersion_content,
+		func(ctx context.Context) (any, error) {
+			return obj.Content, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentVersion_content(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentVersion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentVersion_versionNumber(ctx context.Context, field graphql.CollectedField, obj *DocumentVersion) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentVersion_versionNumber,
+		func(ctx context.Context) (any, error) {
+			return obj.VersionNumber, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentVersion_versionNumber(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentVersion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentVersion_createdAt(ctx context.Context, field graphql.CollectedField, obj *DocumentVersion) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentVersion_createdAt,
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentVersion_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentVersion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentVersion_createdBy(ctx context.Context, field graphql.CollectedField, obj *DocumentVersion) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentVersion_createdBy,
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedBy, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentVersion_createdBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentVersion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DocumentVersion_action(ctx context.Context, field graphql.CollectedField, obj *DocumentVersion) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DocumentVersion_action,
+		func(ctx context.Context) (any, error) {
+			return obj.Action, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DocumentVersion_action(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DocumentVersion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1566,6 +2265,55 @@ func (ec *executionContext) fieldContext_Mutation_updateRagSetting(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_rollbackDocument(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_rollbackDocument,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RollbackDocument(ctx, fc.Args["documentId"].(string), fc.Args["versionId"].(int), fc.Args["rollbackBy"].(*string))
+		},
+		nil,
+		ec.marshalNRollbackResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐRollbackResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_rollbackDocument(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_RollbackResult_success(ctx, field)
+			case "message":
+				return ec.fieldContext_RollbackResult_message(ctx, field)
+			case "newVersionId":
+				return ec.fieldContext_RollbackResult_newVersionId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RollbackResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_rollbackDocument_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PreviewDocumentResult_extractedText(ctx context.Context, field graphql.CollectedField, obj *PreviewDocumentResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1896,6 +2644,108 @@ func (ec *executionContext) fieldContext_Query_getRagSettingsHistory(ctx context
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_getDocumentHistory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_getDocumentHistory,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().GetDocumentHistory(ctx, fc.Args["documentId"].(string), fc.Args["limit"].(*int))
+		},
+		nil,
+		ec.marshalNDocumentVersion2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentVersionᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_getDocumentHistory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_DocumentVersion_id(ctx, field)
+			case "documentId":
+				return ec.fieldContext_DocumentVersion_documentId(ctx, field)
+			case "title":
+				return ec.fieldContext_DocumentVersion_title(ctx, field)
+			case "content":
+				return ec.fieldContext_DocumentVersion_content(ctx, field)
+			case "versionNumber":
+				return ec.fieldContext_DocumentVersion_versionNumber(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_DocumentVersion_createdAt(ctx, field)
+			case "createdBy":
+				return ec.fieldContext_DocumentVersion_createdBy(ctx, field)
+			case "action":
+				return ec.fieldContext_DocumentVersion_action(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DocumentVersion", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getDocumentHistory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getDocuments(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_getDocuments,
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().GetDocuments(ctx)
+		},
+		nil,
+		ec.marshalNDocumentListItem2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentListItemᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_getDocuments(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_DocumentListItem_id(ctx, field)
+			case "title":
+				return ec.fieldContext_DocumentListItem_title(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_DocumentListItem_updatedAt(ctx, field)
+			case "indexed":
+				return ec.fieldContext_DocumentListItem_indexed(ctx, field)
+			case "size":
+				return ec.fieldContext_DocumentListItem_size(ctx, field)
+			case "chunks":
+				return ec.fieldContext_DocumentListItem_chunks(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DocumentListItem", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1999,6 +2849,93 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RollbackResult_success(ctx context.Context, field graphql.CollectedField, obj *RollbackResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RollbackResult_success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_RollbackResult_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RollbackResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RollbackResult_message(ctx context.Context, field graphql.CollectedField, obj *RollbackResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RollbackResult_message,
+		func(ctx context.Context) (any, error) {
+			return obj.Message, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_RollbackResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RollbackResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RollbackResult_newVersionId(ctx context.Context, field graphql.CollectedField, obj *RollbackResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RollbackResult_newVersionId,
+		func(ctx context.Context) (any, error) {
+			return obj.NewVersionID, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_RollbackResult_newVersionId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RollbackResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4034,6 +4971,109 @@ func (ec *executionContext) _Document(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var documentHistoryResultImplementors = []string{"DocumentHistoryResult"}
+
+func (ec *executionContext) _DocumentHistoryResult(ctx context.Context, sel ast.SelectionSet, obj *DocumentHistoryResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, documentHistoryResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DocumentHistoryResult")
+		case "versions":
+			out.Values[i] = ec._DocumentHistoryResult_versions(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var documentListItemImplementors = []string{"DocumentListItem"}
+
+func (ec *executionContext) _DocumentListItem(ctx context.Context, sel ast.SelectionSet, obj *DocumentListItem) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, documentListItemImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DocumentListItem")
+		case "id":
+			out.Values[i] = ec._DocumentListItem_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "title":
+			out.Values[i] = ec._DocumentListItem_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._DocumentListItem_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "indexed":
+			out.Values[i] = ec._DocumentListItem_indexed(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "size":
+			out.Values[i] = ec._DocumentListItem_size(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "chunks":
+			out.Values[i] = ec._DocumentListItem_chunks(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var documentResultImplementors = []string{"DocumentResult"}
 
 func (ec *executionContext) _DocumentResult(ctx context.Context, sel ast.SelectionSet, obj *DocumentResult) graphql.Marshaler {
@@ -4067,6 +5107,80 @@ func (ec *executionContext) _DocumentResult(ctx context.Context, sel ast.Selecti
 			}
 		case "metadata":
 			out.Values[i] = ec._DocumentResult_metadata(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var documentVersionImplementors = []string{"DocumentVersion"}
+
+func (ec *executionContext) _DocumentVersion(ctx context.Context, sel ast.SelectionSet, obj *DocumentVersion) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, documentVersionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DocumentVersion")
+		case "id":
+			out.Values[i] = ec._DocumentVersion_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "documentId":
+			out.Values[i] = ec._DocumentVersion_documentId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "title":
+			out.Values[i] = ec._DocumentVersion_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "content":
+			out.Values[i] = ec._DocumentVersion_content(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "versionNumber":
+			out.Values[i] = ec._DocumentVersion_versionNumber(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._DocumentVersion_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdBy":
+			out.Values[i] = ec._DocumentVersion_createdBy(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "action":
+			out.Values[i] = ec._DocumentVersion_action(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4229,6 +5343,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updateRagSetting":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateRagSetting(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "rollbackDocument":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_rollbackDocument(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -4445,6 +5566,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getDocumentHistory":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getDocumentHistory(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getDocuments":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getDocuments(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -4453,6 +5618,52 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var rollbackResultImplementors = []string{"RollbackResult"}
+
+func (ec *executionContext) _RollbackResult(ctx context.Context, sel ast.SelectionSet, obj *RollbackResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, rollbackResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RollbackResult")
+		case "success":
+			out.Values[i] = ec._RollbackResult_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "message":
+			out.Values[i] = ec._RollbackResult_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "newVersionId":
+			out.Values[i] = ec._RollbackResult_newVersionId(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5012,6 +6223,32 @@ func (ec *executionContext) marshalNDeleteDocumentResult2ᚖgraphqlᚑgatewayᚋ
 	return ec._DeleteDocumentResult(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNDocumentListItem2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentListItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*DocumentListItem) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNDocumentListItem2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentListItem(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNDocumentListItem2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentListItem(ctx context.Context, sel ast.SelectionSet, v *DocumentListItem) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DocumentListItem(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNDocumentResult2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentResultᚄ(ctx context.Context, sel ast.SelectionSet, v []*DocumentResult) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -5046,6 +6283,32 @@ func (ec *executionContext) unmarshalNDocumentSourceType2graphqlᚑgatewayᚋint
 
 func (ec *executionContext) marshalNDocumentSourceType2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentSourceType(ctx context.Context, sel ast.SelectionSet, v DocumentSourceType) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNDocumentVersion2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentVersionᚄ(ctx context.Context, sel ast.SelectionSet, v []*DocumentVersion) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNDocumentVersion2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentVersion(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNDocumentVersion2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentVersion(ctx context.Context, sel ast.SelectionSet, v *DocumentVersion) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DocumentVersion(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
@@ -5128,6 +6391,20 @@ func (ec *executionContext) marshalNPreviewDocumentResult2ᚖgraphqlᚑgateway�
 		return graphql.Null
 	}
 	return ec._PreviewDocumentResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNRollbackResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐRollbackResult(ctx context.Context, sel ast.SelectionSet, v RollbackResult) graphql.Marshaler {
+	return ec._RollbackResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNRollbackResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐRollbackResult(ctx context.Context, sel ast.SelectionSet, v *RollbackResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._RollbackResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSettingEntry2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingEntryᚄ(ctx context.Context, sel ast.SelectionSet, v []*SettingEntry) graphql.Marshaler {

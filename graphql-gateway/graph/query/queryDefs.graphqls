@@ -5,6 +5,8 @@ type Query {
   getIndexStats: IndexStats
   getRagSettings: [SettingEntry!]!
   getRagSettingsHistory(limit: Int): [SettingsHistoryEntry!]!
+  getDocumentHistory(documentId: String!, limit: Int): [DocumentVersion!]!
+  getDocuments: [DocumentListItem!]!
 }
 
 type SettingEntry {

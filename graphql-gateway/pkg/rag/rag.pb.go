@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v3.21.12
-// source: api/rag.proto
+// source: rag.proto
 
 package rag
 
@@ -58,11 +58,11 @@ func (x DocumentSourceType) String() string {
 }
 
 func (DocumentSourceType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_rag_proto_enumTypes[0].Descriptor()
+	return file_rag_proto_enumTypes[0].Descriptor()
 }
 
 func (DocumentSourceType) Type() protoreflect.EnumType {
-	return &file_api_rag_proto_enumTypes[0]
+	return &file_rag_proto_enumTypes[0]
 }
 
 func (x DocumentSourceType) Number() protoreflect.EnumNumber {
@@ -71,7 +71,7 @@ func (x DocumentSourceType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DocumentSourceType.Descriptor instead.
 func (DocumentSourceType) EnumDescriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{0}
+	return file_rag_proto_rawDescGZIP(), []int{0}
 }
 
 // Тип метода сравнения векторов
@@ -114,11 +114,11 @@ func (x ComparisonMethod) String() string {
 }
 
 func (ComparisonMethod) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_rag_proto_enumTypes[1].Descriptor()
+	return file_rag_proto_enumTypes[1].Descriptor()
 }
 
 func (ComparisonMethod) Type() protoreflect.EnumType {
-	return &file_api_rag_proto_enumTypes[1]
+	return &file_rag_proto_enumTypes[1]
 }
 
 func (x ComparisonMethod) Number() protoreflect.EnumNumber {
@@ -127,7 +127,7 @@ func (x ComparisonMethod) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ComparisonMethod.Descriptor instead.
 func (ComparisonMethod) EnumDescriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{1}
+	return file_rag_proto_rawDescGZIP(), []int{1}
 }
 
 // Запрос на добавление документа (legacy, для совместимости)
@@ -147,7 +147,7 @@ type AddDocumentRequest struct {
 
 func (x *AddDocumentRequest) Reset() {
 	*x = AddDocumentRequest{}
-	mi := &file_api_rag_proto_msgTypes[0]
+	mi := &file_rag_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -159,7 +159,7 @@ func (x *AddDocumentRequest) String() string {
 func (*AddDocumentRequest) ProtoMessage() {}
 
 func (x *AddDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[0]
+	mi := &file_rag_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -172,7 +172,7 @@ func (x *AddDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddDocumentRequest.ProtoReflect.Descriptor instead.
 func (*AddDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{0}
+	return file_rag_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *AddDocumentRequest) GetId() string {
@@ -242,7 +242,7 @@ type AddDocumentResponse struct {
 
 func (x *AddDocumentResponse) Reset() {
 	*x = AddDocumentResponse{}
-	mi := &file_api_rag_proto_msgTypes[1]
+	mi := &file_rag_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -254,7 +254,7 @@ func (x *AddDocumentResponse) String() string {
 func (*AddDocumentResponse) ProtoMessage() {}
 
 func (x *AddDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[1]
+	mi := &file_rag_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -267,7 +267,7 @@ func (x *AddDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddDocumentResponse.ProtoReflect.Descriptor instead.
 func (*AddDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{1}
+	return file_rag_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *AddDocumentResponse) GetSuccess() bool {
@@ -298,7 +298,7 @@ type PreviewDocumentRequest struct {
 
 func (x *PreviewDocumentRequest) Reset() {
 	*x = PreviewDocumentRequest{}
-	mi := &file_api_rag_proto_msgTypes[2]
+	mi := &file_rag_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -310,7 +310,7 @@ func (x *PreviewDocumentRequest) String() string {
 func (*PreviewDocumentRequest) ProtoMessage() {}
 
 func (x *PreviewDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[2]
+	mi := &file_rag_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -323,7 +323,7 @@ func (x *PreviewDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreviewDocumentRequest.ProtoReflect.Descriptor instead.
 func (*PreviewDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{2}
+	return file_rag_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *PreviewDocumentRequest) GetTitle() string {
@@ -372,7 +372,7 @@ type PreviewDocumentResponse struct {
 
 func (x *PreviewDocumentResponse) Reset() {
 	*x = PreviewDocumentResponse{}
-	mi := &file_api_rag_proto_msgTypes[3]
+	mi := &file_rag_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -384,7 +384,7 @@ func (x *PreviewDocumentResponse) String() string {
 func (*PreviewDocumentResponse) ProtoMessage() {}
 
 func (x *PreviewDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[3]
+	mi := &file_rag_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -397,7 +397,7 @@ func (x *PreviewDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreviewDocumentResponse.ProtoReflect.Descriptor instead.
 func (*PreviewDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{3}
+	return file_rag_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *PreviewDocumentResponse) GetExtractedText() string {
@@ -426,7 +426,7 @@ type CommitDocumentRequest struct {
 
 func (x *CommitDocumentRequest) Reset() {
 	*x = CommitDocumentRequest{}
-	mi := &file_api_rag_proto_msgTypes[4]
+	mi := &file_rag_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -438,7 +438,7 @@ func (x *CommitDocumentRequest) String() string {
 func (*CommitDocumentRequest) ProtoMessage() {}
 
 func (x *CommitDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[4]
+	mi := &file_rag_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -451,7 +451,7 @@ func (x *CommitDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitDocumentRequest.ProtoReflect.Descriptor instead.
 func (*CommitDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{4}
+	return file_rag_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CommitDocumentRequest) GetTitle() string {
@@ -487,7 +487,7 @@ type CommitDocumentResponse struct {
 
 func (x *CommitDocumentResponse) Reset() {
 	*x = CommitDocumentResponse{}
-	mi := &file_api_rag_proto_msgTypes[5]
+	mi := &file_rag_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -499,7 +499,7 @@ func (x *CommitDocumentResponse) String() string {
 func (*CommitDocumentResponse) ProtoMessage() {}
 
 func (x *CommitDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[5]
+	mi := &file_rag_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -512,7 +512,7 @@ func (x *CommitDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitDocumentResponse.ProtoReflect.Descriptor instead.
 func (*CommitDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{5}
+	return file_rag_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CommitDocumentResponse) GetSuccess() bool {
@@ -549,7 +549,7 @@ type SearchRequest struct {
 
 func (x *SearchRequest) Reset() {
 	*x = SearchRequest{}
-	mi := &file_api_rag_proto_msgTypes[6]
+	mi := &file_rag_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -561,7 +561,7 @@ func (x *SearchRequest) String() string {
 func (*SearchRequest) ProtoMessage() {}
 
 func (x *SearchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[6]
+	mi := &file_rag_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -574,7 +574,7 @@ func (x *SearchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchRequest.ProtoReflect.Descriptor instead.
 func (*SearchRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{6}
+	return file_rag_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *SearchRequest) GetQuery() string {
@@ -616,7 +616,7 @@ type SearchResponse struct {
 
 func (x *SearchResponse) Reset() {
 	*x = SearchResponse{}
-	mi := &file_api_rag_proto_msgTypes[7]
+	mi := &file_rag_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -628,7 +628,7 @@ func (x *SearchResponse) String() string {
 func (*SearchResponse) ProtoMessage() {}
 
 func (x *SearchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[7]
+	mi := &file_rag_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -641,7 +641,7 @@ func (x *SearchResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResponse.ProtoReflect.Descriptor instead.
 func (*SearchResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{7}
+	return file_rag_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *SearchResponse) GetResults() []*DocumentResult {
@@ -672,7 +672,7 @@ type DocumentResult struct {
 
 func (x *DocumentResult) Reset() {
 	*x = DocumentResult{}
-	mi := &file_api_rag_proto_msgTypes[8]
+	mi := &file_rag_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -684,7 +684,7 @@ func (x *DocumentResult) String() string {
 func (*DocumentResult) ProtoMessage() {}
 
 func (x *DocumentResult) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[8]
+	mi := &file_rag_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -697,7 +697,7 @@ func (x *DocumentResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentResult.ProtoReflect.Descriptor instead.
 func (*DocumentResult) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{8}
+	return file_rag_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DocumentResult) GetId() string {
@@ -745,7 +745,7 @@ type GetDocumentRequest struct {
 
 func (x *GetDocumentRequest) Reset() {
 	*x = GetDocumentRequest{}
-	mi := &file_api_rag_proto_msgTypes[9]
+	mi := &file_rag_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -757,7 +757,7 @@ func (x *GetDocumentRequest) String() string {
 func (*GetDocumentRequest) ProtoMessage() {}
 
 func (x *GetDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[9]
+	mi := &file_rag_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -770,7 +770,7 @@ func (x *GetDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDocumentRequest.ProtoReflect.Descriptor instead.
 func (*GetDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{9}
+	return file_rag_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetDocumentRequest) GetId() string {
@@ -791,7 +791,7 @@ type GetDocumentResponse struct {
 
 func (x *GetDocumentResponse) Reset() {
 	*x = GetDocumentResponse{}
-	mi := &file_api_rag_proto_msgTypes[10]
+	mi := &file_rag_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -803,7 +803,7 @@ func (x *GetDocumentResponse) String() string {
 func (*GetDocumentResponse) ProtoMessage() {}
 
 func (x *GetDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[10]
+	mi := &file_rag_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -816,7 +816,7 @@ func (x *GetDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDocumentResponse.ProtoReflect.Descriptor instead.
 func (*GetDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{10}
+	return file_rag_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetDocumentResponse) GetDocument() *DocumentResult {
@@ -843,7 +843,7 @@ type DeleteDocumentRequest struct {
 
 func (x *DeleteDocumentRequest) Reset() {
 	*x = DeleteDocumentRequest{}
-	mi := &file_api_rag_proto_msgTypes[11]
+	mi := &file_rag_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -855,7 +855,7 @@ func (x *DeleteDocumentRequest) String() string {
 func (*DeleteDocumentRequest) ProtoMessage() {}
 
 func (x *DeleteDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[11]
+	mi := &file_rag_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -868,7 +868,7 @@ func (x *DeleteDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteDocumentRequest.ProtoReflect.Descriptor instead.
 func (*DeleteDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{11}
+	return file_rag_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *DeleteDocumentRequest) GetId() string {
@@ -889,7 +889,7 @@ type DeleteDocumentResponse struct {
 
 func (x *DeleteDocumentResponse) Reset() {
 	*x = DeleteDocumentResponse{}
-	mi := &file_api_rag_proto_msgTypes[12]
+	mi := &file_rag_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -901,7 +901,7 @@ func (x *DeleteDocumentResponse) String() string {
 func (*DeleteDocumentResponse) ProtoMessage() {}
 
 func (x *DeleteDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[12]
+	mi := &file_rag_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -914,7 +914,7 @@ func (x *DeleteDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteDocumentResponse.ProtoReflect.Descriptor instead.
 func (*DeleteDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{12}
+	return file_rag_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DeleteDocumentResponse) GetSuccess() bool {
@@ -940,7 +940,7 @@ type GetIndexStatsRequest struct {
 
 func (x *GetIndexStatsRequest) Reset() {
 	*x = GetIndexStatsRequest{}
-	mi := &file_api_rag_proto_msgTypes[13]
+	mi := &file_rag_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -952,7 +952,7 @@ func (x *GetIndexStatsRequest) String() string {
 func (*GetIndexStatsRequest) ProtoMessage() {}
 
 func (x *GetIndexStatsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[13]
+	mi := &file_rag_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -965,7 +965,7 @@ func (x *GetIndexStatsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetIndexStatsRequest.ProtoReflect.Descriptor instead.
 func (*GetIndexStatsRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{13}
+	return file_rag_proto_rawDescGZIP(), []int{13}
 }
 
 // Ответ со статистикой индекса
@@ -980,7 +980,7 @@ type GetIndexStatsResponse struct {
 
 func (x *GetIndexStatsResponse) Reset() {
 	*x = GetIndexStatsResponse{}
-	mi := &file_api_rag_proto_msgTypes[14]
+	mi := &file_rag_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -992,7 +992,7 @@ func (x *GetIndexStatsResponse) String() string {
 func (*GetIndexStatsResponse) ProtoMessage() {}
 
 func (x *GetIndexStatsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[14]
+	mi := &file_rag_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1005,7 +1005,7 @@ func (x *GetIndexStatsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetIndexStatsResponse.ProtoReflect.Descriptor instead.
 func (*GetIndexStatsResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{14}
+	return file_rag_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GetIndexStatsResponse) GetTotalDocuments() int32 {
@@ -1038,7 +1038,7 @@ type GetRagSettingsRequest struct {
 
 func (x *GetRagSettingsRequest) Reset() {
 	*x = GetRagSettingsRequest{}
-	mi := &file_api_rag_proto_msgTypes[15]
+	mi := &file_rag_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1050,7 +1050,7 @@ func (x *GetRagSettingsRequest) String() string {
 func (*GetRagSettingsRequest) ProtoMessage() {}
 
 func (x *GetRagSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[15]
+	mi := &file_rag_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1063,7 +1063,7 @@ func (x *GetRagSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRagSettingsRequest.ProtoReflect.Descriptor instead.
 func (*GetRagSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{15}
+	return file_rag_proto_rawDescGZIP(), []int{15}
 }
 
 // Ответ с настройками RAG
@@ -1076,7 +1076,7 @@ type GetRagSettingsResponse struct {
 
 func (x *GetRagSettingsResponse) Reset() {
 	*x = GetRagSettingsResponse{}
-	mi := &file_api_rag_proto_msgTypes[16]
+	mi := &file_rag_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1088,7 +1088,7 @@ func (x *GetRagSettingsResponse) String() string {
 func (*GetRagSettingsResponse) ProtoMessage() {}
 
 func (x *GetRagSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[16]
+	mi := &file_rag_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1101,7 +1101,7 @@ func (x *GetRagSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRagSettingsResponse.ProtoReflect.Descriptor instead.
 func (*GetRagSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{16}
+	return file_rag_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *GetRagSettingsResponse) GetSettings() map[string]string {
@@ -1123,7 +1123,7 @@ type UpdateRagSettingsRequest struct {
 
 func (x *UpdateRagSettingsRequest) Reset() {
 	*x = UpdateRagSettingsRequest{}
-	mi := &file_api_rag_proto_msgTypes[17]
+	mi := &file_rag_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1135,7 +1135,7 @@ func (x *UpdateRagSettingsRequest) String() string {
 func (*UpdateRagSettingsRequest) ProtoMessage() {}
 
 func (x *UpdateRagSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[17]
+	mi := &file_rag_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1148,7 +1148,7 @@ func (x *UpdateRagSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRagSettingsRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRagSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{17}
+	return file_rag_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UpdateRagSettingsRequest) GetKey() string {
@@ -1183,7 +1183,7 @@ type UpdateRagSettingsResponse struct {
 
 func (x *UpdateRagSettingsResponse) Reset() {
 	*x = UpdateRagSettingsResponse{}
-	mi := &file_api_rag_proto_msgTypes[18]
+	mi := &file_rag_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1195,7 +1195,7 @@ func (x *UpdateRagSettingsResponse) String() string {
 func (*UpdateRagSettingsResponse) ProtoMessage() {}
 
 func (x *UpdateRagSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[18]
+	mi := &file_rag_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1208,7 +1208,7 @@ func (x *UpdateRagSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRagSettingsResponse.ProtoReflect.Descriptor instead.
 func (*UpdateRagSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{18}
+	return file_rag_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *UpdateRagSettingsResponse) GetSuccess() bool {
@@ -1235,7 +1235,7 @@ type GetRagSettingsHistoryRequest struct {
 
 func (x *GetRagSettingsHistoryRequest) Reset() {
 	*x = GetRagSettingsHistoryRequest{}
-	mi := &file_api_rag_proto_msgTypes[19]
+	mi := &file_rag_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1247,7 +1247,7 @@ func (x *GetRagSettingsHistoryRequest) String() string {
 func (*GetRagSettingsHistoryRequest) ProtoMessage() {}
 
 func (x *GetRagSettingsHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[19]
+	mi := &file_rag_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1260,7 +1260,7 @@ func (x *GetRagSettingsHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRagSettingsHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetRagSettingsHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{19}
+	return file_rag_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GetRagSettingsHistoryRequest) GetLimit() int32 {
@@ -1280,7 +1280,7 @@ type GetRagSettingsHistoryResponse struct {
 
 func (x *GetRagSettingsHistoryResponse) Reset() {
 	*x = GetRagSettingsHistoryResponse{}
-	mi := &file_api_rag_proto_msgTypes[20]
+	mi := &file_rag_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1292,7 +1292,7 @@ func (x *GetRagSettingsHistoryResponse) String() string {
 func (*GetRagSettingsHistoryResponse) ProtoMessage() {}
 
 func (x *GetRagSettingsHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[20]
+	mi := &file_rag_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1305,7 +1305,7 @@ func (x *GetRagSettingsHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRagSettingsHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetRagSettingsHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{20}
+	return file_rag_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetRagSettingsHistoryResponse) GetEntries() []*SettingsHistoryEntry {
@@ -1330,7 +1330,7 @@ type SettingsHistoryEntry struct {
 
 func (x *SettingsHistoryEntry) Reset() {
 	*x = SettingsHistoryEntry{}
-	mi := &file_api_rag_proto_msgTypes[21]
+	mi := &file_rag_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1342,7 +1342,7 @@ func (x *SettingsHistoryEntry) String() string {
 func (*SettingsHistoryEntry) ProtoMessage() {}
 
 func (x *SettingsHistoryEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_api_rag_proto_msgTypes[21]
+	mi := &file_rag_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1355,7 +1355,7 @@ func (x *SettingsHistoryEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SettingsHistoryEntry.ProtoReflect.Descriptor instead.
 func (*SettingsHistoryEntry) Descriptor() ([]byte, []int) {
-	return file_api_rag_proto_rawDescGZIP(), []int{21}
+	return file_rag_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *SettingsHistoryEntry) GetId() int32 {
@@ -1400,11 +1400,499 @@ func (x *SettingsHistoryEntry) GetChangedAt() string {
 	return ""
 }
 
-var File_api_rag_proto protoreflect.FileDescriptor
+// Запрос на получение истории версий документа
+type GetDocumentHistoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DocumentId    string                 `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_api_rag_proto_rawDesc = "" +
+func (x *GetDocumentHistoryRequest) Reset() {
+	*x = GetDocumentHistoryRequest{}
+	mi := &file_rag_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDocumentHistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDocumentHistoryRequest) ProtoMessage() {}
+
+func (x *GetDocumentHistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDocumentHistoryRequest.ProtoReflect.Descriptor instead.
+func (*GetDocumentHistoryRequest) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *GetDocumentHistoryRequest) GetDocumentId() string {
+	if x != nil {
+		return x.DocumentId
+	}
+	return ""
+}
+
+func (x *GetDocumentHistoryRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+// Ответ с историей версий документа
+type GetDocumentHistoryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Versions      []*DocumentVersion     `protobuf:"bytes,1,rep,name=versions,proto3" json:"versions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDocumentHistoryResponse) Reset() {
+	*x = GetDocumentHistoryResponse{}
+	mi := &file_rag_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDocumentHistoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDocumentHistoryResponse) ProtoMessage() {}
+
+func (x *GetDocumentHistoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDocumentHistoryResponse.ProtoReflect.Descriptor instead.
+func (*GetDocumentHistoryResponse) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *GetDocumentHistoryResponse) GetVersions() []*DocumentVersion {
+	if x != nil {
+		return x.Versions
+	}
+	return nil
+}
+
+// Версия документа
+type DocumentVersion struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	DocumentId    string                 `protobuf:"bytes,2,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
+	VersionNumber int32                  `protobuf:"varint,5,opt,name=version_number,json=versionNumber,proto3" json:"version_number,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreatedBy     string                 `protobuf:"bytes,7,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	Action        string                 `protobuf:"bytes,8,opt,name=action,proto3" json:"action,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DocumentVersion) Reset() {
+	*x = DocumentVersion{}
+	mi := &file_rag_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DocumentVersion) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DocumentVersion) ProtoMessage() {}
+
+func (x *DocumentVersion) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DocumentVersion.ProtoReflect.Descriptor instead.
+func (*DocumentVersion) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *DocumentVersion) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *DocumentVersion) GetDocumentId() string {
+	if x != nil {
+		return x.DocumentId
+	}
+	return ""
+}
+
+func (x *DocumentVersion) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *DocumentVersion) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *DocumentVersion) GetVersionNumber() int32 {
+	if x != nil {
+		return x.VersionNumber
+	}
+	return 0
+}
+
+func (x *DocumentVersion) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *DocumentVersion) GetCreatedBy() string {
+	if x != nil {
+		return x.CreatedBy
+	}
+	return ""
+}
+
+func (x *DocumentVersion) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+// Запрос на откат документа к версии
+type RollbackDocumentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DocumentId    string                 `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	VersionId     int32                  `protobuf:"varint,2,opt,name=version_id,json=versionId,proto3" json:"version_id,omitempty"`
+	RollbackBy    string                 `protobuf:"bytes,3,opt,name=rollback_by,json=rollbackBy,proto3" json:"rollback_by,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RollbackDocumentRequest) Reset() {
+	*x = RollbackDocumentRequest{}
+	mi := &file_rag_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RollbackDocumentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RollbackDocumentRequest) ProtoMessage() {}
+
+func (x *RollbackDocumentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RollbackDocumentRequest.ProtoReflect.Descriptor instead.
+func (*RollbackDocumentRequest) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *RollbackDocumentRequest) GetDocumentId() string {
+	if x != nil {
+		return x.DocumentId
+	}
+	return ""
+}
+
+func (x *RollbackDocumentRequest) GetVersionId() int32 {
+	if x != nil {
+		return x.VersionId
+	}
+	return 0
+}
+
+func (x *RollbackDocumentRequest) GetRollbackBy() string {
+	if x != nil {
+		return x.RollbackBy
+	}
+	return ""
+}
+
+// Ответ на откат документа
+type RollbackDocumentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	NewVersionId  string                 `protobuf:"bytes,3,opt,name=new_version_id,json=newVersionId,proto3" json:"new_version_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RollbackDocumentResponse) Reset() {
+	*x = RollbackDocumentResponse{}
+	mi := &file_rag_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RollbackDocumentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RollbackDocumentResponse) ProtoMessage() {}
+
+func (x *RollbackDocumentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RollbackDocumentResponse.ProtoReflect.Descriptor instead.
+func (*RollbackDocumentResponse) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *RollbackDocumentResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *RollbackDocumentResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *RollbackDocumentResponse) GetNewVersionId() string {
+	if x != nil {
+		return x.NewVersionId
+	}
+	return ""
+}
+
+// Запрос на получение списка всех документов
+type GetAllDocumentsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAllDocumentsRequest) Reset() {
+	*x = GetAllDocumentsRequest{}
+	mi := &file_rag_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAllDocumentsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAllDocumentsRequest) ProtoMessage() {}
+
+func (x *GetAllDocumentsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAllDocumentsRequest.ProtoReflect.Descriptor instead.
+func (*GetAllDocumentsRequest) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{27}
+}
+
+// Ответ со списком документов
+type GetAllDocumentsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Documents     []*DocumentListItem    `protobuf:"bytes,1,rep,name=documents,proto3" json:"documents,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAllDocumentsResponse) Reset() {
+	*x = GetAllDocumentsResponse{}
+	mi := &file_rag_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAllDocumentsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAllDocumentsResponse) ProtoMessage() {}
+
+func (x *GetAllDocumentsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAllDocumentsResponse.ProtoReflect.Descriptor instead.
+func (*GetAllDocumentsResponse) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *GetAllDocumentsResponse) GetDocuments() []*DocumentListItem {
+	if x != nil {
+		return x.Documents
+	}
+	return nil
+}
+
+// Элемент списка документов
+type DocumentListItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Indexed       bool                   `protobuf:"varint,4,opt,name=indexed,proto3" json:"indexed,omitempty"`
+	SizeBytes     int32                  `protobuf:"varint,5,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
+	Chunks        int32                  `protobuf:"varint,6,opt,name=chunks,proto3" json:"chunks,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DocumentListItem) Reset() {
+	*x = DocumentListItem{}
+	mi := &file_rag_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DocumentListItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DocumentListItem) ProtoMessage() {}
+
+func (x *DocumentListItem) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DocumentListItem.ProtoReflect.Descriptor instead.
+func (*DocumentListItem) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *DocumentListItem) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *DocumentListItem) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *DocumentListItem) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+func (x *DocumentListItem) GetIndexed() bool {
+	if x != nil {
+		return x.Indexed
+	}
+	return false
+}
+
+func (x *DocumentListItem) GetSizeBytes() int32 {
+	if x != nil {
+		return x.SizeBytes
+	}
+	return 0
+}
+
+func (x *DocumentListItem) GetChunks() int32 {
+	if x != nil {
+		return x.Chunks
+	}
+	return 0
+}
+
+var File_rag_proto protoreflect.FileDescriptor
+
+const file_rag_proto_rawDesc = "" +
 	"\n" +
-	"\rapi/rag.proto\x12\x03rag\"\xef\x02\n" +
+	"\trag.proto\x12\x03rag\"\xef\x02\n" +
 	"\x12AddDocumentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x14\n" +
@@ -1504,7 +1992,48 @@ const file_api_rag_proto_rawDesc = "" +
 	"\n" +
 	"changed_by\x18\x05 \x01(\tR\tchangedBy\x12\x1d\n" +
 	"\n" +
-	"changed_at\x18\x06 \x01(\tR\tchangedAt*q\n" +
+	"changed_at\x18\x06 \x01(\tR\tchangedAt\"R\n" +
+	"\x19GetDocumentHistoryRequest\x12\x1f\n" +
+	"\vdocument_id\x18\x01 \x01(\tR\n" +
+	"documentId\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"N\n" +
+	"\x1aGetDocumentHistoryResponse\x120\n" +
+	"\bversions\x18\x01 \x03(\v2\x14.rag.DocumentVersionR\bversions\"\xef\x01\n" +
+	"\x0fDocumentVersion\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1f\n" +
+	"\vdocument_id\x18\x02 \x01(\tR\n" +
+	"documentId\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x18\n" +
+	"\acontent\x18\x04 \x01(\tR\acontent\x12%\n" +
+	"\x0eversion_number\x18\x05 \x01(\x05R\rversionNumber\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x06 \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"created_by\x18\a \x01(\tR\tcreatedBy\x12\x16\n" +
+	"\x06action\x18\b \x01(\tR\x06action\"z\n" +
+	"\x17RollbackDocumentRequest\x12\x1f\n" +
+	"\vdocument_id\x18\x01 \x01(\tR\n" +
+	"documentId\x12\x1d\n" +
+	"\n" +
+	"version_id\x18\x02 \x01(\x05R\tversionId\x12\x1f\n" +
+	"\vrollback_by\x18\x03 \x01(\tR\n" +
+	"rollbackBy\"t\n" +
+	"\x18RollbackDocumentResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12$\n" +
+	"\x0enew_version_id\x18\x03 \x01(\tR\fnewVersionId\"\x18\n" +
+	"\x16GetAllDocumentsRequest\"N\n" +
+	"\x17GetAllDocumentsResponse\x123\n" +
+	"\tdocuments\x18\x01 \x03(\v2\x15.rag.DocumentListItemR\tdocuments\"\xa8\x01\n" +
+	"\x10DocumentListItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\x03 \x01(\tR\tupdatedAt\x12\x18\n" +
+	"\aindexed\x18\x04 \x01(\bR\aindexed\x12\x1d\n" +
+	"\n" +
+	"size_bytes\x18\x05 \x01(\x05R\tsizeBytes\x12\x16\n" +
+	"\x06chunks\x18\x06 \x01(\x05R\x06chunks*q\n" +
 	"\x12DocumentSourceType\x12\x1b\n" +
 	"\x17SOURCE_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10SOURCE_TYPE_TEXT\x10\x01\x12\x13\n" +
@@ -1515,7 +2044,7 @@ const file_api_rag_proto_rawDesc = "" +
 	"\x18COMPARISON_METHOD_COSINE\x10\x01\x12\x19\n" +
 	"\x15COMPARISON_METHOD_DOT\x10\x02\x12\x1f\n" +
 	"\x1bCOMPARISON_METHOD_EUCLIDEAN\x10\x03\x12\x18\n" +
-	"\x14COMPARISON_METHOD_L1\x10\x042\xb5\x05\n" +
+	"\x14COMPARISON_METHOD_L1\x10\x042\xab\a\n" +
 	"\n" +
 	"RagService\x12L\n" +
 	"\x0fPreviewDocument\x12\x1b.rag.PreviewDocumentRequest\x1a\x1c.rag.PreviewDocumentResponse\x12I\n" +
@@ -1526,23 +2055,26 @@ const file_api_rag_proto_rawDesc = "" +
 	"\rGetIndexStats\x12\x19.rag.GetIndexStatsRequest\x1a\x1a.rag.GetIndexStatsResponse\x12I\n" +
 	"\x0eGetRagSettings\x12\x1a.rag.GetRagSettingsRequest\x1a\x1b.rag.GetRagSettingsResponse\x12R\n" +
 	"\x11UpdateRagSettings\x12\x1d.rag.UpdateRagSettingsRequest\x1a\x1e.rag.UpdateRagSettingsResponse\x12^\n" +
-	"\x15GetRagSettingsHistory\x12!.rag.GetRagSettingsHistoryRequest\x1a\".rag.GetRagSettingsHistoryResponseB\aZ\x05./ragb\x06proto3"
+	"\x15GetRagSettingsHistory\x12!.rag.GetRagSettingsHistoryRequest\x1a\".rag.GetRagSettingsHistoryResponse\x12U\n" +
+	"\x12GetDocumentHistory\x12\x1e.rag.GetDocumentHistoryRequest\x1a\x1f.rag.GetDocumentHistoryResponse\x12O\n" +
+	"\x10RollbackDocument\x12\x1c.rag.RollbackDocumentRequest\x1a\x1d.rag.RollbackDocumentResponse\x12L\n" +
+	"\x0fGetAllDocuments\x12\x1b.rag.GetAllDocumentsRequest\x1a\x1c.rag.GetAllDocumentsResponseB\aZ\x05./ragb\x06proto3"
 
 var (
-	file_api_rag_proto_rawDescOnce sync.Once
-	file_api_rag_proto_rawDescData []byte
+	file_rag_proto_rawDescOnce sync.Once
+	file_rag_proto_rawDescData []byte
 )
 
-func file_api_rag_proto_rawDescGZIP() []byte {
-	file_api_rag_proto_rawDescOnce.Do(func() {
-		file_api_rag_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_rag_proto_rawDesc), len(file_api_rag_proto_rawDesc)))
+func file_rag_proto_rawDescGZIP() []byte {
+	file_rag_proto_rawDescOnce.Do(func() {
+		file_rag_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_rag_proto_rawDesc), len(file_rag_proto_rawDesc)))
 	})
-	return file_api_rag_proto_rawDescData
+	return file_rag_proto_rawDescData
 }
 
-var file_api_rag_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_api_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
-var file_api_rag_proto_goTypes = []any{
+var file_rag_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 34)
+var file_rag_proto_goTypes = []any{
 	(DocumentSourceType)(0),               // 0: rag.DocumentSourceType
 	(ComparisonMethod)(0),                 // 1: rag.ComparisonMethod
 	(*AddDocumentRequest)(nil),            // 2: rag.AddDocumentRequest
@@ -1567,68 +2099,84 @@ var file_api_rag_proto_goTypes = []any{
 	(*GetRagSettingsHistoryRequest)(nil),  // 21: rag.GetRagSettingsHistoryRequest
 	(*GetRagSettingsHistoryResponse)(nil), // 22: rag.GetRagSettingsHistoryResponse
 	(*SettingsHistoryEntry)(nil),          // 23: rag.SettingsHistoryEntry
-	nil,                                   // 24: rag.AddDocumentRequest.MetadataEntry
-	nil,                                   // 25: rag.CommitDocumentRequest.MetadataEntry
-	nil,                                   // 26: rag.DocumentResult.MetadataEntry
-	nil,                                   // 27: rag.GetRagSettingsResponse.SettingsEntry
+	(*GetDocumentHistoryRequest)(nil),     // 24: rag.GetDocumentHistoryRequest
+	(*GetDocumentHistoryResponse)(nil),    // 25: rag.GetDocumentHistoryResponse
+	(*DocumentVersion)(nil),               // 26: rag.DocumentVersion
+	(*RollbackDocumentRequest)(nil),       // 27: rag.RollbackDocumentRequest
+	(*RollbackDocumentResponse)(nil),      // 28: rag.RollbackDocumentResponse
+	(*GetAllDocumentsRequest)(nil),        // 29: rag.GetAllDocumentsRequest
+	(*GetAllDocumentsResponse)(nil),       // 30: rag.GetAllDocumentsResponse
+	(*DocumentListItem)(nil),              // 31: rag.DocumentListItem
+	nil,                                   // 32: rag.AddDocumentRequest.MetadataEntry
+	nil,                                   // 33: rag.CommitDocumentRequest.MetadataEntry
+	nil,                                   // 34: rag.DocumentResult.MetadataEntry
+	nil,                                   // 35: rag.GetRagSettingsResponse.SettingsEntry
 }
-var file_api_rag_proto_depIdxs = []int32{
-	24, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
+var file_rag_proto_depIdxs = []int32{
+	32, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
 	0,  // 1: rag.AddDocumentRequest.source_type:type_name -> rag.DocumentSourceType
 	0,  // 2: rag.PreviewDocumentRequest.source_type:type_name -> rag.DocumentSourceType
-	25, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
+	33, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
 	1,  // 4: rag.SearchRequest.comparison_method:type_name -> rag.ComparisonMethod
 	10, // 5: rag.SearchResponse.results:type_name -> rag.DocumentResult
-	26, // 6: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
+	34, // 6: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
 	10, // 7: rag.GetDocumentResponse.document:type_name -> rag.DocumentResult
-	27, // 8: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
+	35, // 8: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
 	23, // 9: rag.GetRagSettingsHistoryResponse.entries:type_name -> rag.SettingsHistoryEntry
-	4,  // 10: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
-	6,  // 11: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
-	8,  // 12: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
-	11, // 13: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
-	13, // 14: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
-	15, // 15: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
-	17, // 16: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
-	19, // 17: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
-	21, // 18: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
-	5,  // 19: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
-	7,  // 20: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
-	9,  // 21: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
-	12, // 22: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
-	14, // 23: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
-	16, // 24: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
-	18, // 25: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
-	20, // 26: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
-	22, // 27: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
-	19, // [19:28] is the sub-list for method output_type
-	10, // [10:19] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	26, // 10: rag.GetDocumentHistoryResponse.versions:type_name -> rag.DocumentVersion
+	31, // 11: rag.GetAllDocumentsResponse.documents:type_name -> rag.DocumentListItem
+	4,  // 12: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
+	6,  // 13: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
+	8,  // 14: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
+	11, // 15: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
+	13, // 16: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
+	15, // 17: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
+	17, // 18: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
+	19, // 19: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
+	21, // 20: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
+	24, // 21: rag.RagService.GetDocumentHistory:input_type -> rag.GetDocumentHistoryRequest
+	27, // 22: rag.RagService.RollbackDocument:input_type -> rag.RollbackDocumentRequest
+	29, // 23: rag.RagService.GetAllDocuments:input_type -> rag.GetAllDocumentsRequest
+	5,  // 24: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
+	7,  // 25: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
+	9,  // 26: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
+	12, // 27: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
+	14, // 28: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
+	16, // 29: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
+	18, // 30: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
+	20, // 31: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
+	22, // 32: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
+	25, // 33: rag.RagService.GetDocumentHistory:output_type -> rag.GetDocumentHistoryResponse
+	28, // 34: rag.RagService.RollbackDocument:output_type -> rag.RollbackDocumentResponse
+	30, // 35: rag.RagService.GetAllDocuments:output_type -> rag.GetAllDocumentsResponse
+	24, // [24:36] is the sub-list for method output_type
+	12, // [12:24] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
-func init() { file_api_rag_proto_init() }
-func file_api_rag_proto_init() {
-	if File_api_rag_proto != nil {
+func init() { file_rag_proto_init() }
+func file_rag_proto_init() {
+	if File_rag_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_rag_proto_rawDesc), len(file_api_rag_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rag_proto_rawDesc), len(file_rag_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   26,
+			NumMessages:   34,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_rag_proto_goTypes,
-		DependencyIndexes: file_api_rag_proto_depIdxs,
-		EnumInfos:         file_api_rag_proto_enumTypes,
-		MessageInfos:      file_api_rag_proto_msgTypes,
+		GoTypes:           file_rag_proto_goTypes,
+		DependencyIndexes: file_rag_proto_depIdxs,
+		EnumInfos:         file_rag_proto_enumTypes,
+		MessageInfos:      file_rag_proto_msgTypes,
 	}.Build()
-	File_api_rag_proto = out.File
-	file_api_rag_proto_goTypes = nil
-	file_api_rag_proto_depIdxs = nil
+	File_rag_proto = out.File
+	file_rag_proto_goTypes = nil
+	file_rag_proto_depIdxs = nil
 }

@@ -114,6 +114,7 @@ func main() {
 		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, fw)
 		settingsUsecase        = usecases.NewSettingsUsecase(db, llmClient)
 		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw, settingsUsecase)
+		documentHistoryUsecase = usecases.NewDocumentHistoryUsecase(db)
 	)
 
 	// Создаем TCP listener на порту 50051
@@ -136,6 +137,7 @@ func main() {
 		commitDocumentUsecase,
 		searchDocumentUsecase,
 		settingsUsecase,
+		documentHistoryUsecase,
 	)
 	pb.RegisterRagServiceServer(s, ragServer)
 
