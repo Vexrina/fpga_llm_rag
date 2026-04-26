@@ -113,8 +113,9 @@ func main() {
 		previewDocumentUsecase = usecases.NewPreviewDocumentUsecase(pdfProcessor, nil)
 		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, fw)
 		settingsUsecase        = usecases.NewSettingsUsecase(db, llmClient)
-		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw, settingsUsecase)
+		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw, settingsUsecase, db)
 		documentHistoryUsecase = usecases.NewDocumentHistoryUsecase(db)
+		queryLogsUsecase       = usecases.NewQueryLogsUsecase(db)
 	)
 
 	// Создаем TCP listener на порту 50051
@@ -138,6 +139,7 @@ func main() {
 		searchDocumentUsecase,
 		settingsUsecase,
 		documentHistoryUsecase,
+		queryLogsUsecase,
 	)
 	pb.RegisterRagServiceServer(s, ragServer)
 

@@ -114,9 +114,27 @@ type ComplexityRoot struct {
 		GetDocumentHistory    func(childComplexity int, documentID string, limit *int) int
 		GetDocuments          func(childComplexity int) int
 		GetIndexStats         func(childComplexity int) int
+		GetQueryLogs          func(childComplexity int, page *int, pageSize *int) int
 		GetRagSettings        func(childComplexity int) int
 		GetRagSettingsHistory func(childComplexity int, limit *int) int
 		SearchDocuments       func(childComplexity int, query string, limit *int, threshold *float64) int
+	}
+
+	QueryLogEntry struct {
+		CreatedAt      func(childComplexity int) int
+		EmbeddingModel func(childComplexity int) int
+		Found          func(childComplexity int) int
+		ID             func(childComplexity int) int
+		QueryText      func(childComplexity int) int
+		ResponseTimeMs func(childComplexity int) int
+		ResultsCount   func(childComplexity int) int
+	}
+
+	QueryLogsResult struct {
+		Logs     func(childComplexity int) int
+		Page     func(childComplexity int) int
+		PageSize func(childComplexity int) int
+		Total    func(childComplexity int) int
 	}
 
 	RollbackResult struct {
@@ -161,6 +179,7 @@ type QueryResolver interface {
 	GetRagSettingsHistory(ctx context.Context, limit *int) ([]*SettingsHistoryEntry, error)
 	GetDocumentHistory(ctx context.Context, documentID string, limit *int) ([]*DocumentVersion, error)
 	GetDocuments(ctx context.Context) ([]*DocumentListItem, error)
+	GetQueryLogs(ctx context.Context, page *int, pageSize *int) (*QueryLogsResult, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -504,6 +523,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.GetIndexStats(childComplexity), true
+	case "Query.getQueryLogs":
+		if e.ComplexityRoot.Query.GetQueryLogs == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getQueryLogs_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.GetQueryLogs(childComplexity, args["page"].(*int), args["pageSize"].(*int)), true
 	case "Query.getRagSettings":
 		if e.ComplexityRoot.Query.GetRagSettings == nil {
 			break
@@ -533,6 +563,74 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.SearchDocuments(childComplexity, args["query"].(string), args["limit"].(*int), args["threshold"].(*float64)), true
+
+	case "QueryLogEntry.createdAt":
+		if e.ComplexityRoot.QueryLogEntry.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogEntry.CreatedAt(childComplexity), true
+	case "QueryLogEntry.embeddingModel":
+		if e.ComplexityRoot.QueryLogEntry.EmbeddingModel == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogEntry.EmbeddingModel(childComplexity), true
+	case "QueryLogEntry.found":
+		if e.ComplexityRoot.QueryLogEntry.Found == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogEntry.Found(childComplexity), true
+	case "QueryLogEntry.id":
+		if e.ComplexityRoot.QueryLogEntry.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogEntry.ID(childComplexity), true
+	case "QueryLogEntry.queryText":
+		if e.ComplexityRoot.QueryLogEntry.QueryText == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogEntry.QueryText(childComplexity), true
+	case "QueryLogEntry.responseTimeMs":
+		if e.ComplexityRoot.QueryLogEntry.ResponseTimeMs == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogEntry.ResponseTimeMs(childComplexity), true
+	case "QueryLogEntry.resultsCount":
+		if e.ComplexityRoot.QueryLogEntry.ResultsCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogEntry.ResultsCount(childComplexity), true
+
+	case "QueryLogsResult.logs":
+		if e.ComplexityRoot.QueryLogsResult.Logs == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogsResult.Logs(childComplexity), true
+	case "QueryLogsResult.page":
+		if e.ComplexityRoot.QueryLogsResult.Page == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogsResult.Page(childComplexity), true
+	case "QueryLogsResult.pageSize":
+		if e.ComplexityRoot.QueryLogsResult.PageSize == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogsResult.PageSize(childComplexity), true
+	case "QueryLogsResult.total":
+		if e.ComplexityRoot.QueryLogsResult.Total == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QueryLogsResult.Total(childComplexity), true
 
 	case "RollbackResult.message":
 		if e.ComplexityRoot.RollbackResult.Message == nil {
@@ -812,6 +910,23 @@ type RollbackResult {
   message: String!
   newVersionId: String
 }
+
+type QueryLogEntry {
+  id: Int!
+  queryText: String!
+  embeddingModel: String!
+  responseTimeMs: Int!
+  found: Boolean!
+  resultsCount: Int!
+  createdAt: String!
+}
+
+type QueryLogsResult {
+  logs: [QueryLogEntry!]!
+  total: Int!
+  page: Int!
+  pageSize: Int!
+}
 `, BuiltIn: false},
 	{Name: "../../../graph/query/queryDefs.graphqls", Input: `type Query {
   ask(question: String!): String!
@@ -822,6 +937,7 @@ type RollbackResult {
   getRagSettingsHistory(limit: Int): [SettingsHistoryEntry!]!
   getDocumentHistory(documentId: String!, limit: Int): [DocumentVersion!]!
   getDocuments: [DocumentListItem!]!
+  getQueryLogs(page: Int, pageSize: Int): QueryLogsResult!
 }
 
 type SettingEntry {
@@ -972,6 +1088,22 @@ func (ec *executionContext) field_Query_getDocument_args(ctx context.Context, ra
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getQueryLogs_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "page", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["page"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "pageSize", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["pageSize"] = arg1
 	return args, nil
 }
 
@@ -2746,6 +2878,57 @@ func (ec *executionContext) fieldContext_Query_getDocuments(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_getQueryLogs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_getQueryLogs,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().GetQueryLogs(ctx, fc.Args["page"].(*int), fc.Args["pageSize"].(*int))
+		},
+		nil,
+		ec.marshalNQueryLogsResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐQueryLogsResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_getQueryLogs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "logs":
+				return ec.fieldContext_QueryLogsResult_logs(ctx, field)
+			case "total":
+				return ec.fieldContext_QueryLogsResult_total(ctx, field)
+			case "page":
+				return ec.fieldContext_QueryLogsResult_page(ctx, field)
+			case "pageSize":
+				return ec.fieldContext_QueryLogsResult_pageSize(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryLogsResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getQueryLogs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2849,6 +3032,341 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogEntry_id(ctx context.Context, field graphql.CollectedField, obj *QueryLogEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogEntry_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogEntry_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogEntry_queryText(ctx context.Context, field graphql.CollectedField, obj *QueryLogEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogEntry_queryText,
+		func(ctx context.Context) (any, error) {
+			return obj.QueryText, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogEntry_queryText(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogEntry_embeddingModel(ctx context.Context, field graphql.CollectedField, obj *QueryLogEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogEntry_embeddingModel,
+		func(ctx context.Context) (any, error) {
+			return obj.EmbeddingModel, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogEntry_embeddingModel(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogEntry_responseTimeMs(ctx context.Context, field graphql.CollectedField, obj *QueryLogEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogEntry_responseTimeMs,
+		func(ctx context.Context) (any, error) {
+			return obj.ResponseTimeMs, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogEntry_responseTimeMs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogEntry_found(ctx context.Context, field graphql.CollectedField, obj *QueryLogEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogEntry_found,
+		func(ctx context.Context) (any, error) {
+			return obj.Found, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogEntry_found(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogEntry_resultsCount(ctx context.Context, field graphql.CollectedField, obj *QueryLogEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogEntry_resultsCount,
+		func(ctx context.Context) (any, error) {
+			return obj.ResultsCount, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogEntry_resultsCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogEntry_createdAt(ctx context.Context, field graphql.CollectedField, obj *QueryLogEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogEntry_createdAt,
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogEntry_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogsResult_logs(ctx context.Context, field graphql.CollectedField, obj *QueryLogsResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogsResult_logs,
+		func(ctx context.Context) (any, error) {
+			return obj.Logs, nil
+		},
+		nil,
+		ec.marshalNQueryLogEntry2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐQueryLogEntryᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogsResult_logs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogsResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_QueryLogEntry_id(ctx, field)
+			case "queryText":
+				return ec.fieldContext_QueryLogEntry_queryText(ctx, field)
+			case "embeddingModel":
+				return ec.fieldContext_QueryLogEntry_embeddingModel(ctx, field)
+			case "responseTimeMs":
+				return ec.fieldContext_QueryLogEntry_responseTimeMs(ctx, field)
+			case "found":
+				return ec.fieldContext_QueryLogEntry_found(ctx, field)
+			case "resultsCount":
+				return ec.fieldContext_QueryLogEntry_resultsCount(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_QueryLogEntry_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryLogEntry", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogsResult_total(ctx context.Context, field graphql.CollectedField, obj *QueryLogsResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogsResult_total,
+		func(ctx context.Context) (any, error) {
+			return obj.Total, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogsResult_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogsResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogsResult_page(ctx context.Context, field graphql.CollectedField, obj *QueryLogsResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogsResult_page,
+		func(ctx context.Context) (any, error) {
+			return obj.Page, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogsResult_page(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogsResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryLogsResult_pageSize(ctx context.Context, field graphql.CollectedField, obj *QueryLogsResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QueryLogsResult_pageSize,
+		func(ctx context.Context) (any, error) {
+			return obj.PageSize, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QueryLogsResult_pageSize(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryLogsResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5610,6 +6128,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getQueryLogs":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getQueryLogs(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -5618,6 +6158,129 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queryLogEntryImplementors = []string{"QueryLogEntry"}
+
+func (ec *executionContext) _QueryLogEntry(ctx context.Context, sel ast.SelectionSet, obj *QueryLogEntry) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryLogEntryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryLogEntry")
+		case "id":
+			out.Values[i] = ec._QueryLogEntry_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "queryText":
+			out.Values[i] = ec._QueryLogEntry_queryText(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "embeddingModel":
+			out.Values[i] = ec._QueryLogEntry_embeddingModel(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "responseTimeMs":
+			out.Values[i] = ec._QueryLogEntry_responseTimeMs(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "found":
+			out.Values[i] = ec._QueryLogEntry_found(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "resultsCount":
+			out.Values[i] = ec._QueryLogEntry_resultsCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._QueryLogEntry_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queryLogsResultImplementors = []string{"QueryLogsResult"}
+
+func (ec *executionContext) _QueryLogsResult(ctx context.Context, sel ast.SelectionSet, obj *QueryLogsResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryLogsResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryLogsResult")
+		case "logs":
+			out.Values[i] = ec._QueryLogsResult_logs(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "total":
+			out.Values[i] = ec._QueryLogsResult_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "page":
+			out.Values[i] = ec._QueryLogsResult_page(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pageSize":
+			out.Values[i] = ec._QueryLogsResult_pageSize(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6391,6 +7054,46 @@ func (ec *executionContext) marshalNPreviewDocumentResult2ᚖgraphqlᚑgateway�
 		return graphql.Null
 	}
 	return ec._PreviewDocumentResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNQueryLogEntry2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐQueryLogEntryᚄ(ctx context.Context, sel ast.SelectionSet, v []*QueryLogEntry) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNQueryLogEntry2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐQueryLogEntry(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNQueryLogEntry2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐQueryLogEntry(ctx context.Context, sel ast.SelectionSet, v *QueryLogEntry) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QueryLogEntry(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNQueryLogsResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐQueryLogsResult(ctx context.Context, sel ast.SelectionSet, v QueryLogsResult) graphql.Marshaler {
+	return ec._QueryLogsResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQueryLogsResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐQueryLogsResult(ctx context.Context, sel ast.SelectionSet, v *QueryLogsResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QueryLogsResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNRollbackResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐRollbackResult(ctx context.Context, sel ast.SelectionSet, v RollbackResult) graphql.Marshaler {

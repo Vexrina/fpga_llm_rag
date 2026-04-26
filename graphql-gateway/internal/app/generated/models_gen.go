@@ -100,6 +100,23 @@ type PreviewDocumentResult struct {
 type Query struct {
 }
 
+type QueryLogEntry struct {
+	ID             int    `json:"id"`
+	QueryText      string `json:"queryText"`
+	EmbeddingModel string `json:"embeddingModel"`
+	ResponseTimeMs int    `json:"responseTimeMs"`
+	Found          bool   `json:"found"`
+	ResultsCount   int    `json:"resultsCount"`
+	CreatedAt      string `json:"createdAt"`
+}
+
+type QueryLogsResult struct {
+	Logs     []*QueryLogEntry `json:"logs"`
+	Total    int              `json:"total"`
+	Page     int              `json:"page"`
+	PageSize int              `json:"pageSize"`
+}
+
 type RollbackResult struct {
 	Success      bool    `json:"success"`
 	Message      string  `json:"message"`

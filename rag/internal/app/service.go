@@ -23,6 +23,7 @@ type (
 		getIndexStatUsecase    GetIndexStatUsecase
 		settingsUsecase        SettingsUsecase
 		documentHistoryUsecase DocumentHistoryUsecase
+		queryLogsUsecase       QueryLogsUsecase
 	}
 
 	AddDocumentUsecase interface {
@@ -57,6 +58,9 @@ type (
 		RollbackDocument(ctx context.Context, req *utils.RollbackDocumentDomain) (*pb.RollbackDocumentResponse, error)
 		GetAllDocuments(ctx context.Context) ([]*pb.DocumentListItem, error)
 	}
+	QueryLogsUsecase interface {
+		GetQueryLogs(ctx context.Context, page, pageSize int) (*pb.GetQueryLogsResponse, error)
+	}
 )
 
 // NewRagServer создает новый экземпляр RagServer
@@ -68,6 +72,7 @@ func NewRagServer(
 	searchDocumentUsecase SearchDocumentsUsecase,
 	settingsUsecase SettingsUsecase,
 	documentHistoryUsecase DocumentHistoryUsecase,
+	queryLogsUsecase QueryLogsUsecase,
 ) *RagServer {
 	return &RagServer{
 		db:                     database,
@@ -77,5 +82,6 @@ func NewRagServer(
 		searchDocumentUsecase:  searchDocumentUsecase,
 		settingsUsecase:        settingsUsecase,
 		documentHistoryUsecase: documentHistoryUsecase,
+		queryLogsUsecase:       queryLogsUsecase,
 	}
 }

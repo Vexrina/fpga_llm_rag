@@ -3,6 +3,8 @@ package usecases
 import (
 	"context"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 
@@ -21,27 +23,37 @@ type SearchDocumentsRepository interface {
 
 type SettingsProvider interface {
 	GetComparisonMethod(ctx context.Context) (utils.ComparisonMethod, error)
+	GetEmbeddingModel(ctx context.Context) (string, error)
+}
+
+type QueryLogger interface {
+	InsertQueryLog(ctx context.Context, params repository.QueryLogParams) error
 }
 
 type SearchDocumentsUsecase struct {
 	repository        SearchDocumentsRepository
 	floatWeaverClient floatweaver.EmbedServiceClient
 	settingsProvider  SettingsProvider
+	queryLogger       QueryLogger
 }
 
 func NewSearchDocumentsUsecase(
 	repository SearchDocumentsRepository,
 	floatWeaverClient floatweaver.EmbedServiceClient,
 	settingsProvider SettingsProvider,
+	queryLogger QueryLogger,
 ) *SearchDocumentsUsecase {
 	return &SearchDocumentsUsecase{
 		repository:        repository,
 		floatWeaverClient: floatWeaverClient,
 		settingsProvider:  settingsProvider,
+		queryLogger:       queryLogger,
 	}
 }
 
 func (u *SearchDocumentsUsecase) SearchDocuments(ctx context.Context, domain *utils.SearchDocumentDomain) (*pb.SearchResponse, error) {
+	startTime := time.Now()
+
 	embed, err := u.floatWeaverClient.Embed(ctx, &floatweaver.EmbedRequest{Text: domain.Query})
 	if err != nil {
 		return nil, fmt.Errorf("floatWeaverClient.Embed got error: %w", err)
@@ -81,6 +93,31 @@ func (u *SearchDocumentsUsecase) SearchDocuments(ctx context.Context, domain *ut
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	responseTimeMs := int(time.Since(startTime).Milliseconds())
+	found := totalFound > 0
+
+	embeddingModel := "unknown"
+	if u.settingsProvider != nil {
+		if model, err := u.settingsProvider.GetEmbeddingModel(ctx); err == nil {
+			embeddingModel = model
+		}
+	}
+
+	if u.queryLogger != nil {
+		go func() {
+			logCtx := context.Background()
+			if err := u.queryLogger.InsertQueryLog(logCtx, repository.QueryLogParams{
+				QueryText:      domain.Query,
+				EmbeddingModel: embeddingModel,
+				ResponseTimeMs: responseTimeMs,
+				Found:          found,
+				ResultsCount:   int(totalFound),
+			}); err != nil {
+				log.Printf("ERROR: failed to insert query log: %v", err)
+			}
+		}()
 	}
 
 	return &pb.SearchResponse{

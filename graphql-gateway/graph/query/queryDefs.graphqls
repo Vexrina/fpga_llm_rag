@@ -7,6 +7,7 @@ type Query {
   getRagSettingsHistory(limit: Int): [SettingsHistoryEntry!]!
   getDocumentHistory(documentId: String!, limit: Int): [DocumentVersion!]!
   getDocuments: [DocumentListItem!]!
+  getQueryLogs(page: Int, pageSize: Int): QueryLogsResult!
 }
 
 type SettingEntry {

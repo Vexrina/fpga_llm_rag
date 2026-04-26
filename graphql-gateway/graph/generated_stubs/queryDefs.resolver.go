@@ -51,6 +51,11 @@ func (r *queryResolver) GetDocuments(ctx context.Context) ([]*generated.Document
 	panic(fmt.Errorf("not implemented: GetDocuments - getDocuments"))
 }
 
+// GetQueryLogs is the resolver for the getQueryLogs field.
+func (r *queryResolver) GetQueryLogs(ctx context.Context, page *int, pageSize *int) (*generated.QueryLogsResult, error) {
+	panic(fmt.Errorf("not implemented: GetQueryLogs - getQueryLogs"))
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

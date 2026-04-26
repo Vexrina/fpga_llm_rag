@@ -165,6 +165,42 @@ func (r *queryResolver) GetDocuments(ctx context.Context) ([]*generated.Document
 	return result, nil
 }
 
+// GetQueryLogs is the resolver for the getQueryLogs field.
+func (r *queryResolver) GetQueryLogs(ctx context.Context, page *int, pageSize *int) (*generated.QueryLogsResult, error) {
+	p := int32(1)
+	if page != nil {
+		p = int32(*page)
+	}
+	ps := int32(20)
+	if pageSize != nil {
+		ps = int32(*pageSize)
+	}
+
+	result, err := r.RAGClient.GetQueryLogs(ctx, p, ps)
+	if err != nil {
+		return nil, err
+	}
+
+	logs := make([]*generated.QueryLogEntry, 0, len(result.Logs))
+	for _, l := range result.Logs {
+		logs = append(logs, &generated.QueryLogEntry{
+			ID:             int(l.ID),
+			QueryText:      l.QueryText,
+			EmbeddingModel: l.EmbeddingModel,
+			ResponseTimeMs: int(l.ResponseTimeMs),
+			Found:          l.Found,
+			ResultsCount:   int(l.ResultsCount),
+			CreatedAt:      l.CreatedAt,
+		})
+	}
+	return &generated.QueryLogsResult{
+		Logs:     logs,
+		Total:    int(result.Total),
+		Page:     int(result.Page),
+		PageSize: int(result.PageSize),
+	}, nil
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

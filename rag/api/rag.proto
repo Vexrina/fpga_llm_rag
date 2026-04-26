@@ -41,6 +41,9 @@ service RagService {
 
   // Получить список всех документов
   rpc GetAllDocuments(GetAllDocumentsRequest) returns (GetAllDocumentsResponse);
+
+  // Получить логи запросов с пагинацией
+  rpc GetQueryLogs(GetQueryLogsRequest) returns (GetQueryLogsResponse);
 }
 
 // Тип источника документа
@@ -256,4 +259,29 @@ message DocumentListItem {
   bool indexed = 4;
   int32 size_bytes = 5;
   int32 chunks = 6;
+}
+
+// Запрос на получение логов запросов
+message GetQueryLogsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+// Ответ с логами запросов
+message GetQueryLogsResponse {
+  repeated QueryLogEntry logs = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// Запись лога запроса
+message QueryLogEntry {
+  int32 id = 1;
+  string query_text = 2;
+  string embedding_model = 3;
+  int32 response_time_ms = 4;
+  bool found = 5;
+  int32 results_count = 6;
+  string created_at = 7;
 } 

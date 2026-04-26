@@ -281,3 +281,50 @@ export async function getDocumentByIdAPI(id: string): Promise<DocumentDetail | n
   const result = await graphqlRequest<GetDocumentResult>(query, { id })
   return result.getDocument
 }
+
+export interface QueryLogEntry {
+  id: number
+  queryText: string
+  embeddingModel: string
+  responseTimeMs: number
+  found: boolean
+  resultsCount: number
+  createdAt: string
+}
+
+export interface GetQueryLogsResult {
+  getQueryLogs: {
+    logs: QueryLogEntry[]
+    total: number
+    page: number
+    pageSize: number
+  }
+}
+
+export async function getQueryLogsAPI(page: number = 1, pageSize: number = 20): Promise<{
+  logs: QueryLogEntry[]
+  total: number
+  page: number
+  pageSize: number
+}> {
+  const query = `
+    query GetQueryLogs($page: Int, $pageSize: Int) {
+      getQueryLogs(page: $page, pageSize: $pageSize) {
+        logs {
+          id
+          queryText
+          embeddingModel
+          responseTimeMs
+          found
+          resultsCount
+          createdAt
+        }
+        total
+        page
+        pageSize
+      }
+    }
+  `
+  const result = await graphqlRequest<GetQueryLogsResult>(query, { page, pageSize })
+  return result.getQueryLogs
+}

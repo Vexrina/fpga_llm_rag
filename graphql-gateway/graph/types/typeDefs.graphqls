@@ -83,3 +83,20 @@ type RollbackResult {
   message: String!
   newVersionId: String
 }
+
+type QueryLogEntry {
+  id: Int!
+  queryText: String!
+  embeddingModel: String!
+  responseTimeMs: Int!
+  found: Boolean!
+  resultsCount: Int!
+  createdAt: String!
+}
+
+type QueryLogsResult {
+  logs: [QueryLogEntry!]!
+  total: Int!
+  page: Int!
+  pageSize: Int!
+}

@@ -1,17 +1,16 @@
 import { useState, useEffect, type ChangeEvent } from 'react'
-import type { RagSettings, HistoryEntry, LogEntry, KnowledgeDoc, DocumentVersion } from '../types'
+import type { RagSettings, HistoryEntry, KnowledgeDoc, DocumentVersion } from '../types'
 import {
   getRagSettings,
   saveRagSettings,
   testRagConnection,
   getHistory,
-  getLogs,
   getDocuments,
   getDocument,
   getDocumentHistory,
   rollbackDocument,
 } from '../mocks/rag'
-import { previewDocument, commitDocument } from '../api/graphql'
+import { previewDocument, commitDocument, getQueryLogsAPI, type QueryLogEntry } from '../api/graphql'
 import Tooltip from '../components/Tooltip'
 
 type Tab = 'settings' | 'history' | 'logs' | 'knowledge'
@@ -327,16 +326,43 @@ function HistoryTab() {
 }
 
 function LogsTab() {
-  const [logs, setLogs] = useState<LogEntry[]>([])
+  const [logs, setLogs] = useState<QueryLogEntry[]>([])
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [pageSize] = useState(20)
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  const loadLogs = async (pageNum: number, append: boolean = false) => {
+    if (append) {
+      setIsLoadingMore(true)
+    } else {
+      setIsLoading(true)
+    }
+    try {
+      const result = await getQueryLogsAPI(pageNum, pageSize)
+      if (append) {
+        setLogs((prev) => [...prev, ...result.logs])
+      } else {
+        setLogs(result.logs)
+      }
+      setTotal(result.total)
+      setPage(result.page)
+    } catch (err) {
+      console.error('Failed to load logs:', err)
+    } finally {
+      setIsLoading(false)
+      setIsLoadingMore(false)
+    }
+  }
 
   useEffect(() => {
-    getLogs()
-      .then((data) => setLogs(data))
-      .finally(() => setIsLoading(false))
+    loadLogs(1)
   }, [])
 
-  if (isLoading) {
+  const hasMore = page * pageSize < total
+
+  if (isLoading && logs.length === 0) {
     return (
       <div className="text-center py-16">
         <div className="animate-pulse text-gray-400">Загрузка логов...</div>
@@ -346,28 +372,30 @@ function LogsTab() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="text-sm text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">
+        Всего записей: {total}
+      </div>
       <table className="w-full text-sm">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Время</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Запрос</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Top K</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Модель</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Время ответа</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Статус</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-600">Найдено</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {logs.map((log) => (
             <tr key={log.id} className="hover:bg-gray-50">
               <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                {log.timestamp.toLocaleString('ru-RU')}
+                {new Date(log.createdAt).toLocaleString('ru-RU')}
               </td>
-              <td className="px-4 py-3 max-w-[200px] truncate" title={log.userQuery}>
-                {log.userQuery}
+              <td className="px-4 py-3 max-w-[200px] truncate" title={log.queryText}>
+                {log.queryText}
               </td>
-              <td className="px-4 py-3">{log.topK}</td>
-              <td className="px-4 py-3 text-gray-600">{log.model}</td>
+              <td className="px-4 py-3 text-gray-600">{log.embeddingModel}</td>
               <td className="px-4 py-3">{log.responseTimeMs} мс</td>
               <td className="px-4 py-3">
                 <span
@@ -380,10 +408,22 @@ function LogsTab() {
                   {log.found ? 'Найдено' : 'Не найдено'}
                 </span>
               </td>
+              <td className="px-4 py-3 text-gray-600">{log.resultsCount}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      {hasMore && (
+        <div className="p-4 border-t border-gray-200 flex justify-center">
+          <button
+            onClick={() => loadLogs(page + 1, true)}
+            disabled={isLoadingMore}
+            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoadingMore ? 'Загрузка...' : 'Загрузить ещё'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -395,7 +435,6 @@ function KnowledgeTab() {
   const [isDocLoading, setIsDocLoading] = useState(false)
 
   const [docHistory, setDocHistory] = useState<DocumentVersion[]>([])
-  const [isHistoryLoading, setIsHistoryLoading] = useState(false)
   const [isRollingBack, setIsRollingBack] = useState<number | null>(null)
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)

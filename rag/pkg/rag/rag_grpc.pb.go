@@ -31,6 +31,7 @@ const (
 	RagService_GetDocumentHistory_FullMethodName    = "/rag.RagService/GetDocumentHistory"
 	RagService_RollbackDocument_FullMethodName      = "/rag.RagService/RollbackDocument"
 	RagService_GetAllDocuments_FullMethodName       = "/rag.RagService/GetAllDocuments"
+	RagService_GetQueryLogs_FullMethodName          = "/rag.RagService/GetQueryLogs"
 )
 
 // RagServiceClient is the client API for RagService service.
@@ -63,6 +64,8 @@ type RagServiceClient interface {
 	RollbackDocument(ctx context.Context, in *RollbackDocumentRequest, opts ...grpc.CallOption) (*RollbackDocumentResponse, error)
 	// Получить список всех документов
 	GetAllDocuments(ctx context.Context, in *GetAllDocumentsRequest, opts ...grpc.CallOption) (*GetAllDocumentsResponse, error)
+	// Получить логи запросов с пагинацией
+	GetQueryLogs(ctx context.Context, in *GetQueryLogsRequest, opts ...grpc.CallOption) (*GetQueryLogsResponse, error)
 }
 
 type ragServiceClient struct {
@@ -193,6 +196,16 @@ func (c *ragServiceClient) GetAllDocuments(ctx context.Context, in *GetAllDocume
 	return out, nil
 }
 
+func (c *ragServiceClient) GetQueryLogs(ctx context.Context, in *GetQueryLogsRequest, opts ...grpc.CallOption) (*GetQueryLogsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetQueryLogsResponse)
+	err := c.cc.Invoke(ctx, RagService_GetQueryLogs_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RagServiceServer is the server API for RagService service.
 // All implementations must embed UnimplementedRagServiceServer
 // for forward compatibility.
@@ -223,6 +236,8 @@ type RagServiceServer interface {
 	RollbackDocument(context.Context, *RollbackDocumentRequest) (*RollbackDocumentResponse, error)
 	// Получить список всех документов
 	GetAllDocuments(context.Context, *GetAllDocumentsRequest) (*GetAllDocumentsResponse, error)
+	// Получить логи запросов с пагинацией
+	GetQueryLogs(context.Context, *GetQueryLogsRequest) (*GetQueryLogsResponse, error)
 	mustEmbedUnimplementedRagServiceServer()
 }
 
@@ -268,6 +283,9 @@ func (UnimplementedRagServiceServer) RollbackDocument(context.Context, *Rollback
 }
 func (UnimplementedRagServiceServer) GetAllDocuments(context.Context, *GetAllDocumentsRequest) (*GetAllDocumentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllDocuments not implemented")
+}
+func (UnimplementedRagServiceServer) GetQueryLogs(context.Context, *GetQueryLogsRequest) (*GetQueryLogsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetQueryLogs not implemented")
 }
 func (UnimplementedRagServiceServer) mustEmbedUnimplementedRagServiceServer() {}
 func (UnimplementedRagServiceServer) testEmbeddedByValue()                    {}
@@ -506,6 +524,24 @@ func _RagService_GetAllDocuments_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RagService_GetQueryLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetQueryLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).GetQueryLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_GetQueryLogs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).GetQueryLogs(ctx, req.(*GetQueryLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RagService_ServiceDesc is the grpc.ServiceDesc for RagService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -560,6 +596,10 @@ var RagService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllDocuments",
 			Handler:    _RagService_GetAllDocuments_Handler,
+		},
+		{
+			MethodName: "GetQueryLogs",
+			Handler:    _RagService_GetQueryLogs_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

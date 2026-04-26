@@ -324,3 +324,49 @@ func (c *RAGClient) RollbackDocument(ctx context.Context, documentID string, ver
 		NewVersionID: resp.NewVersionId,
 	}, nil
 }
+
+type QueryLogEntry struct {
+	ID             int32
+	QueryText      string
+	EmbeddingModel string
+	ResponseTimeMs int32
+	Found          bool
+	ResultsCount   int32
+	CreatedAt      string
+}
+
+type QueryLogsResult struct {
+	Logs     []QueryLogEntry
+	Total    int32
+	Page     int32
+	PageSize int32
+}
+
+func (c *RAGClient) GetQueryLogs(ctx context.Context, page, pageSize int32) (*QueryLogsResult, error) {
+	resp, err := c.client.GetQueryLogs(ctx, &pb.GetQueryLogsRequest{
+		Page:     page,
+		PageSize: pageSize,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("GetQueryLogs RPC failed: %w", err)
+	}
+
+	entries := make([]QueryLogEntry, 0, len(resp.Logs))
+	for _, l := range resp.Logs {
+		entries = append(entries, QueryLogEntry{
+			ID:             l.Id,
+			QueryText:      l.QueryText,
+			EmbeddingModel: l.EmbeddingModel,
+			ResponseTimeMs: l.ResponseTimeMs,
+			Found:          l.Found,
+			ResultsCount:   l.ResultsCount,
+			CreatedAt:      l.CreatedAt,
+		})
+	}
+	return &QueryLogsResult{
+		Logs:     entries,
+		Total:    resp.Total,
+		Page:     resp.Page,
+		PageSize: resp.PageSize,
+	}, nil
+}

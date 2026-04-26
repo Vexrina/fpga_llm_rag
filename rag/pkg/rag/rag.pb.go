@@ -1888,6 +1888,221 @@ func (x *DocumentListItem) GetChunks() int32 {
 	return 0
 }
 
+// Запрос на получение логов запросов
+type GetQueryLogsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetQueryLogsRequest) Reset() {
+	*x = GetQueryLogsRequest{}
+	mi := &file_api_rag_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetQueryLogsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetQueryLogsRequest) ProtoMessage() {}
+
+func (x *GetQueryLogsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetQueryLogsRequest.ProtoReflect.Descriptor instead.
+func (*GetQueryLogsRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *GetQueryLogsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetQueryLogsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// Ответ с логами запросов
+type GetQueryLogsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Logs          []*QueryLogEntry       `protobuf:"bytes,1,rep,name=logs,proto3" json:"logs,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetQueryLogsResponse) Reset() {
+	*x = GetQueryLogsResponse{}
+	mi := &file_api_rag_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetQueryLogsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetQueryLogsResponse) ProtoMessage() {}
+
+func (x *GetQueryLogsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetQueryLogsResponse.ProtoReflect.Descriptor instead.
+func (*GetQueryLogsResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *GetQueryLogsResponse) GetLogs() []*QueryLogEntry {
+	if x != nil {
+		return x.Logs
+	}
+	return nil
+}
+
+func (x *GetQueryLogsResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *GetQueryLogsResponse) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetQueryLogsResponse) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// Запись лога запроса
+type QueryLogEntry struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	QueryText      string                 `protobuf:"bytes,2,opt,name=query_text,json=queryText,proto3" json:"query_text,omitempty"`
+	EmbeddingModel string                 `protobuf:"bytes,3,opt,name=embedding_model,json=embeddingModel,proto3" json:"embedding_model,omitempty"`
+	ResponseTimeMs int32                  `protobuf:"varint,4,opt,name=response_time_ms,json=responseTimeMs,proto3" json:"response_time_ms,omitempty"`
+	Found          bool                   `protobuf:"varint,5,opt,name=found,proto3" json:"found,omitempty"`
+	ResultsCount   int32                  `protobuf:"varint,6,opt,name=results_count,json=resultsCount,proto3" json:"results_count,omitempty"`
+	CreatedAt      string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *QueryLogEntry) Reset() {
+	*x = QueryLogEntry{}
+	mi := &file_api_rag_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueryLogEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryLogEntry) ProtoMessage() {}
+
+func (x *QueryLogEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryLogEntry.ProtoReflect.Descriptor instead.
+func (*QueryLogEntry) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *QueryLogEntry) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *QueryLogEntry) GetQueryText() string {
+	if x != nil {
+		return x.QueryText
+	}
+	return ""
+}
+
+func (x *QueryLogEntry) GetEmbeddingModel() string {
+	if x != nil {
+		return x.EmbeddingModel
+	}
+	return ""
+}
+
+func (x *QueryLogEntry) GetResponseTimeMs() int32 {
+	if x != nil {
+		return x.ResponseTimeMs
+	}
+	return 0
+}
+
+func (x *QueryLogEntry) GetFound() bool {
+	if x != nil {
+		return x.Found
+	}
+	return false
+}
+
+func (x *QueryLogEntry) GetResultsCount() int32 {
+	if x != nil {
+		return x.ResultsCount
+	}
+	return 0
+}
+
+func (x *QueryLogEntry) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
 var File_api_rag_proto protoreflect.FileDescriptor
 
 const file_api_rag_proto_rawDesc = "" +
@@ -2033,7 +2248,25 @@ const file_api_rag_proto_rawDesc = "" +
 	"\aindexed\x18\x04 \x01(\bR\aindexed\x12\x1d\n" +
 	"\n" +
 	"size_bytes\x18\x05 \x01(\x05R\tsizeBytes\x12\x16\n" +
-	"\x06chunks\x18\x06 \x01(\x05R\x06chunks*q\n" +
+	"\x06chunks\x18\x06 \x01(\x05R\x06chunks\"F\n" +
+	"\x13GetQueryLogsRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"\x85\x01\n" +
+	"\x14GetQueryLogsResponse\x12&\n" +
+	"\x04logs\x18\x01 \x03(\v2\x12.rag.QueryLogEntryR\x04logs\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\xeb\x01\n" +
+	"\rQueryLogEntry\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1d\n" +
+	"\n" +
+	"query_text\x18\x02 \x01(\tR\tqueryText\x12'\n" +
+	"\x0fembedding_model\x18\x03 \x01(\tR\x0eembeddingModel\x12(\n" +
+	"\x10response_time_ms\x18\x04 \x01(\x05R\x0eresponseTimeMs\x12\x14\n" +
+	"\x05found\x18\x05 \x01(\bR\x05found\x12#\n" +
+	"\rresults_count\x18\x06 \x01(\x05R\fresultsCount\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAt*q\n" +
 	"\x12DocumentSourceType\x12\x1b\n" +
 	"\x17SOURCE_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10SOURCE_TYPE_TEXT\x10\x01\x12\x13\n" +
@@ -2044,7 +2277,7 @@ const file_api_rag_proto_rawDesc = "" +
 	"\x18COMPARISON_METHOD_COSINE\x10\x01\x12\x19\n" +
 	"\x15COMPARISON_METHOD_DOT\x10\x02\x12\x1f\n" +
 	"\x1bCOMPARISON_METHOD_EUCLIDEAN\x10\x03\x12\x18\n" +
-	"\x14COMPARISON_METHOD_L1\x10\x042\xab\a\n" +
+	"\x14COMPARISON_METHOD_L1\x10\x042\xf0\a\n" +
 	"\n" +
 	"RagService\x12L\n" +
 	"\x0fPreviewDocument\x12\x1b.rag.PreviewDocumentRequest\x1a\x1c.rag.PreviewDocumentResponse\x12I\n" +
@@ -2058,7 +2291,8 @@ const file_api_rag_proto_rawDesc = "" +
 	"\x15GetRagSettingsHistory\x12!.rag.GetRagSettingsHistoryRequest\x1a\".rag.GetRagSettingsHistoryResponse\x12U\n" +
 	"\x12GetDocumentHistory\x12\x1e.rag.GetDocumentHistoryRequest\x1a\x1f.rag.GetDocumentHistoryResponse\x12O\n" +
 	"\x10RollbackDocument\x12\x1c.rag.RollbackDocumentRequest\x1a\x1d.rag.RollbackDocumentResponse\x12L\n" +
-	"\x0fGetAllDocuments\x12\x1b.rag.GetAllDocumentsRequest\x1a\x1c.rag.GetAllDocumentsResponseB\aZ\x05./ragb\x06proto3"
+	"\x0fGetAllDocuments\x12\x1b.rag.GetAllDocumentsRequest\x1a\x1c.rag.GetAllDocumentsResponse\x12C\n" +
+	"\fGetQueryLogs\x12\x18.rag.GetQueryLogsRequest\x1a\x19.rag.GetQueryLogsResponseB\aZ\x05./ragb\x06proto3"
 
 var (
 	file_api_rag_proto_rawDescOnce sync.Once
@@ -2073,7 +2307,7 @@ func file_api_rag_proto_rawDescGZIP() []byte {
 }
 
 var file_api_rag_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_api_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 34)
+var file_api_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
 var file_api_rag_proto_goTypes = []any{
 	(DocumentSourceType)(0),               // 0: rag.DocumentSourceType
 	(ComparisonMethod)(0),                 // 1: rag.ComparisonMethod
@@ -2107,53 +2341,59 @@ var file_api_rag_proto_goTypes = []any{
 	(*GetAllDocumentsRequest)(nil),        // 29: rag.GetAllDocumentsRequest
 	(*GetAllDocumentsResponse)(nil),       // 30: rag.GetAllDocumentsResponse
 	(*DocumentListItem)(nil),              // 31: rag.DocumentListItem
-	nil,                                   // 32: rag.AddDocumentRequest.MetadataEntry
-	nil,                                   // 33: rag.CommitDocumentRequest.MetadataEntry
-	nil,                                   // 34: rag.DocumentResult.MetadataEntry
-	nil,                                   // 35: rag.GetRagSettingsResponse.SettingsEntry
+	(*GetQueryLogsRequest)(nil),           // 32: rag.GetQueryLogsRequest
+	(*GetQueryLogsResponse)(nil),          // 33: rag.GetQueryLogsResponse
+	(*QueryLogEntry)(nil),                 // 34: rag.QueryLogEntry
+	nil,                                   // 35: rag.AddDocumentRequest.MetadataEntry
+	nil,                                   // 36: rag.CommitDocumentRequest.MetadataEntry
+	nil,                                   // 37: rag.DocumentResult.MetadataEntry
+	nil,                                   // 38: rag.GetRagSettingsResponse.SettingsEntry
 }
 var file_api_rag_proto_depIdxs = []int32{
-	32, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
+	35, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
 	0,  // 1: rag.AddDocumentRequest.source_type:type_name -> rag.DocumentSourceType
 	0,  // 2: rag.PreviewDocumentRequest.source_type:type_name -> rag.DocumentSourceType
-	33, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
+	36, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
 	1,  // 4: rag.SearchRequest.comparison_method:type_name -> rag.ComparisonMethod
 	10, // 5: rag.SearchResponse.results:type_name -> rag.DocumentResult
-	34, // 6: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
+	37, // 6: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
 	10, // 7: rag.GetDocumentResponse.document:type_name -> rag.DocumentResult
-	35, // 8: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
+	38, // 8: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
 	23, // 9: rag.GetRagSettingsHistoryResponse.entries:type_name -> rag.SettingsHistoryEntry
 	26, // 10: rag.GetDocumentHistoryResponse.versions:type_name -> rag.DocumentVersion
 	31, // 11: rag.GetAllDocumentsResponse.documents:type_name -> rag.DocumentListItem
-	4,  // 12: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
-	6,  // 13: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
-	8,  // 14: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
-	11, // 15: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
-	13, // 16: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
-	15, // 17: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
-	17, // 18: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
-	19, // 19: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
-	21, // 20: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
-	24, // 21: rag.RagService.GetDocumentHistory:input_type -> rag.GetDocumentHistoryRequest
-	27, // 22: rag.RagService.RollbackDocument:input_type -> rag.RollbackDocumentRequest
-	29, // 23: rag.RagService.GetAllDocuments:input_type -> rag.GetAllDocumentsRequest
-	5,  // 24: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
-	7,  // 25: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
-	9,  // 26: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
-	12, // 27: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
-	14, // 28: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
-	16, // 29: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
-	18, // 30: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
-	20, // 31: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
-	22, // 32: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
-	25, // 33: rag.RagService.GetDocumentHistory:output_type -> rag.GetDocumentHistoryResponse
-	28, // 34: rag.RagService.RollbackDocument:output_type -> rag.RollbackDocumentResponse
-	30, // 35: rag.RagService.GetAllDocuments:output_type -> rag.GetAllDocumentsResponse
-	24, // [24:36] is the sub-list for method output_type
-	12, // [12:24] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	34, // 12: rag.GetQueryLogsResponse.logs:type_name -> rag.QueryLogEntry
+	4,  // 13: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
+	6,  // 14: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
+	8,  // 15: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
+	11, // 16: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
+	13, // 17: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
+	15, // 18: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
+	17, // 19: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
+	19, // 20: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
+	21, // 21: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
+	24, // 22: rag.RagService.GetDocumentHistory:input_type -> rag.GetDocumentHistoryRequest
+	27, // 23: rag.RagService.RollbackDocument:input_type -> rag.RollbackDocumentRequest
+	29, // 24: rag.RagService.GetAllDocuments:input_type -> rag.GetAllDocumentsRequest
+	32, // 25: rag.RagService.GetQueryLogs:input_type -> rag.GetQueryLogsRequest
+	5,  // 26: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
+	7,  // 27: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
+	9,  // 28: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
+	12, // 29: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
+	14, // 30: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
+	16, // 31: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
+	18, // 32: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
+	20, // 33: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
+	22, // 34: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
+	25, // 35: rag.RagService.GetDocumentHistory:output_type -> rag.GetDocumentHistoryResponse
+	28, // 36: rag.RagService.RollbackDocument:output_type -> rag.RollbackDocumentResponse
+	30, // 37: rag.RagService.GetAllDocuments:output_type -> rag.GetAllDocumentsResponse
+	33, // 38: rag.RagService.GetQueryLogs:output_type -> rag.GetQueryLogsResponse
+	26, // [26:39] is the sub-list for method output_type
+	13, // [13:26] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_api_rag_proto_init() }
@@ -2167,7 +2407,7 @@ func file_api_rag_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_rag_proto_rawDesc), len(file_api_rag_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   34,
+			NumMessages:   37,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

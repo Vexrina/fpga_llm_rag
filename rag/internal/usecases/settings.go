@@ -109,3 +109,11 @@ func (u *SettingsUsecase) GetComparisonMethod(ctx context.Context) (utils.Compar
 		return utils.ComparisonMethodCosine, nil
 	}
 }
+
+func (u *SettingsUsecase) GetEmbeddingModel(ctx context.Context) (string, error) {
+	model, err := u.repository.GetSetting(ctx, "model")
+	if err != nil {
+		return "mxbai-embed-large", nil
+	}
+	return model, nil
+}
