@@ -10,7 +10,7 @@ import {
   getDocumentHistory,
   rollbackDocument,
 } from '../mocks/rag'
-import { previewDocument, commitDocument, getQueryLogsAPI, type QueryLogEntry } from '../api/graphql'
+import { commitDocument, getQueryLogsAPI, type QueryLogEntry, discoverLinks, scrapeUrls } from '../api/graphql'
 import Tooltip from '../components/Tooltip'
 
 type Tab = 'settings' | 'history' | 'logs' | 'knowledge'
@@ -441,11 +441,20 @@ function KnowledgeTab() {
   const [newDocTitle, setNewDocTitle] = useState('')
   const [newDocSourceType, setNewDocSourceType] = useState<'URL' | 'TEXT' | 'PDF'>('URL')
   const [newDocSourceUrl, setNewDocSourceUrl] = useState('')
+  const [newDocUrlMaxDepth, setNewDocUrlMaxDepth] = useState(0)
   const [newDocFileBase64, setNewDocFileBase64] = useState('')
   const [newDocContent, setNewDocContent] = useState('')
-  const [isPreviewLoading, setIsPreviewLoading] = useState(false)
-  const [previewDone, setPreviewDone] = useState(false)
   const [isCommitting, setIsCommitting] = useState(false)
+
+  // URL Discovery states
+  const [urlStep, setUrlStep] = useState<1 | 2 | 3>(1)
+  const [discoveredLinks, setDiscoveredLinks] = useState<string[]>([])
+  const [selectedLinks, setSelectedLinks] = useState<Set<string>>(new Set())
+  const [isDiscovering, setIsDiscovering] = useState(false)
+  const [discoveryStatus, setDiscoveryStatus] = useState('')
+  const [isScrapeLoading, setIsScrapeLoading] = useState(false)
+  const [scrapeStatus, setScrapeStatus] = useState('')
+  const [scrapedPages, setScrapedPages] = useState<{url: string; text: string; title: string}[]>([])
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -509,55 +518,15 @@ function KnowledgeTab() {
     setNewDocTitle('')
     setNewDocSourceType('URL')
     setNewDocSourceUrl('')
+    setNewDocUrlMaxDepth(0)
     setNewDocFileBase64('')
     setNewDocContent('')
-    setPreviewDone(false)
-  }
-
-  const handlePreview = async () => {
-    alert('handlePreview called')
-    console.log('handlePreview called', { newDocTitle, newDocSourceType, newDocSourceUrl, newDocContent: newDocContent?.slice(0, 50), newDocFileBase64: newDocFileBase64?.slice(0, 50) })
-    
-    if (!newDocTitle.trim()) {
-      alert('no title')
-      return
-    }
-    if (newDocSourceType === 'URL' && !newDocSourceUrl.trim()) {
-      alert('no url')
-      return
-    }
-    if (newDocSourceType === 'TEXT' && !newDocContent.trim()) {
-      alert('no text content')
-      return
-    }
-    if (newDocSourceType === 'PDF' && !newDocFileBase64.trim()) {
-      alert('no file base64')
-      return
-    }
-
-    setIsPreviewLoading(true)
-    try {
-      const input = {
-        title: newDocTitle,
-        sourceType: newDocSourceType as 'URL' | 'TEXT' | 'PDF',
-        sourceUrl: newDocSourceType === 'URL' ? newDocSourceUrl : undefined,
-        contentBase64: newDocSourceType === 'TEXT' ? btoa(newDocContent) : newDocSourceType === 'PDF' ? newDocFileBase64 : undefined,
-      }
-      alert('calling previewDocument with: ' + JSON.stringify(input))
-      console.log('calling previewDocument with:', input)
-      
-      const result = await previewDocument(input)
-      alert('result: ' + JSON.stringify(result))
-      console.log('previewDocument result:', result)
-      
-      setNewDocContent(result.previewDocument.extractedText)
-      setPreviewDone(true)
-    } catch (err) {
-      alert('error: ' + err)
-      console.error('previewDocument error:', err)
-    } finally {
-      setIsPreviewLoading(false)
-    }
+    setUrlStep(1)
+    setDiscoveredLinks([])
+    setSelectedLinks(new Set())
+    setScrapedPages([])
+    setDiscoveryStatus('')
+    setScrapeStatus('')
   }
 
   const handleCancelAdd = () => {
@@ -565,24 +534,157 @@ function KnowledgeTab() {
     setNewDocTitle('')
     setNewDocSourceType('URL')
     setNewDocSourceUrl('')
+    setNewDocUrlMaxDepth(0)
     setNewDocFileBase64('')
     setNewDocContent('')
-    setPreviewDone(false)
+    setUrlStep(1)
+    setDiscoveredLinks([])
+    setSelectedLinks(new Set())
+    setScrapedPages([])
+    setDiscoveryStatus('')
+    setScrapeStatus('')
+  }
+
+  // URL Discovery handlers
+  const handleDiscoverLinks = async () => {
+    if (!newDocSourceUrl.trim()) return
+    setIsDiscovering(true)
+    setDiscoveryStatus('Запуск браузера...')
+    try {
+      setDiscoveryStatus('Поиск ссылок...')
+      const links = await discoverLinks(newDocSourceUrl, newDocUrlMaxDepth)
+      const unique = [...new Set(links)]
+      setDiscoveredLinks(unique)
+      setUrlStep(2)
+      setDiscoveryStatus(`Найдено ${unique.length} ссылок`)
+    } catch (err) {
+      console.error(err)
+      setDiscoveryStatus('Ошибка')
+      alert('Ошибка при поиске ссылок')
+    } finally {
+      setIsDiscovering(false)
+    }
+  }
+
+  const handleToggleLink = (url: string) => {
+    const next = new Set(selectedLinks)
+    if (next.has(url)) {
+      next.delete(url)
+    } else {
+      next.add(url)
+    }
+    setSelectedLinks(next)
+  }
+
+  const handleSelectAllLinks = (select: boolean) => {
+    if (select) {
+      setSelectedLinks(new Set(discoveredLinks))
+    } else {
+      setSelectedLinks(new Set())
+    }
+  }
+
+  const handleScrapeSelected = async () => {
+    if (selectedLinks.size === 0) return
+    setIsScrapeLoading(true)
+    setScrapeStatus('Скрапинг... 0%')
+    setScrapedPages([])
+    try {
+      const urls = Array.from(selectedLinks)
+      const pages: {url: string; text: string; title: string}[] = []
+      
+      for (let i = 0; i < urls.length; i++) {
+        setScrapeStatus(`Скрапинг... ${Math.round((i / urls.length) * 100)}% (${i}/${urls.length})`)
+        const result = await scrapeUrls([urls[i]])
+        const text = result[urls[i]] || ''
+        if (text.trim()) {
+          const urlTitle = urls[i].split('/').filter(Boolean).pop() || `страница ${i + 1}`
+          pages.push({ 
+            url: urls[i], 
+            text,
+            title: urls.length > 1 ? urlTitle : newDocTitle || urlTitle
+          })
+        }
+      }
+      
+      setScrapedPages(pages)
+      setUrlStep(3)
+      setScrapeStatus(`Готово! Собрано ${pages.length} страниц`)
+    } catch (err) {
+      console.error(err)
+      setScrapeStatus('Ошибка')
+      alert('Ошибка при скрапинге')
+    } finally {
+      setIsScrapeLoading(false)
+    }
   }
 
   const handleConfirmAdd = async () => {
-    if (!newDocTitle.trim()) return
+    if (!newDocTitle.trim() && scrapedPages.length === 0) return
+    
     setIsCommitting(true)
+    
     try {
-      const result = await commitDocument({
-        title: newDocTitle,
-        content: newDocContent,
-      })
-      console.log('commitDocument result:', result)
-      if (!result.commitDocument.success) {
-        alert('Ошибка: ' + result.commitDocument.message)
+      if (newDocSourceType === 'URL' && scrapedPages.length > 0) {
+        // Multiple pages - save each as separate doc
+        if (scrapedPages.length > 1) {
+          let saved = 0
+          for (const page of scrapedPages) {
+            if (!page.text.trim() || !page.title.trim()) continue
+            
+            const result = await commitDocument({
+              title: page.title,
+              content: page.text,
+            })
+            
+            if (result.commitDocument.success) {
+              saved++
+            }
+          }
+          
+          if (saved === 0) {
+            alert('Не удалось сохранить ни одного документа')
+            return
+          }
+          
+          alert(`Сохранено ${saved} документов`)
+        } else {
+          // Single page - save as one doc
+          const result = await commitDocument({
+            title: newDocTitle,
+            content: scrapedPages[0].text,
+          })
+          
+          if (!result.commitDocument.success) {
+            alert('Ошибка: ' + result.commitDocument.message)
+            return
+          }
+        }
+      } else if (newDocSourceType === 'TEXT' && newDocContent.trim()) {
+        const result = await commitDocument({
+          title: newDocTitle,
+          content: newDocContent,
+        })
+        
+        if (!result.commitDocument.success) {
+          alert('Ошибка: ' + result.commitDocument.message)
+          return
+        }
+      } else if (newDocSourceType === 'PDF' && newDocFileBase64.trim()) {
+        const result = await commitDocument({
+          title: newDocTitle,
+          content: newDocContent,
+        })
+        
+        if (!result.commitDocument.success) {
+          alert('Ошибка: ' + result.commitDocument.message)
+          return
+        }
+      } else {
+        alert('Нет содержимого для сохранения')
         return
       }
+      
       setIsAddModalOpen(false)
       const data = await getDocuments()
       setDocs(data)
@@ -745,8 +847,7 @@ function KnowledgeTab() {
                   type="text"
                   value={newDocTitle}
                   onChange={(e) => setNewDocTitle(e.target.value)}
-                  disabled={previewDone}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Введите название документа"
                 />
               </div>
@@ -758,8 +859,7 @@ function KnowledgeTab() {
                 <select
                   value={newDocSourceType}
                   onChange={(e) => setNewDocSourceType(e.target.value as 'URL' | 'TEXT' | 'PDF')}
-                  disabled={previewDone}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="URL">URL</option>
                   <option value="TEXT">Текст</option>
@@ -768,30 +868,169 @@ function KnowledgeTab() {
               </div>
 
               {newDocSourceType === 'URL' ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    URL документа
-                  </label>
-                  <input
-                    type="text"
-                    value={newDocSourceUrl}
-                    onChange={(e) => setNewDocSourceUrl(e.target.value)}
-                    disabled={previewDone}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    placeholder="https://example.com/document"
-                  />
+                <div className="space-y-4">
+                  {/* Step 1: Discover */}
+                  {urlStep === 1 && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          URL документа
+                        </label>
+                        <input
+                          type="text"
+                          value={newDocSourceUrl}
+                          onChange={(e) => setNewDocSourceUrl(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="https://example.com"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Глубина поиска
+                        </label>
+                        <select
+                          value={newDocUrlMaxDepth}
+                          onChange={(e) => setNewDocUrlMaxDepth(parseInt(e.target.value))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                          <option value={0}>Только эта страница</option>
+                          <option value={1}>+1 уровень</option>
+                          <option value={2}>+2 уровня</option>
+                        </select>
+                      </div>
+                      {discoveryStatus && (
+                        <div className={`text-sm p-2 rounded ${discoveryStatus.includes('Ошибка') ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
+                          {discoveryStatus}
+                        </div>
+                      )}
+                      <button
+                        onClick={handleDiscoverLinks}
+                        disabled={!newDocSourceUrl.trim() || isDiscovering}
+                        className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isDiscovering ? 'Поиск...' : 'Найти ссылки'}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Step 2: Select */}
+                  {urlStep === 2 && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">
+                          Найдено: {discoveredLinks.length}
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleSelectAllLinks(true)}
+                            className="text-xs text-indigo-600 hover:text-indigo-800"
+                          >
+                            Все
+                          </button>
+                          <button
+                            onClick={() => handleSelectAllLinks(false)}
+                            className="text-xs text-gray-500 hover:text-gray-700"
+                          >
+                            Ничего
+                          </button>
+                        </div>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+                        {discoveredLinks.map((link) => (
+                          <label
+                            key={link}
+                            className="flex items-start gap-2 p-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedLinks.has(link)}
+                              onChange={() => handleToggleLink(link)}
+                              className="mt-1 rounded border-gray-300 text-indigo-600"
+                            />
+                            <span className="text-xs text-gray-600 truncate">{link}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setUrlStep(1)}
+                          className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200"
+                        >
+                          Назад
+                        </button>
+                        <button
+                          onClick={handleScrapeSelected}
+                          disabled={selectedLinks.size === 0 || isScrapeLoading}
+                          className="flex-1 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                          {isScrapeLoading ? 'Скрапинг...' : `Скрапить (${selectedLinks.size})`}
+                        </button>
+                      </div>
+                      {scrapeStatus && (
+                        <div className={`text-sm p-2 rounded ${scrapeStatus.includes('Ошибка') ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
+                          {scrapeStatus}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Step 3: Edit & Save */}
+                  {urlStep === 3 && (
+                    <div className="space-y-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setUrlStep(2)}
+                          className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200"
+                        >
+                          Назад к выбору
+                        </button>
+                      </div>
+                      <div className="text-sm font-medium text-gray-700">
+                        Собрано страниц: {scrapedPages.length}
+                      </div>
+                      <div className="max-h-64 overflow-y-auto space-y-3">
+                        {scrapedPages.map((page, idx) => (
+                          <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                            <div className="text-xs text-gray-500 truncate" title={page.url}>
+                              {idx + 1}. {page.url}
+                            </div>
+                            <input
+                              type="text"
+                              value={page.title}
+                              onChange={(e) => {
+                                const updated = [...scrapedPages]
+                                updated[idx].title = e.target.value
+                                setScrapedPages(updated)
+                              }}
+                              className="w-full px-2 py-1 border border-gray-200 rounded text-sm font-medium"
+                              placeholder="Назван��е документа"
+                            />
+                            <textarea
+                              value={page.text}
+                              onChange={(e) => {
+                                const updated = [...scrapedPages]
+                                updated[idx].text = e.target.value
+                                setScrapedPages(updated)
+                              }}
+                              className="w-full h-24 px-2 py-1 border border-gray-200 rounded text-xs font-mono resize-none"
+                              placeholder="Содержимое"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : newDocSourceType === 'TEXT' ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Содержимое (Base64)
+                    Содержимое
                   </label>
                   <textarea
                     value={newDocContent}
                     onChange={(e) => setNewDocContent(e.target.value)}
-                    disabled={previewDone}
-                    className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed font-mono"
-                    placeholder="Введите содержимое в Base64"
+                    className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono"
+                    placeholder="Введите содержимое"
                   />
                 </div>
               ) : (
@@ -803,52 +1042,32 @@ function KnowledgeTab() {
                     type="file"
                     accept=".pdf"
                     onChange={handleFileChange}
-                    disabled={previewDone}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                   />
                   {newDocFileBase64 && (
                     <p className="text-sm text-green-600 mt-1">Файл загружен</p>
                   )}
                 </div>
               )}
-
-              {!previewDone && (
-                <button
-                  onClick={handlePreview}
-                  disabled={!newDocTitle.trim() || isPreviewLoading}
-                  className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isPreviewLoading ? 'Загрузка превью...' : 'Получить превью'}
-                </button>
-              )}
-
-              {previewDone && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Содержимое документа (редактируемое)
-                  </label>
-                  <textarea
-                    value={newDocContent}
-                    onChange={(e) => setNewDocContent(e.target.value)}
-                    className="w-full h-64 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 whitespace-pre-wrap font-mono"
-                    placeholder="Содержимое документа"
-                  />
-                </div>
-              )}
             </div>
             <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
               <button
                 onClick={handleCancelAdd}
-                className="px-4 py-2 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-100"
               >
-                Отменить добавление
+                Отмена
               </button>
               <button
                 onClick={handleConfirmAdd}
-                disabled={!previewDone || !newDocContent.trim() || isCommitting}
-                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={
+                  (newDocSourceType === 'URL' && scrapedPages.length === 0) ||
+                  (newDocSourceType === 'TEXT' && !newDocContent.trim()) ||
+                  (newDocSourceType === 'PDF' && !newDocFileBase64.trim()) ||
+                  isCommitting
+                }
+                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isCommitting ? 'Сохранение...' : 'Подтвердить добавление'}
+                {isCommitting ? 'Сохранение...' : 'Сохранить'}
               </button>
             </div>
           </div>
