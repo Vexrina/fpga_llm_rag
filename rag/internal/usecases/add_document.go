@@ -20,10 +20,15 @@ type PDFProcessor interface {
 
 type URLProcessor interface {
 	ExtractTextFromURL(url string, maxDepth int32) (string, error)
+	DiscoverLinks(url string, maxDepth int32) ([]string, error)
 }
 
 func NewPDFProcessor(pythonPath, scriptPath string, pythonArgs []string, timeout time.Duration) PDFProcessor {
 	return processors.NewKugScrapProcessor(pythonPath, scriptPath, pythonArgs, timeout)
+}
+
+func NewLinkScraperProcessor(pythonPath, scriptPath, cacheDir string, timeout time.Duration) URLProcessor {
+	return processors.NewLinkScraperProcessor(pythonPath, scriptPath, cacheDir, timeout)
 }
 
 type AddDocumentRepository interface {

@@ -48,10 +48,11 @@ services:
       - MAX_TOTAL_TOKENS=8192
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      test: ["CMD-SHELL", "curl -f http://localhost/ || curl -f http://localhost/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 120s
     networks:
       - fpga-network
 

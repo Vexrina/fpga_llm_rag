@@ -45,6 +45,10 @@ type ComplexityRoot struct {
 		Success func(childComplexity int) int
 	}
 
+	DiscoverLinksResult struct {
+		Links func(childComplexity int) int
+	}
+
 	Document struct {
 		Content  func(childComplexity int) int
 		ID       func(childComplexity int) int
@@ -98,8 +102,10 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CommitDocument   func(childComplexity int, input CommitDocumentInput) int
 		DeleteDocument   func(childComplexity int, id string) int
+		DiscoverLinks    func(childComplexity int, url string, maxDepth int) int
 		PreviewDocument  func(childComplexity int, input PreviewDocumentInput) int
 		RollbackDocument func(childComplexity int, documentID string, versionID int, rollbackBy *string) int
+		ScrapeUrls       func(childComplexity int, urls []string) int
 		UpdateRagSetting func(childComplexity int, key string, value string, changedBy *string) int
 	}
 
@@ -143,6 +149,15 @@ type ComplexityRoot struct {
 		Success      func(childComplexity int) int
 	}
 
+	ScrapeUrlsResult struct {
+		Texts func(childComplexity int) int
+	}
+
+	ScrapedText struct {
+		Text func(childComplexity int) int
+		URL  func(childComplexity int) int
+	}
+
 	SettingEntry struct {
 		Key   func(childComplexity int) int
 		Value func(childComplexity int) int
@@ -169,6 +184,8 @@ type MutationResolver interface {
 	DeleteDocument(ctx context.Context, id string) (*DeleteDocumentResult, error)
 	UpdateRagSetting(ctx context.Context, key string, value string, changedBy *string) (*UpdateSettingsResult, error)
 	RollbackDocument(ctx context.Context, documentID string, versionID int, rollbackBy *string) (*RollbackResult, error)
+	DiscoverLinks(ctx context.Context, url string, maxDepth int) (*DiscoverLinksResult, error)
+	ScrapeUrls(ctx context.Context, urls []string) (*ScrapeUrlsResult, error)
 }
 type QueryResolver interface {
 	Ask(ctx context.Context, question string) (string, error)
@@ -227,6 +244,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.DeleteDocumentResult.Success(childComplexity), true
+
+	case "DiscoverLinksResult.links":
+		if e.ComplexityRoot.DiscoverLinksResult.Links == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DiscoverLinksResult.Links(childComplexity), true
 
 	case "Document.content":
 		if e.ComplexityRoot.Document.Content == nil {
@@ -431,6 +455,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteDocument(childComplexity, args["id"].(string)), true
+	case "Mutation.discoverLinks":
+		if e.ComplexityRoot.Mutation.DiscoverLinks == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_discoverLinks_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DiscoverLinks(childComplexity, args["url"].(string), args["maxDepth"].(int)), true
 	case "Mutation.previewDocument":
 		if e.ComplexityRoot.Mutation.PreviewDocument == nil {
 			break
@@ -453,6 +488,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RollbackDocument(childComplexity, args["documentId"].(string), args["versionId"].(int), args["rollbackBy"].(*string)), true
+	case "Mutation.scrapeUrls":
+		if e.ComplexityRoot.Mutation.ScrapeUrls == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_scrapeUrls_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ScrapeUrls(childComplexity, args["urls"].([]string)), true
 	case "Mutation.updateRagSetting":
 		if e.ComplexityRoot.Mutation.UpdateRagSetting == nil {
 			break
@@ -650,6 +696,26 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.RollbackResult.Success(childComplexity), true
+
+	case "ScrapeUrlsResult.texts":
+		if e.ComplexityRoot.ScrapeUrlsResult.Texts == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ScrapeUrlsResult.Texts(childComplexity), true
+
+	case "ScrapedText.text":
+		if e.ComplexityRoot.ScrapedText.Text == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ScrapedText.Text(childComplexity), true
+	case "ScrapedText.url":
+		if e.ComplexityRoot.ScrapedText.URL == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ScrapedText.URL(childComplexity), true
 
 	case "SettingEntry.key":
 		if e.ComplexityRoot.SettingEntry.Key == nil {
@@ -927,6 +993,19 @@ type QueryLogsResult {
   page: Int!
   pageSize: Int!
 }
+
+type DiscoverLinksResult {
+  links: [String!]!
+}
+
+type ScrapedText {
+  url: String!
+  text: String!
+}
+
+type ScrapeUrlsResult {
+  texts: [ScrapedText!]!
+}
 `, BuiltIn: false},
 	{Name: "../../../graph/query/queryDefs.graphqls", Input: `type Query {
   ask(question: String!): String!
@@ -951,6 +1030,8 @@ type SettingEntry {
   deleteDocument(id: String!): DeleteDocumentResult!
   updateRagSetting(key: String!, value: String!, changedBy: String): UpdateSettingsResult!
   rollbackDocument(documentId: String!, versionId: Int!, rollbackBy: String): RollbackResult!
+  discoverLinks(url: String!, maxDepth: Int!): DiscoverLinksResult!
+  scrapeUrls(urls: [String!]!): ScrapeUrlsResult!
 }
 `, BuiltIn: false},
 	{Name: "../../../graph/enums/enumDefs.graphqls", Input: `enum DocumentSourceType {
@@ -989,6 +1070,22 @@ func (ec *executionContext) field_Mutation_deleteDocument_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_discoverLinks_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "url", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["url"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "maxDepth", ec.unmarshalNInt2int)
+	if err != nil {
+		return nil, err
+	}
+	args["maxDepth"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_previewDocument_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1018,6 +1115,17 @@ func (ec *executionContext) field_Mutation_rollbackDocument_args(ctx context.Con
 		return nil, err
 	}
 	args["rollbackBy"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_scrapeUrls_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "urls", ec.unmarshalNString2ᚕstringᚄ)
+	if err != nil {
+		return nil, err
+	}
+	args["urls"] = arg0
 	return args, nil
 }
 
@@ -1326,6 +1434,35 @@ func (ec *executionContext) _DeleteDocumentResult_message(ctx context.Context, f
 func (ec *executionContext) fieldContext_DeleteDocumentResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "DeleteDocumentResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DiscoverLinksResult_links(ctx context.Context, field graphql.CollectedField, obj *DiscoverLinksResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DiscoverLinksResult_links,
+		func(ctx context.Context) (any, error) {
+			return obj.Links, nil
+		},
+		nil,
+		ec.marshalNString2ᚕstringᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DiscoverLinksResult_links(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DiscoverLinksResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2446,6 +2583,96 @@ func (ec *executionContext) fieldContext_Mutation_rollbackDocument(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_discoverLinks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_discoverLinks,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DiscoverLinks(ctx, fc.Args["url"].(string), fc.Args["maxDepth"].(int))
+		},
+		nil,
+		ec.marshalNDiscoverLinksResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDiscoverLinksResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_discoverLinks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "links":
+				return ec.fieldContext_DiscoverLinksResult_links(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DiscoverLinksResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_discoverLinks_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_scrapeUrls(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_scrapeUrls,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().ScrapeUrls(ctx, fc.Args["urls"].([]string))
+		},
+		nil,
+		ec.marshalNScrapeUrlsResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐScrapeUrlsResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_scrapeUrls(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "texts":
+				return ec.fieldContext_ScrapeUrlsResult_texts(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ScrapeUrlsResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_scrapeUrls_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PreviewDocumentResult_extractedText(ctx context.Context, field graphql.CollectedField, obj *PreviewDocumentResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3449,6 +3676,99 @@ func (ec *executionContext) _RollbackResult_newVersionId(ctx context.Context, fi
 func (ec *executionContext) fieldContext_RollbackResult_newVersionId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "RollbackResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ScrapeUrlsResult_texts(ctx context.Context, field graphql.CollectedField, obj *ScrapeUrlsResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ScrapeUrlsResult_texts,
+		func(ctx context.Context) (any, error) {
+			return obj.Texts, nil
+		},
+		nil,
+		ec.marshalNScrapedText2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐScrapedTextᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ScrapeUrlsResult_texts(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ScrapeUrlsResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "url":
+				return ec.fieldContext_ScrapedText_url(ctx, field)
+			case "text":
+				return ec.fieldContext_ScrapedText_text(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ScrapedText", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ScrapedText_url(ctx context.Context, field graphql.CollectedField, obj *ScrapedText) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ScrapedText_url,
+		func(ctx context.Context) (any, error) {
+			return obj.URL, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ScrapedText_url(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ScrapedText",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ScrapedText_text(ctx context.Context, field graphql.CollectedField, obj *ScrapedText) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ScrapedText_text,
+		func(ctx context.Context) (any, error) {
+			return obj.Text, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ScrapedText_text(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ScrapedText",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -5435,6 +5755,45 @@ func (ec *executionContext) _DeleteDocumentResult(ctx context.Context, sel ast.S
 	return out
 }
 
+var discoverLinksResultImplementors = []string{"DiscoverLinksResult"}
+
+func (ec *executionContext) _DiscoverLinksResult(ctx context.Context, sel ast.SelectionSet, obj *DiscoverLinksResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, discoverLinksResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DiscoverLinksResult")
+		case "links":
+			out.Values[i] = ec._DiscoverLinksResult_links(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var documentImplementors = []string{"Document"}
 
 func (ec *executionContext) _Document(ctx context.Context, sel ast.SelectionSet, obj *Document) graphql.Marshaler {
@@ -5868,6 +6227,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "rollbackDocument":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_rollbackDocument(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "discoverLinks":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_discoverLinks(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "scrapeUrls":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_scrapeUrls(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -6327,6 +6700,89 @@ func (ec *executionContext) _RollbackResult(ctx context.Context, sel ast.Selecti
 			}
 		case "newVersionId":
 			out.Values[i] = ec._RollbackResult_newVersionId(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var scrapeUrlsResultImplementors = []string{"ScrapeUrlsResult"}
+
+func (ec *executionContext) _ScrapeUrlsResult(ctx context.Context, sel ast.SelectionSet, obj *ScrapeUrlsResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, scrapeUrlsResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ScrapeUrlsResult")
+		case "texts":
+			out.Values[i] = ec._ScrapeUrlsResult_texts(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var scrapedTextImplementors = []string{"ScrapedText"}
+
+func (ec *executionContext) _ScrapedText(ctx context.Context, sel ast.SelectionSet, obj *ScrapedText) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, scrapedTextImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ScrapedText")
+		case "url":
+			out.Values[i] = ec._ScrapedText_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "text":
+			out.Values[i] = ec._ScrapedText_text(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6886,6 +7342,20 @@ func (ec *executionContext) marshalNDeleteDocumentResult2ᚖgraphqlᚑgatewayᚋ
 	return ec._DeleteDocumentResult(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNDiscoverLinksResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDiscoverLinksResult(ctx context.Context, sel ast.SelectionSet, v DiscoverLinksResult) graphql.Marshaler {
+	return ec._DiscoverLinksResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDiscoverLinksResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDiscoverLinksResult(ctx context.Context, sel ast.SelectionSet, v *DiscoverLinksResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DiscoverLinksResult(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNDocumentListItem2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentListItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*DocumentListItem) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -7110,6 +7580,46 @@ func (ec *executionContext) marshalNRollbackResult2ᚖgraphqlᚑgatewayᚋintern
 	return ec._RollbackResult(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNScrapeUrlsResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐScrapeUrlsResult(ctx context.Context, sel ast.SelectionSet, v ScrapeUrlsResult) graphql.Marshaler {
+	return ec._ScrapeUrlsResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNScrapeUrlsResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐScrapeUrlsResult(ctx context.Context, sel ast.SelectionSet, v *ScrapeUrlsResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ScrapeUrlsResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNScrapedText2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐScrapedTextᚄ(ctx context.Context, sel ast.SelectionSet, v []*ScrapedText) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNScrapedText2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐScrapedText(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNScrapedText2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐScrapedText(ctx context.Context, sel ast.SelectionSet, v *ScrapedText) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ScrapedText(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNSettingEntry2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐSettingEntryᚄ(ctx context.Context, sel ast.SelectionSet, v []*SettingEntry) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -7176,6 +7686,36 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNUpdateSettingsResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐUpdateSettingsResult(ctx context.Context, sel ast.SelectionSet, v UpdateSettingsResult) graphql.Marshaler {

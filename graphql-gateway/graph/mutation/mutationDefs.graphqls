@@ -4,4 +4,6 @@ type Mutation {
   deleteDocument(id: String!): DeleteDocumentResult!
   updateRagSetting(key: String!, value: String!, changedBy: String): UpdateSettingsResult!
   rollbackDocument(documentId: String!, versionId: Int!, rollbackBy: String): RollbackResult!
+  discoverLinks(url: String!, maxDepth: Int!): DiscoverLinksResult!
+  scrapeUrls(urls: [String!]!): ScrapeUrlsResult!
 }

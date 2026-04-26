@@ -103,6 +103,36 @@ func (r *mutationResolver) RollbackDocument(ctx context.Context, documentID stri
 	}, nil
 }
 
+// DiscoverLinks is the resolver for the discoverLinks field.
+func (r *mutationResolver) DiscoverLinks(ctx context.Context, url string, maxDepth int) (*generated.DiscoverLinksResult, error) {
+	result, err := r.RAGClient.DiscoverLinks(ctx, url, int32(maxDepth))
+	if err != nil {
+		return nil, err
+	}
+	return &generated.DiscoverLinksResult{
+		Links: result.Links,
+	}, nil
+}
+
+// ScrapeUrls is the resolver for the scrapeUrls field.
+func (r *mutationResolver) ScrapeUrls(ctx context.Context, urls []string) (*generated.ScrapeUrlsResult, error) {
+	result, err := r.RAGClient.ScrapeUrls(ctx, urls)
+	if err != nil {
+		return nil, err
+	}
+	texts := make([]*generated.ScrapedText, len(result.Texts))
+	for i, t := range result.Texts {
+		t := t
+		texts[i] = &generated.ScrapedText{
+			URL:  t.URL,
+			Text: t.Text,
+		}
+	}
+	return &generated.ScrapeUrlsResult{
+		Texts: texts,
+	}, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

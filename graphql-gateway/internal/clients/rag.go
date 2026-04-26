@@ -370,3 +370,49 @@ func (c *RAGClient) GetQueryLogs(ctx context.Context, page, pageSize int32) (*Qu
 		PageSize: resp.PageSize,
 	}, nil
 }
+
+type DiscoverLinksResult struct {
+	Links []string
+}
+
+func (c *RAGClient) DiscoverLinks(ctx context.Context, url string, maxDepth int32) (*DiscoverLinksResult, error) {
+	resp, err := c.client.DiscoverLinks(ctx, &pb.DiscoverLinksRequest{
+		Url:      url,
+		MaxDepth: maxDepth,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("DiscoverLinks RPC failed: %w", err)
+	}
+	return &DiscoverLinksResult{
+		Links: resp.Links,
+	}, nil
+}
+
+type ScrapedText struct {
+	URL  string
+	Text string
+}
+
+type ScrapeUrlsResult struct {
+	Texts []ScrapedText
+}
+
+func (c *RAGClient) ScrapeUrls(ctx context.Context, urls []string) (*ScrapeUrlsResult, error) {
+	resp, err := c.client.ScrapeUrls(ctx, &pb.ScrapeUrlsRequest{
+		Urls: urls,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("ScrapeUrls RPC failed: %w", err)
+	}
+
+	texts := make([]ScrapedText, 0, len(resp.Texts))
+	for _, t := range resp.Texts {
+		texts = append(texts, ScrapedText{
+			URL:  t.Url,
+			Text: t.Text,
+		})
+	}
+	return &ScrapeUrlsResult{
+		Texts: texts,
+	}, nil
+}

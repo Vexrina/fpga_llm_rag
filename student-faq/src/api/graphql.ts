@@ -34,6 +34,49 @@ export interface PreviewDocumentInput {
   urlMaxDepth?: number
 }
 
+export interface DiscoverLinksResult {
+  discoverLinks: {
+    links: string[]
+  }
+}
+
+export interface ScrapeUrlsResult {
+  scrapeUrls: {
+    texts: { url: string; text: string }[]
+  }
+}
+
+export async function discoverLinks(url: string, maxDepth: number): Promise<string[]> {
+  const query = `
+    mutation DiscoverLinks($url: String!, $maxDepth: Int!) {
+      discoverLinks(url: $url, maxDepth: $maxDepth) {
+        links
+      }
+    }
+  `
+  const result = await graphqlRequest<DiscoverLinksResult>(query, { url, maxDepth })
+  return result.discoverLinks.links
+}
+
+export async function scrapeUrls(urls: string[]): Promise<Record<string, string>> {
+  const query = `
+    mutation ScrapeUrls($urls: [String!]!) {
+      scrapeUrls(urls: $urls) {
+        texts {
+          url
+          text
+        }
+      }
+    }
+  `
+  const result = await graphqlRequest<ScrapeUrlsResult>(query, { urls })
+  const texts: Record<string, string> = {}
+  for (const t of result.scrapeUrls.texts) {
+    texts[t.url] = t.text
+  }
+  return texts
+}
+
 export interface PreviewResult {
   previewDocument: {
     extractedText: string

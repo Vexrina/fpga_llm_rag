@@ -32,6 +32,8 @@ const (
 	RagService_RollbackDocument_FullMethodName      = "/rag.RagService/RollbackDocument"
 	RagService_GetAllDocuments_FullMethodName       = "/rag.RagService/GetAllDocuments"
 	RagService_GetQueryLogs_FullMethodName          = "/rag.RagService/GetQueryLogs"
+	RagService_DiscoverLinks_FullMethodName         = "/rag.RagService/DiscoverLinks"
+	RagService_ScrapeUrls_FullMethodName            = "/rag.RagService/ScrapeUrls"
 )
 
 // RagServiceClient is the client API for RagService service.
@@ -66,6 +68,10 @@ type RagServiceClient interface {
 	GetAllDocuments(ctx context.Context, in *GetAllDocumentsRequest, opts ...grpc.CallOption) (*GetAllDocumentsResponse, error)
 	// Получить логи запросов с пагинацией
 	GetQueryLogs(ctx context.Context, in *GetQueryLogsRequest, opts ...grpc.CallOption) (*GetQueryLogsResponse, error)
+	// Найти ссылки на странице (BFS)
+	DiscoverLinks(ctx context.Context, in *DiscoverLinksRequest, opts ...grpc.CallOption) (*DiscoverLinksResponse, error)
+	// Скрапить выбранные URL
+	ScrapeUrls(ctx context.Context, in *ScrapeUrlsRequest, opts ...grpc.CallOption) (*ScrapeUrlsResponse, error)
 }
 
 type ragServiceClient struct {
@@ -206,6 +212,26 @@ func (c *ragServiceClient) GetQueryLogs(ctx context.Context, in *GetQueryLogsReq
 	return out, nil
 }
 
+func (c *ragServiceClient) DiscoverLinks(ctx context.Context, in *DiscoverLinksRequest, opts ...grpc.CallOption) (*DiscoverLinksResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DiscoverLinksResponse)
+	err := c.cc.Invoke(ctx, RagService_DiscoverLinks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ragServiceClient) ScrapeUrls(ctx context.Context, in *ScrapeUrlsRequest, opts ...grpc.CallOption) (*ScrapeUrlsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ScrapeUrlsResponse)
+	err := c.cc.Invoke(ctx, RagService_ScrapeUrls_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RagServiceServer is the server API for RagService service.
 // All implementations must embed UnimplementedRagServiceServer
 // for forward compatibility.
@@ -238,6 +264,10 @@ type RagServiceServer interface {
 	GetAllDocuments(context.Context, *GetAllDocumentsRequest) (*GetAllDocumentsResponse, error)
 	// Получить логи запросов с пагинацией
 	GetQueryLogs(context.Context, *GetQueryLogsRequest) (*GetQueryLogsResponse, error)
+	// Найти ссылки на странице (BFS)
+	DiscoverLinks(context.Context, *DiscoverLinksRequest) (*DiscoverLinksResponse, error)
+	// Скрапить выбранные URL
+	ScrapeUrls(context.Context, *ScrapeUrlsRequest) (*ScrapeUrlsResponse, error)
 	mustEmbedUnimplementedRagServiceServer()
 }
 
@@ -286,6 +316,12 @@ func (UnimplementedRagServiceServer) GetAllDocuments(context.Context, *GetAllDoc
 }
 func (UnimplementedRagServiceServer) GetQueryLogs(context.Context, *GetQueryLogsRequest) (*GetQueryLogsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetQueryLogs not implemented")
+}
+func (UnimplementedRagServiceServer) DiscoverLinks(context.Context, *DiscoverLinksRequest) (*DiscoverLinksResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DiscoverLinks not implemented")
+}
+func (UnimplementedRagServiceServer) ScrapeUrls(context.Context, *ScrapeUrlsRequest) (*ScrapeUrlsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ScrapeUrls not implemented")
 }
 func (UnimplementedRagServiceServer) mustEmbedUnimplementedRagServiceServer() {}
 func (UnimplementedRagServiceServer) testEmbeddedByValue()                    {}
@@ -542,6 +578,42 @@ func _RagService_GetQueryLogs_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RagService_DiscoverLinks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DiscoverLinksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).DiscoverLinks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_DiscoverLinks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).DiscoverLinks(ctx, req.(*DiscoverLinksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RagService_ScrapeUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScrapeUrlsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).ScrapeUrls(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_ScrapeUrls_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).ScrapeUrls(ctx, req.(*ScrapeUrlsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RagService_ServiceDesc is the grpc.ServiceDesc for RagService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -600,6 +672,14 @@ var RagService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetQueryLogs",
 			Handler:    _RagService_GetQueryLogs_Handler,
+		},
+		{
+			MethodName: "DiscoverLinks",
+			Handler:    _RagService_DiscoverLinks_Handler,
+		},
+		{
+			MethodName: "ScrapeUrls",
+			Handler:    _RagService_ScrapeUrls_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

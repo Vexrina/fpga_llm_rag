@@ -100,3 +100,16 @@ type QueryLogsResult {
   page: Int!
   pageSize: Int!
 }
+
+type DiscoverLinksResult {
+  links: [String!]!
+}
+
+type ScrapedText {
+  url: String!
+  text: String!
+}
+
+type ScrapeUrlsResult {
+  texts: [ScrapedText!]!
+}

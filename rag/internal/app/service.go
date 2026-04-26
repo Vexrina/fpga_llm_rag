@@ -24,6 +24,8 @@ type (
 		settingsUsecase        SettingsUsecase
 		documentHistoryUsecase DocumentHistoryUsecase
 		queryLogsUsecase       QueryLogsUsecase
+		discoverLinksUsecase   DiscoverLinksUsecase
+		scrapeUrlsUsecase      ScrapeUrlsUsecase
 	}
 
 	AddDocumentUsecase interface {
@@ -61,6 +63,12 @@ type (
 	QueryLogsUsecase interface {
 		GetQueryLogs(ctx context.Context, page, pageSize int) (*pb.GetQueryLogsResponse, error)
 	}
+	DiscoverLinksUsecase interface {
+		Discover(ctx context.Context, url string, maxDepth int32) ([]string, error)
+	}
+	ScrapeUrlsUsecase interface {
+		Scrape(ctx context.Context, urls []string) (map[string]string, error)
+	}
 )
 
 // NewRagServer создает новый экземпляр RagServer
@@ -73,6 +81,8 @@ func NewRagServer(
 	settingsUsecase SettingsUsecase,
 	documentHistoryUsecase DocumentHistoryUsecase,
 	queryLogsUsecase QueryLogsUsecase,
+	discoverLinksUsecase DiscoverLinksUsecase,
+	scrapeUrlsUsecase ScrapeUrlsUsecase,
 ) *RagServer {
 	return &RagServer{
 		db:                     database,
@@ -83,5 +93,7 @@ func NewRagServer(
 		settingsUsecase:        settingsUsecase,
 		documentHistoryUsecase: documentHistoryUsecase,
 		queryLogsUsecase:       queryLogsUsecase,
+		discoverLinksUsecase:   discoverLinksUsecase,
+		scrapeUrlsUsecase:      scrapeUrlsUsecase,
 	}
 }

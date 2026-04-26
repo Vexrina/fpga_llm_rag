@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-rus libgl1 
 RUN pip3 install --no-cache-dir pytesseract pdf2image numpy opencv-python-headless pdfplumber
 RUN pip3 install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 RUN pip3 install --no-cache-dir layoutparser iopath pyyaml
+RUN pip3 install --no-cache-dir playwright && playwright install chromium --with-deps
 COPY --from=builder /rag-server /rag-server
 COPY ./migrations ./migrations
 COPY ./python_scripts ./python_scripts

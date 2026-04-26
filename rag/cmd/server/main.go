@@ -21,7 +21,8 @@ import (
 )
 
 const (
-	defaultPDFTimeout = 5 * time.Minute
+	defaultPDFTimeout        = 5 * time.Minute
+	defaultLinkScrapeTimeout = 3 * time.Minute
 )
 
 type LLMGatewayClient struct {
@@ -109,13 +110,21 @@ func main() {
 			[]string{},
 			defaultPDFTimeout,
 		)
-		addDocumentUsecase     = usecases.NewAddDocumentUsecase(db, fw, pdfProcessor, nil)
-		previewDocumentUsecase = usecases.NewPreviewDocumentUsecase(pdfProcessor, nil)
+		linkScraperProcessor = usecases.NewLinkScraperProcessor(
+			"python3",
+			"/app/python_scripts/link_scraper_cached.py",
+			"/app/.web_cache/link_scraper",
+			defaultLinkScrapeTimeout,
+		)
+		addDocumentUsecase     = usecases.NewAddDocumentUsecase(db, fw, pdfProcessor, linkScraperProcessor)
+		previewDocumentUsecase = usecases.NewPreviewDocumentUsecase(pdfProcessor, linkScraperProcessor)
 		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, fw)
 		settingsUsecase        = usecases.NewSettingsUsecase(db, llmClient)
 		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw, settingsUsecase, db)
 		documentHistoryUsecase = usecases.NewDocumentHistoryUsecase(db)
 		queryLogsUsecase       = usecases.NewQueryLogsUsecase(db)
+		discoverLinksUsecase   = usecases.NewDiscoverLinksUsecase(linkScraperProcessor)
+		scrapeUrlsUsecase      = usecases.NewScrapeUrlsUsecase(linkScraperProcessor)
 	)
 
 	// Создаем TCP listener на порту 50051
@@ -140,6 +149,8 @@ func main() {
 		settingsUsecase,
 		documentHistoryUsecase,
 		queryLogsUsecase,
+		discoverLinksUsecase,
+		scrapeUrlsUsecase,
 	)
 	pb.RegisterRagServiceServer(s, ragServer)
 

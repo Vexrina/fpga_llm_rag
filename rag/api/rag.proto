@@ -8,19 +8,19 @@ option go_package = "./rag";
 service RagService {
   // Предпросмотр: извлечь текст из PDF/URL без сохранения
   rpc PreviewDocument(PreviewDocumentRequest) returns (PreviewDocumentResponse);
-    
+     
   // Сохранить документ с готовым текстом
   rpc CommitDocument(CommitDocumentRequest) returns (CommitDocumentResponse);
-    
+     
   // Поиск документов по запросу
   rpc SearchDocuments(SearchRequest) returns (SearchResponse);
-    
+     
   // Получить документ по ID
   rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
-    
+     
   // Удалить документ по ID
   rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse);
-    
+     
   // Получить статистику индекса
   rpc GetIndexStats(GetIndexStatsRequest) returns (GetIndexStatsResponse);
 
@@ -44,6 +44,12 @@ service RagService {
 
   // Получить логи запросов с пагинацией
   rpc GetQueryLogs(GetQueryLogsRequest) returns (GetQueryLogsResponse);
+
+  // Найти ссылки на странице (BFS)
+  rpc DiscoverLinks(DiscoverLinksRequest) returns (DiscoverLinksResponse);
+
+  // Скрапить выбранные URL
+  rpc ScrapeUrls(ScrapeUrlsRequest) returns (ScrapeUrlsResponse);
 }
 
 // Тип источника документа
@@ -284,4 +290,31 @@ message QueryLogEntry {
   bool found = 5;
   int32 results_count = 6;
   string created_at = 7;
+}
+
+// Запрос на обнаружение ссылок
+message DiscoverLinksRequest {
+  string url = 1;
+  int32 max_depth = 2;
+}
+
+// Ответ со списком ссылок
+message DiscoverLinksResponse {
+  repeated string links = 1;
+}
+
+// Запрос на скрапинг URL
+message ScrapeUrlsRequest {
+  repeated string urls = 1;
+}
+
+// Ответ с текстами
+message ScrapeUrlsResponse {
+  repeated ScrapedTextEntry texts = 1;
+}
+
+// Текст с отдельного URL
+message ScrapedTextEntry {
+  string url = 1;
+  string text = 2;
 } 

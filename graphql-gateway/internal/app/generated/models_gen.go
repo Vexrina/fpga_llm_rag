@@ -26,6 +26,10 @@ type DeleteDocumentResult struct {
 	Message string `json:"message"`
 }
 
+type DiscoverLinksResult struct {
+	Links []string `json:"links"`
+}
+
 type Document struct {
 	ID       string           `json:"id"`
 	Title    string           `json:"title"`
@@ -121,6 +125,15 @@ type RollbackResult struct {
 	Success      bool    `json:"success"`
 	Message      string  `json:"message"`
 	NewVersionID *string `json:"newVersionId,omitempty"`
+}
+
+type ScrapeUrlsResult struct {
+	Texts []*ScrapedText `json:"texts"`
+}
+
+type ScrapedText struct {
+	URL  string `json:"url"`
+	Text string `json:"text"`
 }
 
 type SettingEntry struct {

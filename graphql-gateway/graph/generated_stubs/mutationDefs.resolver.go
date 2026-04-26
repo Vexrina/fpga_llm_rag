@@ -36,6 +36,16 @@ func (r *mutationResolver) RollbackDocument(ctx context.Context, documentID stri
 	panic(fmt.Errorf("not implemented: RollbackDocument - rollbackDocument"))
 }
 
+// DiscoverLinks is the resolver for the discoverLinks field.
+func (r *mutationResolver) DiscoverLinks(ctx context.Context, url string, maxDepth int) (*generated.DiscoverLinksResult, error) {
+	panic(fmt.Errorf("not implemented: DiscoverLinks - discoverLinks"))
+}
+
+// ScrapeUrls is the resolver for the scrapeUrls field.
+func (r *mutationResolver) ScrapeUrls(ctx context.Context, urls []string) (*generated.ScrapeUrlsResult, error) {
+	panic(fmt.Errorf("not implemented: ScrapeUrls - scrapeUrls"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
