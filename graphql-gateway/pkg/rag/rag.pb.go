@@ -974,6 +974,7 @@ type GetIndexStatsResponse struct {
 	TotalDocuments int32                  `protobuf:"varint,1,opt,name=total_documents,json=totalDocuments,proto3" json:"total_documents,omitempty"`
 	IndexSizeBytes int64                  `protobuf:"varint,2,opt,name=index_size_bytes,json=indexSizeBytes,proto3" json:"index_size_bytes,omitempty"`
 	LastUpdated    string                 `protobuf:"bytes,3,opt,name=last_updated,json=lastUpdated,proto3" json:"last_updated,omitempty"`
+	IsReindexing   bool                   `protobuf:"varint,4,opt,name=is_reindexing,json=isReindexing,proto3" json:"is_reindexing,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1027,6 +1028,13 @@ func (x *GetIndexStatsResponse) GetLastUpdated() string {
 		return x.LastUpdated
 	}
 	return ""
+}
+
+func (x *GetIndexStatsResponse) GetIsReindexing() bool {
+	if x != nil {
+		return x.IsReindexing
+	}
+	return false
 }
 
 // Запрос на получение настроек RAG

@@ -1,0 +1,1 @@
+ALTER TABLE document_index ADD COLUMN IF NOT EXISTS chunk_overlap INTEGER DEFAULT 0;

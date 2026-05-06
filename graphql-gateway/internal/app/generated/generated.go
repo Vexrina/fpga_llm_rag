@@ -90,6 +90,7 @@ type ComplexityRoot struct {
 
 	IndexStats struct {
 		IndexSizeBytes func(childComplexity int) int
+		IsReindexing   func(childComplexity int) int
 		LastUpdated    func(childComplexity int) int
 		TotalDocuments func(childComplexity int) int
 	}
@@ -407,6 +408,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.IndexStats.IndexSizeBytes(childComplexity), true
+	case "IndexStats.isReindexing":
+		if e.ComplexityRoot.IndexStats.IsReindexing == nil {
+			break
+		}
+
+		return e.ComplexityRoot.IndexStats.IsReindexing(childComplexity), true
 	case "IndexStats.lastUpdated":
 		if e.ComplexityRoot.IndexStats.LastUpdated == nil {
 			break
@@ -2286,6 +2293,35 @@ func (ec *executionContext) fieldContext_IndexStats_lastUpdated(_ context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _IndexStats_isReindexing(ctx context.Context, field graphql.CollectedField, obj *IndexStats) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_IndexStats_isReindexing,
+		func(ctx context.Context) (any, error) {
+			return obj.IsReindexing, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_IndexStats_isReindexing(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IndexStats",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _MetadataEntry_key(ctx context.Context, field graphql.CollectedField, obj *MetadataEntry) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2906,6 +2942,8 @@ func (ec *executionContext) fieldContext_Query_getIndexStats(_ context.Context, 
 				return ec.fieldContext_IndexStats_indexSizeBytes(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_IndexStats_lastUpdated(ctx, field)
+			case "isReindexing":
+				return ec.fieldContext_IndexStats_isReindexing(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IndexStats", field.Name)
 		},
@@ -6107,6 +6145,11 @@ func (ec *executionContext) _IndexStats(ctx context.Context, sel ast.SelectionSe
 			}
 		case "lastUpdated":
 			out.Values[i] = ec._IndexStats_lastUpdated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "isReindexing":
+			out.Values[i] = ec._IndexStats_isReindexing(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

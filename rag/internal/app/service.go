@@ -13,19 +13,20 @@ type (
 	RagServer struct {
 		pb.UnimplementedRagServiceServer
 
-		db                     *repository.VecDb
-		addDocumentUsecase     AddDocumentUsecase
-		previewDocumentUsecase PreviewDocumentUsecase
-		commitDocumentUsecase  CommitDocumentUsecase
-		getDocumentUsecase     GetDocumentUsecase
-		deleteDocumentUsecase  DeleteDocumentsUsecase
-		searchDocumentUsecase  SearchDocumentsUsecase
-		getIndexStatUsecase    GetIndexStatUsecase
-		settingsUsecase        SettingsUsecase
-		documentHistoryUsecase DocumentHistoryUsecase
-		queryLogsUsecase       QueryLogsUsecase
-		discoverLinksUsecase   DiscoverLinksUsecase
-		scrapeUrlsUsecase      ScrapeUrlsUsecase
+		db                      *repository.VecDb
+		addDocumentUsecase      AddDocumentUsecase
+		previewDocumentUsecase  PreviewDocumentUsecase
+		commitDocumentUsecase   CommitDocumentUsecase
+		getDocumentUsecase      GetDocumentUsecase
+		deleteDocumentUsecase   DeleteDocumentsUsecase
+		searchDocumentUsecase   SearchDocumentsUsecase
+		getIndexStatUsecase     GetIndexStatUsecase
+		settingsUsecase         SettingsUsecase
+		documentHistoryUsecase  DocumentHistoryUsecase
+		queryLogsUsecase        QueryLogsUsecase
+		discoverLinksUsecase    DiscoverLinksUsecase
+		scrapeUrlsUsecase       ScrapeUrlsUsecase
+		reindexDocumentsUsecase ReindexDocumentsUsecase
 	}
 
 	AddDocumentUsecase interface {
@@ -69,6 +70,9 @@ type (
 	ScrapeUrlsUsecase interface {
 		Scrape(ctx context.Context, urls []string) (map[string]string, error)
 	}
+	ReindexDocumentsUsecase interface {
+		IsReindexing() bool
+	}
 )
 
 // NewRagServer создает новый экземпляр RagServer
@@ -83,17 +87,19 @@ func NewRagServer(
 	queryLogsUsecase QueryLogsUsecase,
 	discoverLinksUsecase DiscoverLinksUsecase,
 	scrapeUrlsUsecase ScrapeUrlsUsecase,
+	reindexDocumentsUsecase ReindexDocumentsUsecase,
 ) *RagServer {
 	return &RagServer{
-		db:                     database,
-		addDocumentUsecase:     addDocumentUsecase,
-		previewDocumentUsecase: previewDocumentUsecase,
-		commitDocumentUsecase:  commitDocumentUsecase,
-		searchDocumentUsecase:  searchDocumentUsecase,
-		settingsUsecase:        settingsUsecase,
-		documentHistoryUsecase: documentHistoryUsecase,
-		queryLogsUsecase:       queryLogsUsecase,
-		discoverLinksUsecase:   discoverLinksUsecase,
-		scrapeUrlsUsecase:      scrapeUrlsUsecase,
+		db:                      database,
+		addDocumentUsecase:      addDocumentUsecase,
+		previewDocumentUsecase:  previewDocumentUsecase,
+		commitDocumentUsecase:   commitDocumentUsecase,
+		searchDocumentUsecase:   searchDocumentUsecase,
+		settingsUsecase:         settingsUsecase,
+		documentHistoryUsecase:  documentHistoryUsecase,
+		queryLogsUsecase:        queryLogsUsecase,
+		discoverLinksUsecase:    discoverLinksUsecase,
+		scrapeUrlsUsecase:       scrapeUrlsUsecase,
+		reindexDocumentsUsecase: reindexDocumentsUsecase,
 	}
 }

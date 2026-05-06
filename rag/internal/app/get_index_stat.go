@@ -26,9 +26,15 @@ func (s *RagServer) GetIndexStats(ctx context.Context, req *pb.GetIndexStatsRequ
 		return nil, status.Errorf(codes.Internal, "failed to get index stats: %v", err)
 	}
 
+	isReindexing := false
+	if s.reindexDocumentsUsecase != nil {
+		isReindexing = s.reindexDocumentsUsecase.IsReindexing()
+	}
+
 	return &pb.GetIndexStatsResponse{
 		TotalDocuments: int32(totalDocs),
 		IndexSizeBytes: 0,
 		LastUpdated:    lastUpdated,
+		IsReindexing:   isReindexing,
 	}, nil
 }

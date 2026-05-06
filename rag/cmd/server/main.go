@@ -94,6 +94,10 @@ func main() {
 	defer cancel()
 	db := repository.NewVecDb(ctx, connStr)
 
+	if err := initDocumentIndex(ctx, db); err != nil {
+		log.Printf("Warning: failed to initialize document index: %v", err)
+	}
+
 	// LLM Gateway client for push notifications
 	llmClient, err := NewLLMGatewayClient(llmGatewayAddr)
 	if err != nil {
@@ -116,12 +120,17 @@ func main() {
 			"/app/.web_cache/link_scraper",
 			defaultLinkScrapeTimeout,
 		)
+	)
+
+	reindexUsecase := usecases.NewReindexDocumentsUsecase(db, db, db, fw)
+	settingsUsecase := usecases.NewSettingsUsecase(db, llmClient, reindexUsecase)
+
+	var (
 		addDocumentUsecase     = usecases.NewAddDocumentUsecase(db, fw, pdfProcessor, linkScraperProcessor)
 		previewDocumentUsecase = usecases.NewPreviewDocumentUsecase(pdfProcessor, linkScraperProcessor)
-		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, fw)
-		settingsUsecase        = usecases.NewSettingsUsecase(db, llmClient)
+		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, db, fw, settingsUsecase.GetEmbeddingModel, settingsUsecase.GetChunkSize, settingsUsecase.GetChunkOverlap)
 		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw, settingsUsecase, db)
-		documentHistoryUsecase = usecases.NewDocumentHistoryUsecase(db)
+		documentHistoryUsecase = usecases.NewDocumentHistoryUsecase(db, db)
 		queryLogsUsecase       = usecases.NewQueryLogsUsecase(db)
 		discoverLinksUsecase   = usecases.NewDiscoverLinksUsecase(linkScraperProcessor)
 		scrapeUrlsUsecase      = usecases.NewScrapeUrlsUsecase(linkScraperProcessor)
@@ -151,6 +160,7 @@ func main() {
 		queryLogsUsecase,
 		discoverLinksUsecase,
 		scrapeUrlsUsecase,
+		reindexUsecase,
 	)
 	pb.RegisterRagServiceServer(s, ragServer)
 
@@ -183,4 +193,45 @@ func getConn(url, port string) *grpc.ClientConn {
 		log.Fatalf("Не создали коннекшн с floatweaver: %v", err)
 	}
 	return conn
+}
+
+func initDocumentIndex(ctx context.Context, db *repository.VecDb) error {
+	rows, err := db.Pool().Query(ctx, `
+		SELECT DISTINCT 
+			metadata->>'doc_id' as doc_id,
+			SPLIT_PART(title, ' [часть', 1) as title,
+			MAX((metadata->>'chunk_total')::int) as chunk_total,
+			SUM(char_length(content) * 2) as size_bytes
+		FROM documents
+		WHERE metadata->>'doc_id' IS NOT NULL AND metadata->>'doc_id' != ''
+		GROUP BY metadata->>'doc_id', SPLIT_PART(title, ' [часть', 1)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to query existing documents: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var docID, title string
+		var chunkTotal, sizeBytes *int
+		if err := rows.Scan(&docID, &title, &chunkTotal, &sizeBytes); err != nil {
+			continue
+		}
+
+		model := "mxbai-embed-large"
+		chunkSize := 200
+		chunkOverlap := 0
+
+		_, err := db.Pool().Exec(ctx, `
+			INSERT INTO document_index (doc_id, title, indexed, embedding_model, chunk_size, chunk_overlap, chunk_total, size_bytes)
+			VALUES ($1, $2, TRUE, $3, $4, $5, $6, $7)
+			ON CONFLICT (doc_id) DO NOTHING
+		`, docID, title, model, chunkSize, chunkOverlap, chunkTotal, sizeBytes)
+		if err != nil {
+			log.Printf("Warning: failed to insert document index for %s: %v", docID, err)
+		}
+	}
+
+	log.Println("Document index initialized with existing documents")
+	return nil
 }

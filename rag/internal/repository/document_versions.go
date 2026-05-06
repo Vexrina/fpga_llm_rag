@@ -241,3 +241,7 @@ func (r *VecDb) GetAllDocuments(ctx context.Context) ([]AllDocumentItem, error) 
 	}
 	return items, nil
 }
+
+func (r *VecDb) GetAllDocumentsRaw(ctx context.Context) ([]AllDocumentItem, error) {
+	return r.GetAllDocuments(ctx)
+}

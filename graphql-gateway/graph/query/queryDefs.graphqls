@@ -3,6 +3,7 @@ type Query {
   searchDocuments(query: String!, limit: Int, threshold: Float): [DocumentResult!]!
   getDocument(id: String!): Document
   getIndexStats: IndexStats
+  getIndexStatsWithReindex: IndexStatsExtended
   getRagSettings: [SettingEntry!]!
   getRagSettingsHistory(limit: Int): [SettingsHistoryEntry!]!
   getDocumentHistory(documentId: String!, limit: Int): [DocumentVersion!]!

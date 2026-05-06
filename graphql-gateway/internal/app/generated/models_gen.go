@@ -73,6 +73,14 @@ type IndexStats struct {
 	TotalDocuments int    `json:"totalDocuments"`
 	IndexSizeBytes int    `json:"indexSizeBytes"`
 	LastUpdated    string `json:"lastUpdated"`
+	IsReindexing   bool   `json:"isReindexing"`
+}
+
+type IndexStatsExtended struct {
+	TotalDocuments int    `json:"totalDocuments"`
+	IndexSizeBytes int    `json:"indexSizeBytes"`
+	LastUpdated    string `json:"lastUpdated"`
+	IsReindexing   bool   `json:"isReindexing"`
 }
 
 type MetadataEntry struct {

@@ -11,7 +11,8 @@ import (
 )
 
 type DocumentHistoryUsecase struct {
-	repo repository.DocumentVersionRepository
+	repo              repository.DocumentVersionRepository
+	documentIndexRepo repository.DocumentIndexRepository
 }
 
 type DocumentVersionRepository interface {
@@ -21,8 +22,11 @@ type DocumentVersionRepository interface {
 	GetAllDocuments(ctx context.Context) ([]repository.AllDocumentItem, error)
 }
 
-func NewDocumentHistoryUsecase(repo DocumentVersionRepository) *DocumentHistoryUsecase {
-	return &DocumentHistoryUsecase{repo: repo}
+func NewDocumentHistoryUsecase(repo DocumentVersionRepository, documentIndexRepo repository.DocumentIndexRepository) *DocumentHistoryUsecase {
+	return &DocumentHistoryUsecase{
+		repo:              repo,
+		documentIndexRepo: documentIndexRepo,
+	}
 }
 
 func (u *DocumentHistoryUsecase) GetDocumentHistory(ctx context.Context, documentID string, limit int) ([]*pb.DocumentVersion, error) {
@@ -98,13 +102,27 @@ func (u *DocumentHistoryUsecase) GetAllDocuments(ctx context.Context) ([]*pb.Doc
 		return nil, fmt.Errorf("failed to get all documents: %w", err)
 	}
 
+	indexes, err := u.documentIndexRepo.GetAllDocumentIndexes(ctx)
+	if err != nil {
+		indexes = nil
+	}
+
+	indexMap := make(map[string]bool)
+	for _, idx := range indexes {
+		indexMap[idx.DocID] = idx.Indexed
+	}
+
 	result := make([]*pb.DocumentListItem, 0, len(docs))
 	for _, d := range docs {
+		indexed := indexMap[d.ID]
+		if !indexed && d.Indexed {
+			indexed = true
+		}
 		result = append(result, &pb.DocumentListItem{
 			Id:        d.ID,
 			Title:     d.Title,
 			UpdatedAt: d.UpdatedAt,
-			Indexed:   d.Indexed,
+			Indexed:   indexed,
 			SizeBytes: d.SizeBytes,
 			Chunks:    d.Chunks,
 		})

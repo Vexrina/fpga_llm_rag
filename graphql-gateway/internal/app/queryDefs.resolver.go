@@ -83,6 +83,20 @@ func (r *queryResolver) GetIndexStats(ctx context.Context) (*generated.IndexStat
 	}, nil
 }
 
+// GetIndexStatsWithReindex is the resolver for the getIndexStatsWithReindex field.
+func (r *queryResolver) GetIndexStatsWithReindex(ctx context.Context) (*generated.IndexStatsExtended, error) {
+	stats, err := r.RAGClient.GetIndexStats(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &generated.IndexStatsExtended{
+		TotalDocuments: int(stats.TotalDocuments),
+		IndexSizeBytes: int(stats.IndexSizeBytes),
+		LastUpdated:    stats.LastUpdated,
+		IsReindexing:   stats.IsReindexing,
+	}, nil
+}
+
 // GetRagSettings is the resolver for the getRagSettings field.
 func (r *queryResolver) GetRagSettings(ctx context.Context) ([]*generated.SettingEntry, error) {
 	settings, err := r.RAGClient.GetRagSettings(ctx)

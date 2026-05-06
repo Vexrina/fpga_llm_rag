@@ -43,6 +43,7 @@ type IndexStats struct {
 	TotalDocuments int32
 	IndexSizeBytes int64
 	LastUpdated    string
+	IsReindexing   bool
 }
 
 func (c *RAGClient) SearchDocuments(ctx context.Context, query string, limit int32, threshold float32) ([]DocumentResult, int32, error) {
@@ -112,6 +113,7 @@ func (c *RAGClient) GetIndexStats(ctx context.Context) (*IndexStats, error) {
 		TotalDocuments: resp.TotalDocuments,
 		IndexSizeBytes: resp.IndexSizeBytes,
 		LastUpdated:    resp.LastUpdated,
+		IsReindexing:   resp.IsReindexing,
 	}, nil
 }
 

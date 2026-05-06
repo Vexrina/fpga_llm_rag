@@ -47,6 +47,14 @@ type IndexStats {
   totalDocuments: Int!
   indexSizeBytes: Int!
   lastUpdated: String!
+  isReindexing: Boolean!
+}
+
+type IndexStatsExtended {
+  totalDocuments: Int!
+  indexSizeBytes: Int!
+  lastUpdated: String!
+  isReindexing: Boolean!
 }
 
 type UpdateSettingsResult {

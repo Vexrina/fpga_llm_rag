@@ -22,13 +22,18 @@ type WebhookNotifier interface {
 	NotifyBasePromptUpdate(newPrompt string)
 }
 
+type Reindexer interface {
+	StartReindex(ctx context.Context) error
+}
+
 type SettingsUsecase struct {
 	repository SettingsRepository
 	webhook    WebhookNotifier
+	reindexer  Reindexer
 }
 
-func NewSettingsUsecase(repository SettingsRepository, webhook WebhookNotifier) *SettingsUsecase {
-	return &SettingsUsecase{repository: repository, webhook: webhook}
+func NewSettingsUsecase(repository SettingsRepository, webhook WebhookNotifier, reindexer Reindexer) *SettingsUsecase {
+	return &SettingsUsecase{repository: repository, webhook: webhook, reindexer: reindexer}
 }
 
 func (u *SettingsUsecase) GetRagSettings(ctx context.Context) (map[string]string, error) {
@@ -71,6 +76,14 @@ func (u *SettingsUsecase) UpdateRagSetting(ctx context.Context, key, value, chan
 	}
 	if key == "basePrompt" && u.webhook != nil {
 		u.webhook.NotifyBasePromptUpdate(value)
+	}
+	if (key == "model" || key == "chunkSize" || key == "chunkOverlap") && u.reindexer != nil {
+		fmt.Printf("Starting reindex due to setting change: key=%s, value=%s\n", key, value)
+		go func() {
+			if err := u.reindexer.StartReindex(ctx); err != nil {
+				fmt.Printf("failed to start reindex: %v\n", err)
+			}
+		}()
 	}
 	return nil
 }
@@ -116,4 +129,30 @@ func (u *SettingsUsecase) GetEmbeddingModel(ctx context.Context) (string, error)
 		return "mxbai-embed-large", nil
 	}
 	return model, nil
+}
+
+func (u *SettingsUsecase) GetChunkSize(ctx context.Context) (int, error) {
+	chunkSize, err := u.repository.GetSetting(ctx, "chunkSize")
+	if err != nil {
+		return 200, nil
+	}
+	var size int
+	fmt.Sscanf(chunkSize, "%d", &size)
+	if size == 0 {
+		size = 200
+	}
+	return size, nil
+}
+
+func (u *SettingsUsecase) GetChunkOverlap(ctx context.Context) (int, error) {
+	chunkOverlap, err := u.repository.GetSetting(ctx, "chunkOverlap")
+	if err != nil {
+		return 0, nil
+	}
+	var size int
+	fmt.Sscanf(chunkOverlap, "%d", &size)
+	if size < 0 {
+		size = 0
+	}
+	return size, nil
 }
