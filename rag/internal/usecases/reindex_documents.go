@@ -93,7 +93,7 @@ func (u *ReindexDocumentsUsecase) reindexAllDocuments(ctx context.Context) error
 
 	embeddingModel, err := u.getEmbeddingModel(ctx)
 	if err != nil || embeddingModel == "" {
-		embeddingModel = "mxbai-embed-large"
+		embeddingModel = "bge-m3"
 	}
 	u.embeddingModel = embeddingModel
 
@@ -237,10 +237,10 @@ func (u *ReindexDocumentsUsecase) getChunkOverlap(ctx context.Context) (int, err
 func (u *ReindexDocumentsUsecase) getEmbeddingModel(ctx context.Context) (string, error) {
 	value, err := u.settingsRepo.GetSetting(ctx, "model")
 	if err != nil {
-		return "mxbai-embed-large", nil
+		return "bge-m3", nil
 	}
 	if value == "" {
-		return "mxbai-embed-large", nil
+		return "bge-m3", nil
 	}
 	return value, nil
 }

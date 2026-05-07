@@ -61,6 +61,29 @@ func (c *LLMGatewayClient) Close() error {
 	return nil
 }
 
+type FloatWeaverClient struct {
+	client floatweaver.EmbedServiceClient
+	conn   *grpc.ClientConn
+}
+
+func NewFloatWeaverClient(conn *grpc.ClientConn) *FloatWeaverClient {
+	return &FloatWeaverClient{
+		client: floatweaver.NewEmbedServiceClient(conn),
+		conn:   conn,
+	}
+}
+
+func (c *FloatWeaverClient) SetEmbeddingModel(ctx context.Context, model string) error {
+	resp, err := c.client.SetEmbeddingModel(ctx, &floatweaver.SetModelRequest{Model: model})
+	if err != nil {
+		return err
+	}
+	if !resp.Success {
+		return fmt.Errorf("float-weaver rejected model change: %s", resp.Message)
+	}
+	return nil
+}
+
 // some check
 func main() {
 	var ( // envs
@@ -123,7 +146,8 @@ func main() {
 	)
 
 	reindexUsecase := usecases.NewReindexDocumentsUsecase(db, db, db, fw)
-	settingsUsecase := usecases.NewSettingsUsecase(db, llmClient, reindexUsecase)
+	fwClient := NewFloatWeaverClient(fwConn)
+	settingsUsecase := usecases.NewSettingsUsecase(db, llmClient, reindexUsecase, fwClient)
 
 	var (
 		addDocumentUsecase     = usecases.NewAddDocumentUsecase(db, fw, pdfProcessor, linkScraperProcessor)
@@ -218,7 +242,7 @@ func initDocumentIndex(ctx context.Context, db *repository.VecDb) error {
 			continue
 		}
 
-		model := "mxbai-embed-large"
+		model := "bge-m3"
 		chunkSize := 200
 		chunkOverlap := 0
 

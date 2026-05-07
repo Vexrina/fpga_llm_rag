@@ -38,7 +38,7 @@ CREATE TRIGGER update_rag_settings_timestamp
 INSERT INTO rag_settings (key, value) VALUES
     ('topK', '5'),
     ('similarityThreshold', '0.75'),
-    ('model', 'mxbai-embed-large'),
+    ('model', 'bge-m3'),
     ('chunkSize', '512'),
     ('chunkOverlap', '64'),
     ('comparisonMethod', 'cosine')

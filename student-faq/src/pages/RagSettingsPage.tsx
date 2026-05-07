@@ -218,9 +218,8 @@ function SettingsTab() {
             onChange={(e: ChangeEvent<HTMLSelectElement>) => handleChange('model', e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           >
-            <option value="mxbai-embed-large">mxbai-embed-large</option>
-            <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2</option>
-            <option value="text-embedding-ada-002">text-embedding-ada-002</option>
+            <option value="bge-m3">bge-m3 (рекомендуется)</option>
+            <option value="nomic-embed-text-v2-moe">nomic-embed-text-v2-moe (мультиязычная)</option>
           </select>
         </Field>
       </div>

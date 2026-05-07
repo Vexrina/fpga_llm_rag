@@ -85,7 +85,7 @@ func (u *CommitDocumentUsecase) Commit(ctx context.Context, domain *utils.Commit
 
 	embeddingModel, err := u.getEmbeddingModel(ctx)
 	if err != nil {
-		embeddingModel = "mxbai-embed-large"
+		embeddingModel = "bge-m3"
 	}
 	chunkSize, _ := u.getChunkSize(ctx)
 	if chunkSize == 0 {

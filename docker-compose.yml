@@ -35,27 +35,6 @@ services:
     networks:
       - fpga-network
 
-  tgi-mxbai:
-    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.7
-    container_name: tgi-mxbai
-    ports:
-      - "8080:80"
-    environment:
-      - MODEL_ID=BAAI/bge-large-en-v1.5
-      - NUM_SHARD=1
-      - MAX_BATCH_PREFILL_TOKENS=32768
-      - MAX_INPUT_LENGTH=512
-      - MAX_TOTAL_TOKENS=8192
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/ || curl -f http://localhost/health"]
-      interval: 15s
-      timeout: 10s
-      retries: 15
-      start_period: 120s
-    networks:
-      - fpga-network
-
   float-weaver:
     build: ./float-weaver
     container_name: float-weaver
@@ -63,11 +42,11 @@ services:
       - "8081:8081"
     environment:
       - PORT=8081
-      - TGI_URL=tgi-mxbai
-      - TGI_PORT=80
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_EMBEDDING_MODEL=bge-m3
     depends_on:
-      tgi-mxbai:
-        condition: service_healthy
+      ollama:
+        condition: service_started
     restart: unless-stopped
     networks:
       - fpga-network
@@ -104,6 +83,10 @@ services:
       - "11435:11434"
     volumes:
       - ollama_data:/root/.ollama
+      - ./ollama/init.sh:/init.sh
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    entrypoint: ["/bin/bash", "/init.sh"]
     networks:
       - fpga-network
 

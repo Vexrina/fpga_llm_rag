@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"rag/internal/repository"
 	"rag/internal/utils"
@@ -22,18 +23,23 @@ type WebhookNotifier interface {
 	NotifyBasePromptUpdate(newPrompt string)
 }
 
+type FloatWeaverNotifier interface {
+	SetEmbeddingModel(ctx context.Context, model string) error
+}
+
 type Reindexer interface {
 	StartReindex(ctx context.Context) error
 }
 
 type SettingsUsecase struct {
-	repository SettingsRepository
-	webhook    WebhookNotifier
-	reindexer  Reindexer
+	repository          SettingsRepository
+	webhook             WebhookNotifier
+	reindexer           Reindexer
+	floatWeaverNotifier FloatWeaverNotifier
 }
 
-func NewSettingsUsecase(repository SettingsRepository, webhook WebhookNotifier, reindexer Reindexer) *SettingsUsecase {
-	return &SettingsUsecase{repository: repository, webhook: webhook, reindexer: reindexer}
+func NewSettingsUsecase(repository SettingsRepository, webhook WebhookNotifier, reindexer Reindexer, fwNotifier FloatWeaverNotifier) *SettingsUsecase {
+	return &SettingsUsecase{repository: repository, webhook: webhook, reindexer: reindexer, floatWeaverNotifier: fwNotifier}
 }
 
 func (u *SettingsUsecase) GetRagSettings(ctx context.Context) (map[string]string, error) {
@@ -76,6 +82,19 @@ func (u *SettingsUsecase) UpdateRagSetting(ctx context.Context, key, value, chan
 	}
 	if key == "basePrompt" && u.webhook != nil {
 		u.webhook.NotifyBasePromptUpdate(value)
+	}
+	if key == "model" {
+		if u.floatWeaverNotifier != nil {
+			go func() {
+				fwCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				if err := u.floatWeaverNotifier.SetEmbeddingModel(fwCtx, value); err != nil {
+					fmt.Printf("failed to notify float-weaver about model change: %v\n", err)
+				} else {
+					fmt.Printf("Successfully notified float-weaver about model change to: %s\n", value)
+				}
+			}()
+		}
 	}
 	if (key == "model" || key == "chunkSize" || key == "chunkOverlap") && u.reindexer != nil {
 		fmt.Printf("Starting reindex due to setting change: key=%s, value=%s\n", key, value)
@@ -126,7 +145,7 @@ func (u *SettingsUsecase) GetComparisonMethod(ctx context.Context) (utils.Compar
 func (u *SettingsUsecase) GetEmbeddingModel(ctx context.Context) (string, error) {
 	model, err := u.repository.GetSetting(ctx, "model")
 	if err != nil {
-		return "mxbai-embed-large", nil
+		return "bge-m3", nil
 	}
 	return model, nil
 }

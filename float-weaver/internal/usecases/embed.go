@@ -13,25 +13,50 @@ import (
 )
 
 type EmbedUsecase struct {
-	tgiUrl  string
-	tgiPort string
+	ollamaUrl string
+	model     string
 }
 
-type tgiRequest struct {
-	Inputs []string `json:"inputs"`
+type OllamaEmbedRequest struct {
+	Model   string `json:"model"`
+	Prompt  string `json:"prompt"`
+	Options struct {
+		NumEmbed int `json:"num_embed"`
+	} `json:"options"`
 }
 
-func NewEmbedUsecase(tgiUrl, tgiPort string) *EmbedUsecase {
-	return &EmbedUsecase{tgiUrl: tgiUrl, tgiPort: tgiPort}
+type OllamaEmbedResponse struct {
+	Embedding []float32 `json:"embedding"`
+}
+
+func NewEmbedUsecase(ollamaUrl, model string) *EmbedUsecase {
+	if model == "" {
+		model = "bge-m3"
+	}
+	return &EmbedUsecase{ollamaUrl: ollamaUrl, model: model}
+}
+
+func (u EmbedUsecase) SetModel(model string) {
+	u.model = model
+	log.Printf("Model changed to: %s", model)
+}
+
+func (u EmbedUsecase) GetModel() string {
+	return u.model
 }
 
 func (u EmbedUsecase) EmbedContent(ctx context.Context, content string) ([][]float32, error) {
-	url := fmt.Sprintf("http://%s:%s/embed", u.tgiUrl, u.tgiPort)
-	log.Printf("DEBUG: Calling TGI at: %s with content length: %d", url, len(content))
+	url := fmt.Sprintf("%s/api/embeddings", u.ollamaUrl)
+	log.Printf("DEBUG: Calling Ollama at: %s with model: %s, content length: %d", url, u.model, len(content))
 
-	reqBody, _ := json.Marshal(tgiRequest{Inputs: []string{content}})
+	var reqBody []byte
+	oreq := OllamaEmbedRequest{
+		Model:  u.model,
+		Prompt: content,
+	}
+	reqBody, _ = json.Marshal(oreq)
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{Timeout: 60 * time.Second}
 	resp, err := client.Post(
 		url,
 		"application/json",
@@ -43,22 +68,22 @@ func (u EmbedUsecase) EmbedContent(ctx context.Context, content string) ([][]flo
 	}
 	defer resp.Body.Close()
 
-	log.Printf("DEBUG: TGI response status: %d", resp.StatusCode)
+	log.Printf("DEBUG: Ollama response status: %d", resp.StatusCode)
 	body, _ := io.ReadAll(resp.Body)
-	log.Printf("DEBUG: TGI response body length: %d, body: %s", len(body), string(body[:min(200, len(body))]))
+	log.Printf("DEBUG: Ollama response body length: %d", len(body))
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("TGI returned status %d: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("Ollama returned status %d: %s", resp.StatusCode, string(body))
 	}
 
-	var embeddings [][]float32
-	if err := json.Unmarshal(body, &embeddings); err != nil {
+	var ollamaResp OllamaEmbedResponse
+	if err := json.Unmarshal(body, &ollamaResp); err != nil {
 		log.Printf("DEBUG: JSON decode error: %v, body: %s", err, string(body))
 		return nil, err
 	}
-	if len(embeddings) == 0 {
-		return nil, errors.New("TGI не вернул эмбеддинг")
+	if len(ollamaResp.Embedding) == 0 {
+		return nil, errors.New("Ollama не вернул эмбеддинг")
 	}
-	log.Printf("DEBUG: Got %d embeddings, dim: %d", len(embeddings), len(embeddings[0]))
-	return embeddings, nil
+	log.Printf("DEBUG: Got embedding, dim: %d", len(ollamaResp.Embedding))
+	return [][]float32{ollamaResp.Embedding}, nil
 }

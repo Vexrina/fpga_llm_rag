@@ -6,6 +6,8 @@ option go_package = "./floatweaver";
 
 service EmbedService {
   rpc Embed(EmbedRequest) returns (EmbedResponse) {}
+  rpc SetEmbeddingModel(SetModelRequest) returns (SetModelResponse) {}
+  rpc GetEmbeddingModel(GetModelRequest) returns (GetModelResponse) {}
 }
 
 message EmbedRequest {
@@ -18,4 +20,19 @@ message EmbedResponse {
 
 message Embedding {
   repeated float values = 1;
+}
+
+message SetModelRequest {
+  string model = 1;
+}
+
+message SetModelResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetModelRequest {}
+
+message GetModelResponse {
+  string model = 1;
 }

@@ -15,30 +15,26 @@ import (
 
 func main() {
 	port := getEnv("PORT", "8081")
-	tgi_url := getEnv("TGI_URL", "localhost")
-	tgi_port := getEnv("TGI_PORT", "8080")
+	ollamaUrl := getEnv("OLLAMA_URL", "http://localhost:11434")
+	model := getEnv("OLLAMA_EMBEDDING_MODEL", "bge-m3")
 
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalf("Не удалось создать listener: %v", err)
 	}
 
-	// Создаем gRPC сервер
 	s := grpc.NewServer()
 
-	// Создаем юзкейсы
-	embedUc := usecases.NewEmbedUsecase(tgi_url, tgi_port)
+	embedUc := usecases.NewEmbedUsecase(ollamaUrl, model)
+	log.Printf("Using Ollama at %s with model: %s", ollamaUrl, model)
 
-	// Регистрируем наш сервис
 	ragServer := app.NewFloatWeaver(embedUc)
 	pb.RegisterEmbedServiceServer(s, ragServer)
 
-	// Включаем reflection для отладки
 	reflection.Register(s)
 
 	log.Printf("gRPC сервер запущен на порту %s", port)
 
-	// Запускаем сервер
 	if err = s.Serve(lis); err != nil {
 		log.Fatalf("Не удалось запустить сервер: %v", err)
 	}
