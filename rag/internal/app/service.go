@@ -60,6 +60,8 @@ type (
 		GetDocumentHistory(ctx context.Context, documentID string, limit int) ([]*pb.DocumentVersion, error)
 		RollbackDocument(ctx context.Context, req *utils.RollbackDocumentDomain) (*pb.RollbackDocumentResponse, error)
 		GetAllDocuments(ctx context.Context) ([]*pb.DocumentListItem, error)
+		UpdateDocument(ctx context.Context, req *utils.UpdateDocumentDomain) (*pb.UpdateDocumentResponse, error)
+		DeleteDocument(ctx context.Context, req *utils.DeleteDocumentDomain) (*pb.DeleteDocumentResponse, error)
 	}
 	QueryLogsUsecase interface {
 		GetQueryLogs(ctx context.Context, page, pageSize int) (*pb.GetQueryLogsResponse, error)

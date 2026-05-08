@@ -26,6 +26,11 @@ func (r *mutationResolver) DeleteDocument(ctx context.Context, id string) (*gene
 	panic(fmt.Errorf("not implemented: DeleteDocument - deleteDocument"))
 }
 
+// UpdateDocument is the resolver for the updateDocument field.
+func (r *mutationResolver) UpdateDocument(ctx context.Context, id string, title string, content string, updatedBy *string) (*generated.UpdateDocumentResult, error) {
+	panic(fmt.Errorf("not implemented: UpdateDocument - updateDocument"))
+}
+
 // UpdateRagSetting is the resolver for the updateRagSetting field.
 func (r *mutationResolver) UpdateRagSetting(ctx context.Context, key string, value string, changedBy *string) (*generated.UpdateSettingsResult, error) {
 	panic(fmt.Errorf("not implemented: UpdateRagSetting - updateRagSetting"))

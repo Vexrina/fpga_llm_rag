@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v3.21.12
-// source: api/rag.proto
+// source: rag.proto
 
 package rag
 
@@ -30,6 +30,7 @@ const (
 	RagService_GetRagSettingsHistory_FullMethodName = "/rag.RagService/GetRagSettingsHistory"
 	RagService_GetDocumentHistory_FullMethodName    = "/rag.RagService/GetDocumentHistory"
 	RagService_RollbackDocument_FullMethodName      = "/rag.RagService/RollbackDocument"
+	RagService_UpdateDocument_FullMethodName        = "/rag.RagService/UpdateDocument"
 	RagService_GetAllDocuments_FullMethodName       = "/rag.RagService/GetAllDocuments"
 	RagService_GetQueryLogs_FullMethodName          = "/rag.RagService/GetQueryLogs"
 	RagService_DiscoverLinks_FullMethodName         = "/rag.RagService/DiscoverLinks"
@@ -64,6 +65,8 @@ type RagServiceClient interface {
 	GetDocumentHistory(ctx context.Context, in *GetDocumentHistoryRequest, opts ...grpc.CallOption) (*GetDocumentHistoryResponse, error)
 	// Откатить документ к определённой версии
 	RollbackDocument(ctx context.Context, in *RollbackDocumentRequest, opts ...grpc.CallOption) (*RollbackDocumentResponse, error)
+	// Обновить документ (название и/или содержимое)
+	UpdateDocument(ctx context.Context, in *UpdateDocumentRequest, opts ...grpc.CallOption) (*UpdateDocumentResponse, error)
 	// Получить список всех документов
 	GetAllDocuments(ctx context.Context, in *GetAllDocumentsRequest, opts ...grpc.CallOption) (*GetAllDocumentsResponse, error)
 	// Получить логи запросов с пагинацией
@@ -192,6 +195,16 @@ func (c *ragServiceClient) RollbackDocument(ctx context.Context, in *RollbackDoc
 	return out, nil
 }
 
+func (c *ragServiceClient) UpdateDocument(ctx context.Context, in *UpdateDocumentRequest, opts ...grpc.CallOption) (*UpdateDocumentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateDocumentResponse)
+	err := c.cc.Invoke(ctx, RagService_UpdateDocument_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *ragServiceClient) GetAllDocuments(ctx context.Context, in *GetAllDocumentsRequest, opts ...grpc.CallOption) (*GetAllDocumentsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetAllDocumentsResponse)
@@ -260,6 +273,8 @@ type RagServiceServer interface {
 	GetDocumentHistory(context.Context, *GetDocumentHistoryRequest) (*GetDocumentHistoryResponse, error)
 	// Откатить документ к определённой версии
 	RollbackDocument(context.Context, *RollbackDocumentRequest) (*RollbackDocumentResponse, error)
+	// Обновить документ (название и/или содержимое)
+	UpdateDocument(context.Context, *UpdateDocumentRequest) (*UpdateDocumentResponse, error)
 	// Получить список всех документов
 	GetAllDocuments(context.Context, *GetAllDocumentsRequest) (*GetAllDocumentsResponse, error)
 	// Получить логи запросов с пагинацией
@@ -310,6 +325,9 @@ func (UnimplementedRagServiceServer) GetDocumentHistory(context.Context, *GetDoc
 }
 func (UnimplementedRagServiceServer) RollbackDocument(context.Context, *RollbackDocumentRequest) (*RollbackDocumentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RollbackDocument not implemented")
+}
+func (UnimplementedRagServiceServer) UpdateDocument(context.Context, *UpdateDocumentRequest) (*UpdateDocumentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateDocument not implemented")
 }
 func (UnimplementedRagServiceServer) GetAllDocuments(context.Context, *GetAllDocumentsRequest) (*GetAllDocumentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllDocuments not implemented")
@@ -542,6 +560,24 @@ func _RagService_RollbackDocument_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RagService_UpdateDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDocumentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).UpdateDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_UpdateDocument_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).UpdateDocument(ctx, req.(*UpdateDocumentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _RagService_GetAllDocuments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetAllDocumentsRequest)
 	if err := dec(in); err != nil {
@@ -666,6 +702,10 @@ var RagService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RagService_RollbackDocument_Handler,
 		},
 		{
+			MethodName: "UpdateDocument",
+			Handler:    _RagService_UpdateDocument_Handler,
+		},
+		{
 			MethodName: "GetAllDocuments",
 			Handler:    _RagService_GetAllDocuments_Handler,
 		},
@@ -683,5 +723,5 @@ var RagService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/rag.proto",
+	Metadata: "rag.proto",
 }

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -29,4 +30,8 @@ type DocumentVersionRepository interface {
 	GetDocumentVersion(ctx context.Context, versionID int) (*DocumentVersion, error)
 	RollbackToVersion(ctx context.Context, documentID string, versionID int, rollbackBy string) (int, error)
 	GetAllDocuments(ctx context.Context) ([]AllDocumentItem, error)
+	DeleteDocumentByID(ctx context.Context, docID string) error
+	UpdateDocumentTitle(ctx context.Context, docID, title string) error
+	BeginTx(ctx context.Context) (pgx.Tx, error)
+	InsertItemWithTx(ctx context.Context, tx pgx.Tx, item Item) error
 }

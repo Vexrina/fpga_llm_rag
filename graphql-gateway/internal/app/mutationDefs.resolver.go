@@ -103,6 +103,22 @@ func (r *mutationResolver) RollbackDocument(ctx context.Context, documentID stri
 	}, nil
 }
 
+// UpdateDocument is the resolver for the updateDocument field.
+func (r *mutationResolver) UpdateDocument(ctx context.Context, id string, title string, content string, updatedBy *string) (*generated.UpdateDocumentResult, error) {
+	by := "admin"
+	if updatedBy != nil && *updatedBy != "" {
+		by = *updatedBy
+	}
+	result, err := r.RAGClient.UpdateDocument(ctx, id, title, content, by)
+	if err != nil {
+		return nil, err
+	}
+	return &generated.UpdateDocumentResult{
+		Success: result.Success,
+		Message: result.Message,
+	}, nil
+}
+
 // DiscoverLinks is the resolver for the discoverLinks field.
 func (r *mutationResolver) DiscoverLinks(ctx context.Context, url string, maxDepth int) (*generated.DiscoverLinksResult, error) {
 	result, err := r.RAGClient.DiscoverLinks(ctx, url, int32(maxDepth))

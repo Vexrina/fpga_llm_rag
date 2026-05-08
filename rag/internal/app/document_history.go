@@ -63,3 +63,34 @@ func (s *RagServer) GetAllDocuments(ctx context.Context, req *pb.GetAllDocuments
 	}
 	return &pb.GetAllDocumentsResponse{Documents: docs}, nil
 }
+
+func (s *RagServer) UpdateDocument(ctx context.Context, req *pb.UpdateDocumentRequest) (*pb.UpdateDocumentResponse, error) {
+	if req.Id == "" {
+		return &pb.UpdateDocumentResponse{
+			Success: false,
+			Message: "id is required",
+		}, nil
+	}
+
+	updatedBy := req.UpdatedBy
+	if updatedBy == "" {
+		updatedBy = "admin"
+	}
+
+	domain := &utils.UpdateDocumentDomain{
+		ID:        req.Id,
+		Title:     req.Title,
+		Content:   req.Content,
+		UpdatedBy: updatedBy,
+	}
+
+	result, err := s.documentHistoryUsecase.UpdateDocument(ctx, domain)
+	if err != nil {
+		return &pb.UpdateDocumentResponse{
+			Success: false,
+			Message: err.Error(),
+		}, nil
+	}
+
+	return result, nil
+}

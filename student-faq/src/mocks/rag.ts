@@ -1,5 +1,5 @@
 import type { RagSettings, HistoryEntry, LogEntry, KnowledgeDoc, DocumentVersion } from '../types'
-import { getRagSettingsAPI, updateRagSettingAPI, getRagSettingsHistoryAPI, getDocumentHistoryAPI, rollbackDocumentAPI, getAllDocumentsAPI, getDocumentByIdAPI } from '../api/graphql'
+import { getRagSettingsAPI, updateRagSettingAPI, getRagSettingsHistoryAPI, getDocumentHistoryAPI, rollbackDocumentAPI, getAllDocumentsAPI, getDocumentByIdAPI, updateDocumentAPI, deleteDocumentAPI } from '../api/graphql'
 
 const defaultSettings: RagSettings = {
   topK: 5,
@@ -240,6 +240,38 @@ export async function rollbackDocument(documentId: string, versionId: number): P
     const result = await rollbackDocumentAPI(documentId, versionId)
     return { success: result.success, message: result.message }
   } catch (e) {
+    return { success: false, message: String(e) }
+  }
+}
+
+export async function updateDocument(id: string, title: string, content: string): Promise<{ success: boolean; message: string }> {
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  try {
+    const result = await updateDocumentAPI(id, title, content, 'admin')
+    return result
+  } catch (e) {
+    const doc = mockDocs.find((d) => d.id === id)
+    if (doc) {
+      doc.title = title
+      doc.content = content
+      doc.updatedAt = new Date()
+      return { success: true, message: 'Документ обновлён' }
+    }
+    return { success: false, message: String(e) }
+  }
+}
+
+export async function deleteDocument(id: string): Promise<{ success: boolean; message: string }> {
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  try {
+    const result = await deleteDocumentAPI(id)
+    return result
+  } catch (e) {
+    const idx = mockDocs.findIndex((d) => d.id === id)
+    if (idx >= 0) {
+      mockDocs.splice(idx, 1)
+      return { success: true, message: 'Документ удалён' }
+    }
     return { success: false, message: String(e) }
   }
 }

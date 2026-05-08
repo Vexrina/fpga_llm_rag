@@ -31,6 +31,11 @@ func (r *queryResolver) GetIndexStats(ctx context.Context) (*generated.IndexStat
 	panic(fmt.Errorf("not implemented: GetIndexStats - getIndexStats"))
 }
 
+// GetIndexStatsWithReindex is the resolver for the getIndexStatsWithReindex field.
+func (r *queryResolver) GetIndexStatsWithReindex(ctx context.Context) (*generated.IndexStatsExtended, error) {
+	panic(fmt.Errorf("not implemented: GetIndexStatsWithReindex - getIndexStatsWithReindex"))
+}
+
 // GetRagSettings is the resolver for the getRagSettings field.
 func (r *queryResolver) GetRagSettings(ctx context.Context) ([]*generated.SettingEntry, error) {
 	panic(fmt.Errorf("not implemented: GetRagSettings - getRagSettings"))

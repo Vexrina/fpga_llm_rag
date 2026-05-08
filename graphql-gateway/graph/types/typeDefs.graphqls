@@ -43,6 +43,11 @@ type DeleteDocumentResult {
   message: String!
 }
 
+type UpdateDocumentResult {
+  success: Boolean!
+  message: String!
+}
+
 type IndexStats {
   totalDocuments: Int!
   indexSizeBytes: Int!

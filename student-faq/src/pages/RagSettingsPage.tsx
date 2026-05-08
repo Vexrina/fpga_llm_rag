@@ -9,6 +9,8 @@ import {
   getDocument,
   getDocumentHistory,
   rollbackDocument,
+  updateDocument,
+  deleteDocument,
 } from '../mocks/rag'
 import { commitDocument, getQueryLogsAPI, type QueryLogEntry, discoverLinks, scrapeUrls } from '../api/graphql'
 import Tooltip from '../components/Tooltip'
@@ -445,6 +447,13 @@ function KnowledgeTab() {
   const [newDocContent, setNewDocContent] = useState('')
   const [isCommitting, setIsCommitting] = useState(false)
 
+  // Edit document states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editDocTitle, setEditDocTitle] = useState('')
+  const [editDocContent, setEditDocContent] = useState('')
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   // URL Discovery states
   const [urlStep, setUrlStep] = useState<1 | 2 | 3>(1)
   const [discoveredLinks, setDiscoveredLinks] = useState<string[]>([])
@@ -509,6 +518,59 @@ function KnowledgeTab() {
       }
     } finally {
       setIsRollingBack(null)
+    }
+  }
+
+  const handleOpenEditModal = () => {
+    if (!selectedDoc) return
+    setEditDocTitle(selectedDoc.title)
+    setEditDocContent(selectedDoc.content || '')
+    setIsEditModalOpen(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false)
+    setEditDocTitle('')
+    setEditDocContent('')
+  }
+
+  const handleSaveEdit = async () => {
+    if (!selectedDoc) return
+    setIsUpdating(true)
+    try {
+      const result = await updateDocument(selectedDoc.id, editDocTitle, editDocContent)
+      if (result.success) {
+        alert('Документ обновлён')
+        setIsEditModalOpen(false)
+        const data = await getDocuments()
+        setDocs(data)
+        const full = await getDocument(selectedDoc.id)
+        if (full) setSelectedDoc(full)
+      } else {
+        alert('Ошибка: ' + result.message)
+      }
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleDeleteDocument = async () => {
+    if (!selectedDoc) return
+    if (!confirm(`Вы уверены, что хотите удалить документ "${selectedDoc.title}"?`)) return
+    
+    setIsDeleting(true)
+    try {
+      const result = await deleteDocument(selectedDoc.id)
+      if (result.success) {
+        alert('Документ удалён')
+        setSelectedDoc(null)
+        const data = await getDocuments()
+        setDocs(data)
+      } else {
+        alert('Ошибка: ' + result.message)
+      }
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -761,9 +823,24 @@ function KnowledgeTab() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{selectedDoc.title}</h3>
-            {isDocLoading && (
-              <span className="text-sm text-gray-400 animate-pulse">Загрузка...</span>
-            )}
+            <div className="flex items-center gap-2">
+              {isDocLoading && (
+                <span className="text-sm text-gray-400 animate-pulse">Загрузка...</span>
+              )}
+              <button
+                onClick={handleOpenEditModal}
+                className="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors"
+              >
+                Редактировать
+              </button>
+              <button
+                onClick={handleDeleteDocument}
+                disabled={isDeleting}
+                className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? 'Удаление...' : 'Удалить'}
+              </button>
+            </div>
           </div>
           <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap max-h-96 overflow-y-auto">
             {isDocLoading ? 'Загрузка содержимого...' : selectedDoc.content || 'Содержимое отсутствует'}
@@ -1067,6 +1144,56 @@ function KnowledgeTab() {
                 className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCommitting ? 'Сохранение...' : 'Сохранить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Редактировать документ</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Название документа
+                </label>
+                <input
+                  type="text"
+                  value={editDocTitle}
+                  onChange={(e) => setEditDocTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Введите название документа"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Содержимое
+                </label>
+                <textarea
+                  value={editDocContent}
+                  onChange={(e) => setEditDocContent(e.target.value)}
+                  className="w-full h-64 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono resize-none"
+                  placeholder="Введите содержимое документа"
+                />
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={handleCloseEditModal}
+                className="px-4 py-2 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-100"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isUpdating}
+                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUpdating ? 'Сохранение...' : 'Сохранить'}
               </button>
             </div>
           </div>

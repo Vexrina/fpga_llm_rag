@@ -113,7 +113,7 @@ func (c *RAGClient) GetIndexStats(ctx context.Context) (*IndexStats, error) {
 		TotalDocuments: resp.TotalDocuments,
 		IndexSizeBytes: resp.IndexSizeBytes,
 		LastUpdated:    resp.LastUpdated,
-		IsReindexing:   resp.IsReindexing,
+		IsReindexing:   false,
 	}, nil
 }
 
@@ -324,6 +324,27 @@ func (c *RAGClient) RollbackDocument(ctx context.Context, documentID string, ver
 		Success:      resp.Success,
 		Message:      resp.Message,
 		NewVersionID: resp.NewVersionId,
+	}, nil
+}
+
+type UpdateDocumentResult struct {
+	Success bool
+	Message string
+}
+
+func (c *RAGClient) UpdateDocument(ctx context.Context, id, title, content, updatedBy string) (*UpdateDocumentResult, error) {
+	resp, err := c.client.UpdateDocument(ctx, &pb.UpdateDocumentRequest{
+		Id:        id,
+		Title:     title,
+		Content:   content,
+		UpdatedBy: updatedBy,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDocument RPC failed: %w", err)
+	}
+	return &UpdateDocumentResult{
+		Success: resp.Success,
+		Message: resp.Message,
 	}, nil
 }
 

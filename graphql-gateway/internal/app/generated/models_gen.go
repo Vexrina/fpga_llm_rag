@@ -158,6 +158,11 @@ type SettingsHistoryEntry struct {
 	ChangedAt  string `json:"changedAt"`
 }
 
+type UpdateDocumentResult struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 type UpdateSettingsResult struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`

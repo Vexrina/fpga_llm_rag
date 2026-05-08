@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type DocumentVersion struct {
@@ -244,4 +246,50 @@ func (r *VecDb) GetAllDocuments(ctx context.Context) ([]AllDocumentItem, error) 
 
 func (r *VecDb) GetAllDocumentsRaw(ctx context.Context) ([]AllDocumentItem, error) {
 	return r.GetAllDocuments(ctx)
+}
+
+func (r *VecDb) BeginTx(ctx context.Context) (pgx.Tx, error) {
+	return r.conn.Begin(ctx)
+}
+
+func (r *VecDb) UpdateDocumentTitle(ctx context.Context, docID, title string) error {
+	_, err := r.conn.Exec(ctx, `
+		UPDATE document_index 
+		SET title = $1, updated_at = CURRENT_TIMESTAMP
+		WHERE doc_id = $2
+	`, title, docID)
+	if err != nil {
+		return fmt.Errorf("failed to update document title: %w", err)
+	}
+	return nil
+}
+
+func (r *VecDb) DeleteDocumentByID(ctx context.Context, docID string) error {
+	tx, err := r.conn.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, `
+		DELETE FROM documents 
+		WHERE metadata->>'doc_id' = $1
+	`, docID)
+	if err != nil {
+		return fmt.Errorf("failed to delete document chunks: %w", err)
+	}
+
+	_, err = tx.Exec(ctx, `
+		DELETE FROM document_index 
+		WHERE doc_id = $1
+	`, docID)
+	if err != nil {
+		return fmt.Errorf("failed to delete document index: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("failed to commit: %w", err)
+	}
+
+	return nil
 }

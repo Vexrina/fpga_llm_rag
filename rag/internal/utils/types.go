@@ -70,4 +70,11 @@ type (
 		VersionID  int32
 		RollbackBy string
 	}
+
+	UpdateDocumentDomain struct {
+		ID        string
+		Title     string
+		Content   string
+		UpdatedBy string
+	}
 )

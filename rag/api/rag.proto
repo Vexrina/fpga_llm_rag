@@ -39,6 +39,9 @@ service RagService {
   // Откатить документ к определённой версии
   rpc RollbackDocument(RollbackDocumentRequest) returns (RollbackDocumentResponse);
 
+  // Обновить документ (название и/или содержимое)
+  rpc UpdateDocument(UpdateDocumentRequest) returns (UpdateDocumentResponse);
+
   // Получить список всех документов
   rpc GetAllDocuments(GetAllDocumentsRequest) returns (GetAllDocumentsResponse);
 
@@ -247,6 +250,20 @@ message RollbackDocumentResponse {
   bool success = 1;
   string message = 2;
   string new_version_id = 3;
+}
+
+// Запрос на обновление документа
+message UpdateDocumentRequest {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+  string updated_by = 4;
+}
+
+// Ответ на обновление документа
+message UpdateDocumentResponse {
+  bool success = 1;
+  string message = 2;
 }
 
 // Запрос на получение списка всех документов

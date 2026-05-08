@@ -154,7 +154,7 @@ func main() {
 		previewDocumentUsecase = usecases.NewPreviewDocumentUsecase(pdfProcessor, linkScraperProcessor)
 		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, db, fw, settingsUsecase.GetEmbeddingModel, settingsUsecase.GetChunkSize, settingsUsecase.GetChunkOverlap)
 		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw, settingsUsecase, db)
-		documentHistoryUsecase = usecases.NewDocumentHistoryUsecase(db, db)
+		documentHistoryUsecase = usecases.NewDocumentHistoryUsecase(db, db, fw, settingsUsecase.GetChunkSize, settingsUsecase.GetChunkOverlap)
 		queryLogsUsecase       = usecases.NewQueryLogsUsecase(db)
 		discoverLinksUsecase   = usecases.NewDiscoverLinksUsecase(linkScraperProcessor)
 		scrapeUrlsUsecase      = usecases.NewScrapeUrlsUsecase(linkScraperProcessor)

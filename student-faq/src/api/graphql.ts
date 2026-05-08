@@ -344,6 +344,46 @@ export interface GetQueryLogsResult {
   }
 }
 
+export interface UpdateDocumentResult {
+  updateDocument: {
+    success: boolean
+    message: string
+  }
+}
+
+export async function updateDocumentAPI(id: string, title: string, content: string, updatedBy?: string): Promise<{ success: boolean; message: string }> {
+  const query = `
+    mutation UpdateDocument($id: String!, $title: String!, $content: String!, $updatedBy: String) {
+      updateDocument(id: $id, title: $title, content: $content, updatedBy: $updatedBy) {
+        success
+        message
+      }
+    }
+  `
+  const result = await graphqlRequest<UpdateDocumentResult>(query, { id, title, content, updatedBy })
+  return result.updateDocument
+}
+
+export interface DeleteDocumentResult {
+  deleteDocument: {
+    success: boolean
+    message: string
+  }
+}
+
+export async function deleteDocumentAPI(id: string): Promise<{ success: boolean; message: string }> {
+  const query = `
+    mutation DeleteDocument($id: String!) {
+      deleteDocument(id: $id) {
+        success
+        message
+      }
+    }
+  `
+  const result = await graphqlRequest<DeleteDocumentResult>(query, { id })
+  return result.deleteDocument
+}
+
 export async function getQueryLogsAPI(page: number = 1, pageSize: number = 20): Promise<{
   logs: QueryLogEntry[]
   total: number

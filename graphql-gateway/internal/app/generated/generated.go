@@ -95,6 +95,13 @@ type ComplexityRoot struct {
 		TotalDocuments func(childComplexity int) int
 	}
 
+	IndexStatsExtended struct {
+		IndexSizeBytes func(childComplexity int) int
+		IsReindexing   func(childComplexity int) int
+		LastUpdated    func(childComplexity int) int
+		TotalDocuments func(childComplexity int) int
+	}
+
 	MetadataEntry struct {
 		Key   func(childComplexity int) int
 		Value func(childComplexity int) int
@@ -107,6 +114,7 @@ type ComplexityRoot struct {
 		PreviewDocument  func(childComplexity int, input PreviewDocumentInput) int
 		RollbackDocument func(childComplexity int, documentID string, versionID int, rollbackBy *string) int
 		ScrapeUrls       func(childComplexity int, urls []string) int
+		UpdateDocument   func(childComplexity int, id string, title string, content string, updatedBy *string) int
 		UpdateRagSetting func(childComplexity int, key string, value string, changedBy *string) int
 	}
 
@@ -116,15 +124,16 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Ask                   func(childComplexity int, question string) int
-		GetDocument           func(childComplexity int, id string) int
-		GetDocumentHistory    func(childComplexity int, documentID string, limit *int) int
-		GetDocuments          func(childComplexity int) int
-		GetIndexStats         func(childComplexity int) int
-		GetQueryLogs          func(childComplexity int, page *int, pageSize *int) int
-		GetRagSettings        func(childComplexity int) int
-		GetRagSettingsHistory func(childComplexity int, limit *int) int
-		SearchDocuments       func(childComplexity int, query string, limit *int, threshold *float64) int
+		Ask                      func(childComplexity int, question string) int
+		GetDocument              func(childComplexity int, id string) int
+		GetDocumentHistory       func(childComplexity int, documentID string, limit *int) int
+		GetDocuments             func(childComplexity int) int
+		GetIndexStats            func(childComplexity int) int
+		GetIndexStatsWithReindex func(childComplexity int) int
+		GetQueryLogs             func(childComplexity int, page *int, pageSize *int) int
+		GetRagSettings           func(childComplexity int) int
+		GetRagSettingsHistory    func(childComplexity int, limit *int) int
+		SearchDocuments          func(childComplexity int, query string, limit *int, threshold *float64) int
 	}
 
 	QueryLogEntry struct {
@@ -173,6 +182,11 @@ type ComplexityRoot struct {
 		SettingKey func(childComplexity int) int
 	}
 
+	UpdateDocumentResult struct {
+		Message func(childComplexity int) int
+		Success func(childComplexity int) int
+	}
+
 	UpdateSettingsResult struct {
 		Message func(childComplexity int) int
 		Success func(childComplexity int) int
@@ -183,6 +197,7 @@ type MutationResolver interface {
 	PreviewDocument(ctx context.Context, input PreviewDocumentInput) (*PreviewDocumentResult, error)
 	CommitDocument(ctx context.Context, input CommitDocumentInput) (*CommitDocumentResult, error)
 	DeleteDocument(ctx context.Context, id string) (*DeleteDocumentResult, error)
+	UpdateDocument(ctx context.Context, id string, title string, content string, updatedBy *string) (*UpdateDocumentResult, error)
 	UpdateRagSetting(ctx context.Context, key string, value string, changedBy *string) (*UpdateSettingsResult, error)
 	RollbackDocument(ctx context.Context, documentID string, versionID int, rollbackBy *string) (*RollbackResult, error)
 	DiscoverLinks(ctx context.Context, url string, maxDepth int) (*DiscoverLinksResult, error)
@@ -193,6 +208,7 @@ type QueryResolver interface {
 	SearchDocuments(ctx context.Context, query string, limit *int, threshold *float64) ([]*DocumentResult, error)
 	GetDocument(ctx context.Context, id string) (*Document, error)
 	GetIndexStats(ctx context.Context) (*IndexStats, error)
+	GetIndexStatsWithReindex(ctx context.Context) (*IndexStatsExtended, error)
 	GetRagSettings(ctx context.Context) ([]*SettingEntry, error)
 	GetRagSettingsHistory(ctx context.Context, limit *int) ([]*SettingsHistoryEntry, error)
 	GetDocumentHistory(ctx context.Context, documentID string, limit *int) ([]*DocumentVersion, error)
@@ -427,6 +443,31 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.IndexStats.TotalDocuments(childComplexity), true
 
+	case "IndexStatsExtended.indexSizeBytes":
+		if e.ComplexityRoot.IndexStatsExtended.IndexSizeBytes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.IndexStatsExtended.IndexSizeBytes(childComplexity), true
+	case "IndexStatsExtended.isReindexing":
+		if e.ComplexityRoot.IndexStatsExtended.IsReindexing == nil {
+			break
+		}
+
+		return e.ComplexityRoot.IndexStatsExtended.IsReindexing(childComplexity), true
+	case "IndexStatsExtended.lastUpdated":
+		if e.ComplexityRoot.IndexStatsExtended.LastUpdated == nil {
+			break
+		}
+
+		return e.ComplexityRoot.IndexStatsExtended.LastUpdated(childComplexity), true
+	case "IndexStatsExtended.totalDocuments":
+		if e.ComplexityRoot.IndexStatsExtended.TotalDocuments == nil {
+			break
+		}
+
+		return e.ComplexityRoot.IndexStatsExtended.TotalDocuments(childComplexity), true
+
 	case "MetadataEntry.key":
 		if e.ComplexityRoot.MetadataEntry.Key == nil {
 			break
@@ -506,6 +547,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ScrapeUrls(childComplexity, args["urls"].([]string)), true
+	case "Mutation.updateDocument":
+		if e.ComplexityRoot.Mutation.UpdateDocument == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateDocument_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateDocument(childComplexity, args["id"].(string), args["title"].(string), args["content"].(string), args["updatedBy"].(*string)), true
 	case "Mutation.updateRagSetting":
 		if e.ComplexityRoot.Mutation.UpdateRagSetting == nil {
 			break
@@ -576,6 +628,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.GetIndexStats(childComplexity), true
+	case "Query.getIndexStatsWithReindex":
+		if e.ComplexityRoot.Query.GetIndexStatsWithReindex == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.GetIndexStatsWithReindex(childComplexity), true
 	case "Query.getQueryLogs":
 		if e.ComplexityRoot.Query.GetQueryLogs == nil {
 			break
@@ -774,6 +832,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.SettingsHistoryEntry.SettingKey(childComplexity), true
 
+	case "UpdateDocumentResult.message":
+		if e.ComplexityRoot.UpdateDocumentResult.Message == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateDocumentResult.Message(childComplexity), true
+	case "UpdateDocumentResult.success":
+		if e.ComplexityRoot.UpdateDocumentResult.Success == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateDocumentResult.Success(childComplexity), true
+
 	case "UpdateSettingsResult.message":
 		if e.ComplexityRoot.UpdateSettingsResult.Message == nil {
 			break
@@ -943,10 +1014,23 @@ type DeleteDocumentResult {
   message: String!
 }
 
+type UpdateDocumentResult {
+  success: Boolean!
+  message: String!
+}
+
 type IndexStats {
   totalDocuments: Int!
   indexSizeBytes: Int!
   lastUpdated: String!
+  isReindexing: Boolean!
+}
+
+type IndexStatsExtended {
+  totalDocuments: Int!
+  indexSizeBytes: Int!
+  lastUpdated: String!
+  isReindexing: Boolean!
 }
 
 type UpdateSettingsResult {
@@ -1019,6 +1103,7 @@ type ScrapeUrlsResult {
   searchDocuments(query: String!, limit: Int, threshold: Float): [DocumentResult!]!
   getDocument(id: String!): Document
   getIndexStats: IndexStats
+  getIndexStatsWithReindex: IndexStatsExtended
   getRagSettings: [SettingEntry!]!
   getRagSettingsHistory(limit: Int): [SettingsHistoryEntry!]!
   getDocumentHistory(documentId: String!, limit: Int): [DocumentVersion!]!
@@ -1035,6 +1120,7 @@ type SettingEntry {
   previewDocument(input: PreviewDocumentInput!): PreviewDocumentResult!
   commitDocument(input: CommitDocumentInput!): CommitDocumentResult!
   deleteDocument(id: String!): DeleteDocumentResult!
+  updateDocument(id: String!, title: String!, content: String!, updatedBy: String): UpdateDocumentResult!
   updateRagSetting(key: String!, value: String!, changedBy: String): UpdateSettingsResult!
   rollbackDocument(documentId: String!, versionId: Int!, rollbackBy: String): RollbackResult!
   discoverLinks(url: String!, maxDepth: Int!): DiscoverLinksResult!
@@ -1133,6 +1219,32 @@ func (ec *executionContext) field_Mutation_scrapeUrls_args(ctx context.Context, 
 		return nil, err
 	}
 	args["urls"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateDocument_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "title", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["title"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "content", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["content"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "updatedBy", ec.unmarshalOString2ᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["updatedBy"] = arg3
 	return args, nil
 }
 
@@ -2322,6 +2434,122 @@ func (ec *executionContext) fieldContext_IndexStats_isReindexing(_ context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _IndexStatsExtended_totalDocuments(ctx context.Context, field graphql.CollectedField, obj *IndexStatsExtended) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_IndexStatsExtended_totalDocuments,
+		func(ctx context.Context) (any, error) {
+			return obj.TotalDocuments, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_IndexStatsExtended_totalDocuments(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IndexStatsExtended",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _IndexStatsExtended_indexSizeBytes(ctx context.Context, field graphql.CollectedField, obj *IndexStatsExtended) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_IndexStatsExtended_indexSizeBytes,
+		func(ctx context.Context) (any, error) {
+			return obj.IndexSizeBytes, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_IndexStatsExtended_indexSizeBytes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IndexStatsExtended",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _IndexStatsExtended_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *IndexStatsExtended) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_IndexStatsExtended_lastUpdated,
+		func(ctx context.Context) (any, error) {
+			return obj.LastUpdated, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_IndexStatsExtended_lastUpdated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IndexStatsExtended",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _IndexStatsExtended_isReindexing(ctx context.Context, field graphql.CollectedField, obj *IndexStatsExtended) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_IndexStatsExtended_isReindexing,
+		func(ctx context.Context) (any, error) {
+			return obj.IsReindexing, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_IndexStatsExtended_isReindexing(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IndexStatsExtended",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _MetadataEntry_key(ctx context.Context, field graphql.CollectedField, obj *MetadataEntry) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2517,6 +2745,53 @@ func (ec *executionContext) fieldContext_Mutation_deleteDocument(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteDocument_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateDocument(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_updateDocument,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateDocument(ctx, fc.Args["id"].(string), fc.Args["title"].(string), fc.Args["content"].(string), fc.Args["updatedBy"].(*string))
+		},
+		nil,
+		ec.marshalNUpdateDocumentResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐUpdateDocumentResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateDocument(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_UpdateDocumentResult_success(ctx, field)
+			case "message":
+				return ec.fieldContext_UpdateDocumentResult_message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UpdateDocumentResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateDocument_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2946,6 +3221,45 @@ func (ec *executionContext) fieldContext_Query_getIndexStats(_ context.Context, 
 				return ec.fieldContext_IndexStats_isReindexing(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IndexStats", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getIndexStatsWithReindex(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_getIndexStatsWithReindex,
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().GetIndexStatsWithReindex(ctx)
+		},
+		nil,
+		ec.marshalOIndexStatsExtended2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐIndexStatsExtended,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_getIndexStatsWithReindex(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "totalDocuments":
+				return ec.fieldContext_IndexStatsExtended_totalDocuments(ctx, field)
+			case "indexSizeBytes":
+				return ec.fieldContext_IndexStatsExtended_indexSizeBytes(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_IndexStatsExtended_lastUpdated(ctx, field)
+			case "isReindexing":
+				return ec.fieldContext_IndexStatsExtended_isReindexing(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type IndexStatsExtended", field.Name)
 		},
 	}
 	return fc, nil
@@ -4039,6 +4353,64 @@ func (ec *executionContext) _SettingsHistoryEntry_changedAt(ctx context.Context,
 func (ec *executionContext) fieldContext_SettingsHistoryEntry_changedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SettingsHistoryEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpdateDocumentResult_success(ctx context.Context, field graphql.CollectedField, obj *UpdateDocumentResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_UpdateDocumentResult_success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_UpdateDocumentResult_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdateDocumentResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpdateDocumentResult_message(ctx context.Context, field graphql.CollectedField, obj *UpdateDocumentResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_UpdateDocumentResult_message,
+		func(ctx context.Context) (any, error) {
+			return obj.Message, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_UpdateDocumentResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdateDocumentResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -6176,6 +6548,60 @@ func (ec *executionContext) _IndexStats(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
+var indexStatsExtendedImplementors = []string{"IndexStatsExtended"}
+
+func (ec *executionContext) _IndexStatsExtended(ctx context.Context, sel ast.SelectionSet, obj *IndexStatsExtended) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, indexStatsExtendedImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("IndexStatsExtended")
+		case "totalDocuments":
+			out.Values[i] = ec._IndexStatsExtended_totalDocuments(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "indexSizeBytes":
+			out.Values[i] = ec._IndexStatsExtended_indexSizeBytes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "lastUpdated":
+			out.Values[i] = ec._IndexStatsExtended_lastUpdated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "isReindexing":
+			out.Values[i] = ec._IndexStatsExtended_isReindexing(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var metadataEntryImplementors = []string{"MetadataEntry"}
 
 func (ec *executionContext) _MetadataEntry(ctx context.Context, sel ast.SelectionSet, obj *MetadataEntry) graphql.Marshaler {
@@ -6256,6 +6682,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteDocument":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteDocument(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateDocument":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateDocument(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -6447,6 +6880,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getIndexStats(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getIndexStatsWithReindex":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getIndexStatsWithReindex(ctx, field)
 				return res
 			}
 
@@ -6931,6 +7383,50 @@ func (ec *executionContext) _SettingsHistoryEntry(ctx context.Context, sel ast.S
 			}
 		case "changedAt":
 			out.Values[i] = ec._SettingsHistoryEntry_changedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var updateDocumentResultImplementors = []string{"UpdateDocumentResult"}
+
+func (ec *executionContext) _UpdateDocumentResult(ctx context.Context, sel ast.SelectionSet, obj *UpdateDocumentResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, updateDocumentResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UpdateDocumentResult")
+		case "success":
+			out.Values[i] = ec._UpdateDocumentResult_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "message":
+			out.Values[i] = ec._UpdateDocumentResult_message(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7761,6 +8257,20 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
+func (ec *executionContext) marshalNUpdateDocumentResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐUpdateDocumentResult(ctx context.Context, sel ast.SelectionSet, v UpdateDocumentResult) graphql.Marshaler {
+	return ec._UpdateDocumentResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUpdateDocumentResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐUpdateDocumentResult(ctx context.Context, sel ast.SelectionSet, v *UpdateDocumentResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UpdateDocumentResult(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNUpdateSettingsResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐUpdateSettingsResult(ctx context.Context, sel ast.SelectionSet, v UpdateSettingsResult) graphql.Marshaler {
 	return ec._UpdateSettingsResult(ctx, sel, &v)
 }
@@ -7975,6 +8485,13 @@ func (ec *executionContext) marshalOIndexStats2ᚖgraphqlᚑgatewayᚋinternal�
 		return graphql.Null
 	}
 	return ec._IndexStats(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOIndexStatsExtended2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐIndexStatsExtended(ctx context.Context, sel ast.SelectionSet, v *IndexStatsExtended) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._IndexStatsExtended(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {

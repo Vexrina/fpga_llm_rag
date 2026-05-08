@@ -109,6 +109,19 @@ func SearchDocumentFromGRPCToDomain(req *pb.SearchRequest) *SearchDocumentDomain
 	}
 }
 
+func UpdateDocumentFromGRPCToDomain(req *pb.UpdateDocumentRequest) *UpdateDocumentDomain {
+	return &UpdateDocumentDomain{
+		ID:        req.GetId(),
+		Title:     req.GetTitle(),
+		Content:   req.GetContent(),
+		UpdatedBy: req.GetUpdatedBy(),
+	}
+}
+
+func UpdateDocumentFromDomainToGRPC(res *pb.UpdateDocumentResponse) *pb.UpdateDocumentResponse {
+	return res
+}
+
 func SearchDocumentFromDomainToGRPC() *pb.SearchResponse {
 	return &pb.SearchResponse{} // TODO: IMPLEMENT ME
 }

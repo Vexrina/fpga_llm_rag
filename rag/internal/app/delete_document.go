@@ -2,16 +2,22 @@ package app
 
 import (
 	"context"
-	"fmt"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"rag/internal/utils"
 	pb "rag/pkg/rag"
 )
 
-// DeleteDocument удаляет документ по ID
 func (s *RagServer) DeleteDocument(ctx context.Context, req *pb.DeleteDocumentRequest) (*pb.DeleteDocumentResponse, error) {
-	// TODO: Реализовать удаление документа по ID
-	return &pb.DeleteDocumentResponse{
-		Success: false,
-		Message: "Метод DeleteDocument не реализован",
-	}, fmt.Errorf("метод DeleteDocument не реализован")
+	if req.Id == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "id is required")
+	}
+
+	domain := &utils.DeleteDocumentDomain{
+		Id: req.Id,
+	}
+
+	return s.documentHistoryUsecase.DeleteDocument(ctx, domain)
 }

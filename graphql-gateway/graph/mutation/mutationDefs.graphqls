@@ -2,6 +2,7 @@ type Mutation {
   previewDocument(input: PreviewDocumentInput!): PreviewDocumentResult!
   commitDocument(input: CommitDocumentInput!): CommitDocumentResult!
   deleteDocument(id: String!): DeleteDocumentResult!
+  updateDocument(id: String!, title: String!, content: String!, updatedBy: String): UpdateDocumentResult!
   updateRagSetting(key: String!, value: String!, changedBy: String): UpdateSettingsResult!
   rollbackDocument(documentId: String!, versionId: Int!, rollbackBy: String): RollbackResult!
   discoverLinks(url: String!, maxDepth: Int!): DiscoverLinksResult!
