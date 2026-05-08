@@ -53,6 +53,9 @@ service RagService {
 
   // Скрапить выбранные URL
   rpc ScrapeUrls(ScrapeUrlsRequest) returns (ScrapeUrlsResponse);
+
+  // Получить только ID документов по запросу (для метрик)
+  rpc GetDocumentIdsByQuery(GetDocumentIdsRequest) returns (GetDocumentIdsResponse);
 }
 
 // Тип источника документа
@@ -334,4 +337,24 @@ message ScrapeUrlsResponse {
 message ScrapedTextEntry {
   string url = 1;
   string text = 2;
+}
+
+// Запрос на получение ID документов по query
+message GetDocumentIdsRequest {
+  string query = 1;
+  int32 limit = 2;
+  float similarity_threshold = 3;
+  ComparisonMethod comparison_method = 4;
+}
+
+// Ответ с ID документов
+message GetDocumentIdsResponse {
+  repeated DocumentIdEntry document_ids = 1;
+  int32 total_found = 2;
+}
+
+// ID документа с метаданными
+message DocumentIdEntry {
+  string id = 1;
+  float similarity_score = 2;
 } 

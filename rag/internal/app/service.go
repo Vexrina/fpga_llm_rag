@@ -27,6 +27,7 @@ type (
 		discoverLinksUsecase    DiscoverLinksUsecase
 		scrapeUrlsUsecase       ScrapeUrlsUsecase
 		reindexDocumentsUsecase ReindexDocumentsUsecase
+		getDocumentIdsUsecase   GetDocumentIdsUsecase
 	}
 
 	AddDocumentUsecase interface {
@@ -90,6 +91,7 @@ func NewRagServer(
 	discoverLinksUsecase DiscoverLinksUsecase,
 	scrapeUrlsUsecase ScrapeUrlsUsecase,
 	reindexDocumentsUsecase ReindexDocumentsUsecase,
+	getDocumentIdsUsecase GetDocumentIdsUsecase,
 ) *RagServer {
 	return &RagServer{
 		db:                      database,
@@ -103,5 +105,6 @@ func NewRagServer(
 		discoverLinksUsecase:    discoverLinksUsecase,
 		scrapeUrlsUsecase:       scrapeUrlsUsecase,
 		reindexDocumentsUsecase: reindexDocumentsUsecase,
+		getDocumentIdsUsecase:   getDocumentIdsUsecase,
 	}
 }

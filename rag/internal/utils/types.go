@@ -77,4 +77,11 @@ type (
 		Content   string
 		UpdatedBy string
 	}
+
+	GetDocumentIdsDomain struct {
+		Query            string
+		Limit            int32
+		SimilarityThs    float32
+		ComparisonMethod ComparisonMethod
+	}
 )

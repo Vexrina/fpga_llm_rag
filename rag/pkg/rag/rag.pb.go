@@ -2466,6 +2466,181 @@ func (x *ScrapedTextEntry) GetText() string {
 	return ""
 }
 
+// Запрос на получение ID документов по query
+type GetDocumentIdsRequest struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Query               string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	Limit               int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	SimilarityThreshold float32                `protobuf:"fixed32,3,opt,name=similarity_threshold,json=similarityThreshold,proto3" json:"similarity_threshold,omitempty"`
+	ComparisonMethod    ComparisonMethod       `protobuf:"varint,4,opt,name=comparison_method,json=comparisonMethod,proto3,enum=rag.ComparisonMethod" json:"comparison_method,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *GetDocumentIdsRequest) Reset() {
+	*x = GetDocumentIdsRequest{}
+	mi := &file_api_rag_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDocumentIdsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDocumentIdsRequest) ProtoMessage() {}
+
+func (x *GetDocumentIdsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDocumentIdsRequest.ProtoReflect.Descriptor instead.
+func (*GetDocumentIdsRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *GetDocumentIdsRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *GetDocumentIdsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetDocumentIdsRequest) GetSimilarityThreshold() float32 {
+	if x != nil {
+		return x.SimilarityThreshold
+	}
+	return 0
+}
+
+func (x *GetDocumentIdsRequest) GetComparisonMethod() ComparisonMethod {
+	if x != nil {
+		return x.ComparisonMethod
+	}
+	return ComparisonMethod_COMPARISON_METHOD_UNSPECIFIED
+}
+
+// Ответ с ID документов
+type GetDocumentIdsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DocumentIds   []*DocumentIdEntry     `protobuf:"bytes,1,rep,name=document_ids,json=documentIds,proto3" json:"document_ids,omitempty"`
+	TotalFound    int32                  `protobuf:"varint,2,opt,name=total_found,json=totalFound,proto3" json:"total_found,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDocumentIdsResponse) Reset() {
+	*x = GetDocumentIdsResponse{}
+	mi := &file_api_rag_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDocumentIdsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDocumentIdsResponse) ProtoMessage() {}
+
+func (x *GetDocumentIdsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDocumentIdsResponse.ProtoReflect.Descriptor instead.
+func (*GetDocumentIdsResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *GetDocumentIdsResponse) GetDocumentIds() []*DocumentIdEntry {
+	if x != nil {
+		return x.DocumentIds
+	}
+	return nil
+}
+
+func (x *GetDocumentIdsResponse) GetTotalFound() int32 {
+	if x != nil {
+		return x.TotalFound
+	}
+	return 0
+}
+
+// ID документа с метаданными
+type DocumentIdEntry struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	SimilarityScore float32                `protobuf:"fixed32,2,opt,name=similarity_score,json=similarityScore,proto3" json:"similarity_score,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DocumentIdEntry) Reset() {
+	*x = DocumentIdEntry{}
+	mi := &file_api_rag_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DocumentIdEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DocumentIdEntry) ProtoMessage() {}
+
+func (x *DocumentIdEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DocumentIdEntry.ProtoReflect.Descriptor instead.
+func (*DocumentIdEntry) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *DocumentIdEntry) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *DocumentIdEntry) GetSimilarityScore() float32 {
+	if x != nil {
+		return x.SimilarityScore
+	}
+	return 0
+}
+
 var File_api_rag_proto protoreflect.FileDescriptor
 
 const file_api_rag_proto_rawDesc = "" +
@@ -2650,7 +2825,19 @@ const file_api_rag_proto_rawDesc = "" +
 	"\x05texts\x18\x01 \x03(\v2\x15.rag.ScrapedTextEntryR\x05texts\"8\n" +
 	"\x10ScrapedTextEntry\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12\x12\n" +
-	"\x04text\x18\x02 \x01(\tR\x04text*q\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\"\xba\x01\n" +
+	"\x15GetDocumentIdsRequest\x12\x14\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x121\n" +
+	"\x14similarity_threshold\x18\x03 \x01(\x02R\x13similarityThreshold\x12B\n" +
+	"\x11comparison_method\x18\x04 \x01(\x0e2\x15.rag.ComparisonMethodR\x10comparisonMethod\"r\n" +
+	"\x16GetDocumentIdsResponse\x127\n" +
+	"\fdocument_ids\x18\x01 \x03(\v2\x14.rag.DocumentIdEntryR\vdocumentIds\x12\x1f\n" +
+	"\vtotal_found\x18\x02 \x01(\x05R\n" +
+	"totalFound\"L\n" +
+	"\x0fDocumentIdEntry\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12)\n" +
+	"\x10similarity_score\x18\x02 \x01(\x02R\x0fsimilarityScore*q\n" +
 	"\x12DocumentSourceType\x12\x1b\n" +
 	"\x17SOURCE_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10SOURCE_TYPE_TEXT\x10\x01\x12\x13\n" +
@@ -2661,7 +2848,8 @@ const file_api_rag_proto_rawDesc = "" +
 	"\x18COMPARISON_METHOD_COSINE\x10\x01\x12\x19\n" +
 	"\x15COMPARISON_METHOD_DOT\x10\x02\x12\x1f\n" +
 	"\x1bCOMPARISON_METHOD_EUCLIDEAN\x10\x03\x12\x18\n" +
-	"\x14COMPARISON_METHOD_L1\x10\x042\xc2\t\n" +
+	"\x14COMPARISON_METHOD_L1\x10\x042\x94\n" +
+	"\n" +
 	"\n" +
 	"RagService\x12L\n" +
 	"\x0fPreviewDocument\x12\x1b.rag.PreviewDocumentRequest\x1a\x1c.rag.PreviewDocumentResponse\x12I\n" +
@@ -2680,7 +2868,8 @@ const file_api_rag_proto_rawDesc = "" +
 	"\fGetQueryLogs\x12\x18.rag.GetQueryLogsRequest\x1a\x19.rag.GetQueryLogsResponse\x12F\n" +
 	"\rDiscoverLinks\x12\x19.rag.DiscoverLinksRequest\x1a\x1a.rag.DiscoverLinksResponse\x12=\n" +
 	"\n" +
-	"ScrapeUrls\x12\x16.rag.ScrapeUrlsRequest\x1a\x17.rag.ScrapeUrlsResponseB\aZ\x05./ragb\x06proto3"
+	"ScrapeUrls\x12\x16.rag.ScrapeUrlsRequest\x1a\x17.rag.ScrapeUrlsResponse\x12P\n" +
+	"\x15GetDocumentIdsByQuery\x12\x1a.rag.GetDocumentIdsRequest\x1a\x1b.rag.GetDocumentIdsResponseB\aZ\x05./ragb\x06proto3"
 
 var (
 	file_api_rag_proto_rawDescOnce sync.Once
@@ -2695,7 +2884,7 @@ func file_api_rag_proto_rawDescGZIP() []byte {
 }
 
 var file_api_rag_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_api_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
+var file_api_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
 var file_api_rag_proto_goTypes = []any{
 	(DocumentSourceType)(0),               // 0: rag.DocumentSourceType
 	(ComparisonMethod)(0),                 // 1: rag.ComparisonMethod
@@ -2739,63 +2928,70 @@ var file_api_rag_proto_goTypes = []any{
 	(*ScrapeUrlsRequest)(nil),             // 39: rag.ScrapeUrlsRequest
 	(*ScrapeUrlsResponse)(nil),            // 40: rag.ScrapeUrlsResponse
 	(*ScrapedTextEntry)(nil),              // 41: rag.ScrapedTextEntry
-	nil,                                   // 42: rag.AddDocumentRequest.MetadataEntry
-	nil,                                   // 43: rag.CommitDocumentRequest.MetadataEntry
-	nil,                                   // 44: rag.DocumentResult.MetadataEntry
-	nil,                                   // 45: rag.GetRagSettingsResponse.SettingsEntry
+	(*GetDocumentIdsRequest)(nil),         // 42: rag.GetDocumentIdsRequest
+	(*GetDocumentIdsResponse)(nil),        // 43: rag.GetDocumentIdsResponse
+	(*DocumentIdEntry)(nil),               // 44: rag.DocumentIdEntry
+	nil,                                   // 45: rag.AddDocumentRequest.MetadataEntry
+	nil,                                   // 46: rag.CommitDocumentRequest.MetadataEntry
+	nil,                                   // 47: rag.DocumentResult.MetadataEntry
+	nil,                                   // 48: rag.GetRagSettingsResponse.SettingsEntry
 }
 var file_api_rag_proto_depIdxs = []int32{
-	42, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
+	45, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
 	0,  // 1: rag.AddDocumentRequest.source_type:type_name -> rag.DocumentSourceType
 	0,  // 2: rag.PreviewDocumentRequest.source_type:type_name -> rag.DocumentSourceType
-	43, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
+	46, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
 	1,  // 4: rag.SearchRequest.comparison_method:type_name -> rag.ComparisonMethod
 	10, // 5: rag.SearchResponse.results:type_name -> rag.DocumentResult
-	44, // 6: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
+	47, // 6: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
 	10, // 7: rag.GetDocumentResponse.document:type_name -> rag.DocumentResult
-	45, // 8: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
+	48, // 8: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
 	23, // 9: rag.GetRagSettingsHistoryResponse.entries:type_name -> rag.SettingsHistoryEntry
 	26, // 10: rag.GetDocumentHistoryResponse.versions:type_name -> rag.DocumentVersion
 	33, // 11: rag.GetAllDocumentsResponse.documents:type_name -> rag.DocumentListItem
 	36, // 12: rag.GetQueryLogsResponse.logs:type_name -> rag.QueryLogEntry
 	41, // 13: rag.ScrapeUrlsResponse.texts:type_name -> rag.ScrapedTextEntry
-	4,  // 14: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
-	6,  // 15: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
-	8,  // 16: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
-	11, // 17: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
-	13, // 18: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
-	15, // 19: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
-	17, // 20: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
-	19, // 21: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
-	21, // 22: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
-	24, // 23: rag.RagService.GetDocumentHistory:input_type -> rag.GetDocumentHistoryRequest
-	27, // 24: rag.RagService.RollbackDocument:input_type -> rag.RollbackDocumentRequest
-	29, // 25: rag.RagService.UpdateDocument:input_type -> rag.UpdateDocumentRequest
-	31, // 26: rag.RagService.GetAllDocuments:input_type -> rag.GetAllDocumentsRequest
-	34, // 27: rag.RagService.GetQueryLogs:input_type -> rag.GetQueryLogsRequest
-	37, // 28: rag.RagService.DiscoverLinks:input_type -> rag.DiscoverLinksRequest
-	39, // 29: rag.RagService.ScrapeUrls:input_type -> rag.ScrapeUrlsRequest
-	5,  // 30: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
-	7,  // 31: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
-	9,  // 32: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
-	12, // 33: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
-	14, // 34: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
-	16, // 35: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
-	18, // 36: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
-	20, // 37: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
-	22, // 38: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
-	25, // 39: rag.RagService.GetDocumentHistory:output_type -> rag.GetDocumentHistoryResponse
-	28, // 40: rag.RagService.RollbackDocument:output_type -> rag.RollbackDocumentResponse
-	30, // 41: rag.RagService.UpdateDocument:output_type -> rag.UpdateDocumentResponse
-	32, // 42: rag.RagService.GetAllDocuments:output_type -> rag.GetAllDocumentsResponse
-	35, // 43: rag.RagService.GetQueryLogs:output_type -> rag.GetQueryLogsResponse
-	38, // 44: rag.RagService.DiscoverLinks:output_type -> rag.DiscoverLinksResponse
-	40, // 45: rag.RagService.ScrapeUrls:output_type -> rag.ScrapeUrlsResponse
-	30, // [30:46] is the sub-list for method output_type
-	14, // [14:30] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	1,  // 14: rag.GetDocumentIdsRequest.comparison_method:type_name -> rag.ComparisonMethod
+	44, // 15: rag.GetDocumentIdsResponse.document_ids:type_name -> rag.DocumentIdEntry
+	4,  // 16: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
+	6,  // 17: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
+	8,  // 18: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
+	11, // 19: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
+	13, // 20: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
+	15, // 21: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
+	17, // 22: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
+	19, // 23: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
+	21, // 24: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
+	24, // 25: rag.RagService.GetDocumentHistory:input_type -> rag.GetDocumentHistoryRequest
+	27, // 26: rag.RagService.RollbackDocument:input_type -> rag.RollbackDocumentRequest
+	29, // 27: rag.RagService.UpdateDocument:input_type -> rag.UpdateDocumentRequest
+	31, // 28: rag.RagService.GetAllDocuments:input_type -> rag.GetAllDocumentsRequest
+	34, // 29: rag.RagService.GetQueryLogs:input_type -> rag.GetQueryLogsRequest
+	37, // 30: rag.RagService.DiscoverLinks:input_type -> rag.DiscoverLinksRequest
+	39, // 31: rag.RagService.ScrapeUrls:input_type -> rag.ScrapeUrlsRequest
+	42, // 32: rag.RagService.GetDocumentIdsByQuery:input_type -> rag.GetDocumentIdsRequest
+	5,  // 33: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
+	7,  // 34: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
+	9,  // 35: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
+	12, // 36: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
+	14, // 37: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
+	16, // 38: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
+	18, // 39: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
+	20, // 40: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
+	22, // 41: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
+	25, // 42: rag.RagService.GetDocumentHistory:output_type -> rag.GetDocumentHistoryResponse
+	28, // 43: rag.RagService.RollbackDocument:output_type -> rag.RollbackDocumentResponse
+	30, // 44: rag.RagService.UpdateDocument:output_type -> rag.UpdateDocumentResponse
+	32, // 45: rag.RagService.GetAllDocuments:output_type -> rag.GetAllDocumentsResponse
+	35, // 46: rag.RagService.GetQueryLogs:output_type -> rag.GetQueryLogsResponse
+	38, // 47: rag.RagService.DiscoverLinks:output_type -> rag.DiscoverLinksResponse
+	40, // 48: rag.RagService.ScrapeUrls:output_type -> rag.ScrapeUrlsResponse
+	43, // 49: rag.RagService.GetDocumentIdsByQuery:output_type -> rag.GetDocumentIdsResponse
+	33, // [33:50] is the sub-list for method output_type
+	16, // [16:33] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_api_rag_proto_init() }
@@ -2809,7 +3005,7 @@ func file_api_rag_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_rag_proto_rawDesc), len(file_api_rag_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   44,
+			NumMessages:   47,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

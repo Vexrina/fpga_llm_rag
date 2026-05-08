@@ -158,6 +158,7 @@ func main() {
 		queryLogsUsecase       = usecases.NewQueryLogsUsecase(db)
 		discoverLinksUsecase   = usecases.NewDiscoverLinksUsecase(linkScraperProcessor)
 		scrapeUrlsUsecase      = usecases.NewScrapeUrlsUsecase(linkScraperProcessor)
+		getDocumentIdsUsecase  = usecases.NewGetDocumentIdsUsecase(db, fw, settingsUsecase)
 	)
 
 	// Создаем TCP listener на порту 50051
@@ -185,6 +186,7 @@ func main() {
 		discoverLinksUsecase,
 		scrapeUrlsUsecase,
 		reindexUsecase,
+		getDocumentIdsUsecase,
 	)
 	pb.RegisterRagServiceServer(s, ragServer)
 
