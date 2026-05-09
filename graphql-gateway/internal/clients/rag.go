@@ -158,16 +158,19 @@ type CommitResult struct {
 	ID      string
 }
 
-func (c *RAGClient) CommitDocument(ctx context.Context, title, content string, metadata []MetadataEntry) (*CommitResult, error) {
+func (c *RAGClient) CommitDocument(ctx context.Context, title, content string, metadata []MetadataEntry, sourceType, contentBase64 string) (*CommitResult, error) {
 	metaMap := make(map[string]string)
 	for _, m := range metadata {
 		metaMap[m.Key] = m.Value
 	}
 
+	st := MapDocumentSourceType(sourceType)
 	resp, err := c.client.CommitDocument(ctx, &pb.CommitDocumentRequest{
-		Title:    title,
-		Content:  content,
-		Metadata: metaMap,
+		Title:         title,
+		Content:       content,
+		Metadata:      metaMap,
+		SourceType:    st,
+		ContentBase64: contentBase64,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("CommitDocument RPC failed: %w", err)

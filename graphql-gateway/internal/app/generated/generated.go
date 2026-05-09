@@ -965,8 +965,10 @@ input PreviewDocumentInput {
 
 input CommitDocumentInput {
   title: String!
-  content: String!
+  content: String
   metadata: [MetadataInput!]
+  sourceType: DocumentSourceType
+  contentBase64: String
 }
 `, BuiltIn: false},
 	{Name: "../../../graph/types/typeDefs.graphqls", Input: `type MetadataEntry {
@@ -5936,7 +5938,7 @@ func (ec *executionContext) unmarshalInputCommitDocumentInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "content", "metadata"}
+	fieldsInOrder := [...]string{"title", "content", "metadata", "sourceType", "contentBase64"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5952,7 +5954,7 @@ func (ec *executionContext) unmarshalInputCommitDocumentInput(ctx context.Contex
 			it.Title = data
 		case "content":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5964,6 +5966,20 @@ func (ec *executionContext) unmarshalInputCommitDocumentInput(ctx context.Contex
 				return it, err
 			}
 			it.Metadata = data
+		case "sourceType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sourceType"))
+			data, err := ec.unmarshalODocumentSourceType2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentSourceType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SourceType = data
+		case "contentBase64":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contentBase64"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentBase64 = data
 		}
 	}
 	return it, nil
@@ -8461,6 +8477,22 @@ func (ec *executionContext) marshalODocument2ᚖgraphqlᚑgatewayᚋinternalᚋa
 		return graphql.Null
 	}
 	return ec._Document(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalODocumentSourceType2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentSourceType(ctx context.Context, v any) (*DocumentSourceType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(DocumentSourceType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODocumentSourceType2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐDocumentSourceType(ctx context.Context, sel ast.SelectionSet, v *DocumentSourceType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {

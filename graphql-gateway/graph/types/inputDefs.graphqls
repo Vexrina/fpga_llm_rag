@@ -13,6 +13,8 @@ input PreviewDocumentInput {
 
 input CommitDocumentInput {
   title: String!
-  content: String!
+  content: String
   metadata: [MetadataInput!]
+  sourceType: DocumentSourceType
+  contentBase64: String
 }

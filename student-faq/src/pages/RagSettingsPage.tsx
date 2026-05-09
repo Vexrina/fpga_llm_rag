@@ -12,7 +12,7 @@ import {
   updateDocument,
   deleteDocument,
 } from '../mocks/rag'
-import { commitDocument, getQueryLogsAPI, type QueryLogEntry, discoverLinks, scrapeUrls } from '../api/graphql'
+import { commitDocument, getQueryLogsAPI, type QueryLogEntry, discoverLinks, scrapeUrls, previewDocument } from '../api/graphql'
 import Tooltip from '../components/Tooltip'
 
 type Tab = 'settings' | 'history' | 'logs' | 'knowledge'
@@ -445,6 +445,9 @@ function KnowledgeTab() {
   const [newDocUrlMaxDepth, setNewDocUrlMaxDepth] = useState(0)
   const [newDocFileBase64, setNewDocFileBase64] = useState('')
   const [newDocContent, setNewDocContent] = useState('')
+  const [newDocPreviewText, setNewDocPreviewText] = useState('')
+  const [isPdfPreviewing, setIsPdfPreviewing] = useState(false)
+  const [pdfPreviewError, setPdfPreviewError] = useState('')
   const [isCommitting, setIsCommitting] = useState(false)
 
   // Edit document states
@@ -472,11 +475,38 @@ function KnowledgeTab() {
       const result = reader.result as string
       const base64 = result.split(',')[1]
       setNewDocFileBase64(base64)
+      setPdfPreviewError('')
       if (!newDocTitle.trim()) {
         setNewDocTitle(file.name)
       }
+      previewPdfFile(base64)
     }
     reader.readAsDataURL(file)
+  }
+
+  const previewPdfFile = async (base64: string) => {
+    setIsPdfPreviewing(true)
+    setPdfPreviewError('')
+    try {
+      const result = await previewDocument({
+        title: 'preview',
+        sourceType: 'PDF',
+        contentBase64: base64,
+      })
+      setNewDocPreviewText(result.previewDocument.extractedText)
+    } catch (err) {
+      console.error(err)
+      let message = 'Ошибка при извлечении текста из PDF'
+      if (typeof err === 'string') {
+        message = 'Ошибка: ' + err
+      } else if (err instanceof Error) {
+        message = 'Ошибка: ' + err.message
+      }
+      setPdfPreviewError(message)
+      setNewDocPreviewText('')
+    } finally {
+      setIsPdfPreviewing(false)
+    }
   }
 
   useEffect(() => {
@@ -582,6 +612,8 @@ function KnowledgeTab() {
     setNewDocUrlMaxDepth(0)
     setNewDocFileBase64('')
     setNewDocContent('')
+    setNewDocPreviewText('')
+    setPdfPreviewError('')
     setUrlStep(1)
     setDiscoveredLinks([])
     setSelectedLinks(new Set())
@@ -598,6 +630,8 @@ function KnowledgeTab() {
     setNewDocUrlMaxDepth(0)
     setNewDocFileBase64('')
     setNewDocContent('')
+    setNewDocPreviewText('')
+    setPdfPreviewError('')
     setUrlStep(1)
     setDiscoveredLinks([])
     setSelectedLinks(new Set())
@@ -731,15 +765,28 @@ function KnowledgeTab() {
           alert('Ошибка: ' + result.commitDocument.message)
           return
         }
-      } else if (newDocSourceType === 'PDF' && newDocFileBase64.trim()) {
-        const result = await commitDocument({
-          title: newDocTitle,
-          content: newDocContent,
-        })
-        
-        if (!result.commitDocument.success) {
-          alert('Ошибка: ' + result.commitDocument.message)
-          return
+      } else if (newDocSourceType === 'PDF' && (newDocFileBase64.trim() || newDocPreviewText.trim())) {
+        if (newDocPreviewText.trim()) {
+          const result = await commitDocument({
+            title: newDocTitle,
+            content: newDocPreviewText,
+          })
+          
+          if (!result.commitDocument.success) {
+            alert('Ошибка: ' + result.commitDocument.message)
+            return
+          }
+        } else {
+          const result = await commitDocument({
+            title: newDocTitle,
+            sourceType: 'PDF',
+            contentBase64: newDocFileBase64,
+          })
+          
+          if (!result.commitDocument.success) {
+            alert('Ошибка: ' + result.commitDocument.message)
+            return
+          }
         }
       } else {
         alert('Нет содержимого для сохранения')
@@ -1110,18 +1157,36 @@ function KnowledgeTab() {
                   />
                 </div>
               ) : (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Загрузить файл (PDF)
-                  </label>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                  />
-                  {newDocFileBase64 && (
-                    <p className="text-sm text-green-600 mt-1">Файл загружен</p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Загрузить файл (PDF)
+                    </label>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                  </div>
+                  {isPdfPreviewing && (
+                    <p className="text-sm text-gray-500">Извлечение текста...</p>
+                  )}
+                  {pdfPreviewError && (
+                    <p className="text-sm text-red-600">{pdfPreviewError}</p>
+                  )}
+                  {newDocPreviewText && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Извлечённый текст (можно редактировать)
+                      </label>
+                      <textarea
+                        value={newDocPreviewText}
+                        onChange={(e) => setNewDocPreviewText(e.target.value)}
+                        className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono resize-none"
+                        placeholder="Текст из PDF"
+                      />
+                    </div>
                   )}
                 </div>
               )}
@@ -1138,7 +1203,7 @@ function KnowledgeTab() {
                 disabled={
                   (newDocSourceType === 'URL' && scrapedPages.length === 0) ||
                   (newDocSourceType === 'TEXT' && !newDocContent.trim()) ||
-                  (newDocSourceType === 'PDF' && !newDocFileBase64.trim()) ||
+                  (newDocSourceType === 'PDF' && !newDocPreviewText.trim()) ||
                   isCommitting
                 }
                 className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"

@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -52,6 +53,7 @@ type CommitDocumentUsecase struct {
 	repo              AddDocumentRepository
 	documentIndexRepo DocumentIndexRepository
 	floatWeaverClient floatweaver.EmbedServiceClient
+	pdfProcessor      PDFProcessor
 	getEmbeddingModel func(ctx context.Context) (string, error)
 	getChunkSize      func(ctx context.Context) (int, error)
 	getChunkOverlap   func(ctx context.Context) (int, error)
@@ -61,6 +63,7 @@ func NewCommitDocumentUsecase(
 	repo AddDocumentRepository,
 	documentIndexRepo DocumentIndexRepository,
 	floatWeaverClient floatweaver.EmbedServiceClient,
+	pdfProcessor PDFProcessor,
 	getEmbeddingModel func(ctx context.Context) (string, error),
 	getChunkSize func(ctx context.Context) (int, error),
 	getChunkOverlap func(ctx context.Context) (int, error),
@@ -69,6 +72,7 @@ func NewCommitDocumentUsecase(
 		repo:              repo,
 		documentIndexRepo: documentIndexRepo,
 		floatWeaverClient: floatWeaverClient,
+		pdfProcessor:      pdfProcessor,
 		getEmbeddingModel: getEmbeddingModel,
 		getChunkSize:      getChunkSize,
 		getChunkOverlap:   getChunkOverlap,
@@ -76,11 +80,34 @@ func NewCommitDocumentUsecase(
 }
 
 func (u *CommitDocumentUsecase) Commit(ctx context.Context, domain *utils.CommitDocumentDomain) (string, error) {
-	if domain.Content == "" {
-		return "", fmt.Errorf("content cannot be empty")
-	}
 	if domain.Title == "" {
 		return "", fmt.Errorf("title cannot be empty")
+	}
+
+	var content string
+
+	switch domain.SourceType {
+	case utils.DocumentSourceTypePDF:
+		if u.pdfProcessor == nil {
+			return "", fmt.Errorf("pdf processor not configured")
+		}
+		pdfData, err := base64.StdEncoding.DecodeString(domain.ContentBase64)
+		if err != nil {
+			return "", fmt.Errorf("failed to decode PDF from base64: %w", err)
+		}
+		if len(pdfData) > 20*1024*1024 {
+			return "", fmt.Errorf("pdf size exceeds 20MB limit")
+		}
+		content, err = u.pdfProcessor.ExtractTextFromPDF(pdfData)
+		if err != nil {
+			return "", fmt.Errorf("pdfProcessor.ExtractTextFromPDF got error: %w", err)
+		}
+
+	default:
+		if domain.Content == "" {
+			return "", fmt.Errorf("content cannot be empty")
+		}
+		content = domain.Content
 	}
 
 	embeddingModel, err := u.getEmbeddingModel(ctx)
@@ -96,7 +123,7 @@ func (u *CommitDocumentUsecase) Commit(ctx context.Context, domain *utils.Commit
 		chunkOverlap = 0
 	}
 
-	chunks := chunkTextByTokens(domain.Content, chunkSize, chunkOverlap)
+	chunks := chunkTextByTokens(content, chunkSize, chunkOverlap)
 	docID := uuid.New().String()
 
 	err = u.repo.WithTransactional(ctx, func(tx pgx.Tx) error {

@@ -40,9 +40,11 @@ type (
 	}
 
 	CommitDocumentDomain struct {
-		Title    string
-		Content  string
-		Metadata map[string]string
+		Title         string
+		Content       string
+		Metadata      map[string]string
+		SourceType    DocumentSourceType
+		ContentBase64 string
 	}
 
 	GetDocumentDomain struct {

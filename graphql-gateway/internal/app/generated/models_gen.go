@@ -10,9 +10,11 @@ import (
 )
 
 type CommitDocumentInput struct {
-	Title    string           `json:"title"`
-	Content  string           `json:"content"`
-	Metadata []*MetadataInput `json:"metadata,omitempty"`
+	Title         string              `json:"title"`
+	Content       *string             `json:"content,omitempty"`
+	Metadata      []*MetadataInput    `json:"metadata,omitempty"`
+	SourceType    *DocumentSourceType `json:"sourceType,omitempty"`
+	ContentBase64 *string             `json:"contentBase64,omitempty"`
 }
 
 type CommitDocumentResult struct {

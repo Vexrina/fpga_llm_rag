@@ -152,7 +152,7 @@ func main() {
 	var (
 		addDocumentUsecase     = usecases.NewAddDocumentUsecase(db, fw, pdfProcessor, linkScraperProcessor)
 		previewDocumentUsecase = usecases.NewPreviewDocumentUsecase(pdfProcessor, linkScraperProcessor)
-		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, db, fw, settingsUsecase.GetEmbeddingModel, settingsUsecase.GetChunkSize, settingsUsecase.GetChunkOverlap)
+		commitDocumentUsecase  = usecases.NewCommitDocumentUsecase(db, db, fw, pdfProcessor, settingsUsecase.GetEmbeddingModel, settingsUsecase.GetChunkSize, settingsUsecase.GetChunkOverlap)
 		searchDocumentUsecase  = usecases.NewSearchDocumentsUsecase(db, fw, settingsUsecase, db)
 		documentHistoryUsecase = usecases.NewDocumentHistoryUsecase(db, db, fw, settingsUsecase.GetChunkSize, settingsUsecase.GetChunkOverlap)
 		queryLogsUsecase       = usecases.NewQueryLogsUsecase(db)

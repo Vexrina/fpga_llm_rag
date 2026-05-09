@@ -13,10 +13,15 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /rag-server ./cmd/server/main.go
 
 FROM python:3.10-slim
 WORKDIR /app
-RUN apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-rus libgl1 libglib2.0-0 poppler-utils && rm -rf /var/lib/apt/lists/*
-RUN pip3 install --no-cache-dir pytesseract pdf2image numpy opencv-python-headless pdfplumber
+RUN apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-rus libgl1 libglib2.0-0 poppler-utils git cmake libcairo2-dev g++ python3-dev && rm -rf /var/lib/apt/lists/*
+RUN pip3 install --no-cache-dir pytesseract pdf2image numpy opencv-python-headless pdfplumber scipy
 RUN pip3 install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
-RUN pip3 install --no-cache-dir layoutparser iopath pyyaml
+RUN pip3 install --no-cache-dir 'fvcore>=0.1.5' iopath pycocotools yacs omegaconf termcolor cloudpickle hydra-core matplotlib tabulate shapely
+RUN git clone --depth 1 https://github.com/facebookresearch/detectron2.git /tmp/detectron2
+WORKDIR /tmp/detectron2
+RUN pip3 install --no-build-isolation --no-cache-dir -e . && rm -rf /root/.cache
+WORKDIR /app
+RUN pip3 install --no-cache-dir layoutparser pyyaml
 RUN pip3 install --no-cache-dir playwright && playwright install chromium --with-deps
 COPY --from=builder /rag-server /rag-server
 COPY ./migrations ./migrations

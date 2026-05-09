@@ -50,7 +50,20 @@ func (r *mutationResolver) CommitDocument(ctx context.Context, input generated.C
 		metadata[i] = clients.MetadataEntry{Key: m.Key, Value: m.Value}
 	}
 
-	result, err := r.RAGClient.CommitDocument(ctx, input.Title, input.Content, metadata)
+	content := ""
+	if input.Content != nil {
+		content = *input.Content
+	}
+	contentBase64 := ""
+	if input.ContentBase64 != nil {
+		contentBase64 = *input.ContentBase64
+	}
+	sourceType := ""
+	if input.SourceType != nil {
+		sourceType = string(*input.SourceType)
+	}
+
+	result, err := r.RAGClient.CommitDocument(ctx, input.Title, content, metadata, sourceType, contentBase64)
 	if err != nil {
 		return nil, err
 	}

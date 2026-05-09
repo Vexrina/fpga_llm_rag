@@ -49,7 +49,8 @@ def _build_extra_config(score_thresh: float) -> list:
 
 
 def load_model(config_path: Path, weights_path: Path, score_thresh: float):
-    return lp.Detectron2LayoutModel(
+    from layoutparser.models import Detectron2LayoutModel
+    return Detectron2LayoutModel(
         config_path=str(config_path),
         model_path=str(weights_path),
         extra_config=_build_extra_config(score_thresh),
@@ -382,7 +383,7 @@ def ocr_auto_page(
                 best_full_conf = mean_conf
 
     # Если full распознал мало адекватного русского текста — пробуем layout как резерв
-    if _text_quality_score(best_full_text) < 30 or best_full_conf < 25:
+    if lp_model is not None and (_text_quality_score(best_full_text) < 30 or best_full_conf < 25):
         return parse_page(img_pil, lp_model, img_rgb, img_ocr)
 
     # Нормализуем пробелы для читабельности
@@ -390,6 +391,9 @@ def ocr_auto_page(
 
 
 def parse_page(img_pil, lp_model, img_rgb: np.ndarray, img_ocr: np.ndarray):
+    if lp_model is None:
+        text, _, _ = ocr_full_with_conf(img_ocr, psm=3)
+        return "\n".join(clean_line(x) for x in text.splitlines() if clean_line(x))
     layout = lp_model.detect(img_rgb)
     layout = [b for b in layout if b.width > 40 and b.height > 12]
     layout = sort_reading_order(layout)
@@ -505,6 +509,7 @@ def main():
     lp_model = None
     if need_layout:
         lp_model = load_model(CONFIG, WEIGHTS, args.score_thresh)
+        print(f"Layout model: {'загружен' if lp_model else 'не доступен, используем только OCR'}", file=sys.stderr)
 
     images = pdf_pages_to_pil(pdf_path, args.pages, args.dpi)
 

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v3.21.12
-// source: rag.proto
+// source: api/rag.proto
 
 package rag
 
@@ -35,6 +35,7 @@ const (
 	RagService_GetQueryLogs_FullMethodName          = "/rag.RagService/GetQueryLogs"
 	RagService_DiscoverLinks_FullMethodName         = "/rag.RagService/DiscoverLinks"
 	RagService_ScrapeUrls_FullMethodName            = "/rag.RagService/ScrapeUrls"
+	RagService_GetDocumentIdsByQuery_FullMethodName = "/rag.RagService/GetDocumentIdsByQuery"
 )
 
 // RagServiceClient is the client API for RagService service.
@@ -75,6 +76,8 @@ type RagServiceClient interface {
 	DiscoverLinks(ctx context.Context, in *DiscoverLinksRequest, opts ...grpc.CallOption) (*DiscoverLinksResponse, error)
 	// Скрапить выбранные URL
 	ScrapeUrls(ctx context.Context, in *ScrapeUrlsRequest, opts ...grpc.CallOption) (*ScrapeUrlsResponse, error)
+	// Получить только ID документов по запросу (для метрик)
+	GetDocumentIdsByQuery(ctx context.Context, in *GetDocumentIdsRequest, opts ...grpc.CallOption) (*GetDocumentIdsResponse, error)
 }
 
 type ragServiceClient struct {
@@ -245,6 +248,16 @@ func (c *ragServiceClient) ScrapeUrls(ctx context.Context, in *ScrapeUrlsRequest
 	return out, nil
 }
 
+func (c *ragServiceClient) GetDocumentIdsByQuery(ctx context.Context, in *GetDocumentIdsRequest, opts ...grpc.CallOption) (*GetDocumentIdsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDocumentIdsResponse)
+	err := c.cc.Invoke(ctx, RagService_GetDocumentIdsByQuery_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RagServiceServer is the server API for RagService service.
 // All implementations must embed UnimplementedRagServiceServer
 // for forward compatibility.
@@ -283,6 +296,8 @@ type RagServiceServer interface {
 	DiscoverLinks(context.Context, *DiscoverLinksRequest) (*DiscoverLinksResponse, error)
 	// Скрапить выбранные URL
 	ScrapeUrls(context.Context, *ScrapeUrlsRequest) (*ScrapeUrlsResponse, error)
+	// Получить только ID документов по запросу (для метрик)
+	GetDocumentIdsByQuery(context.Context, *GetDocumentIdsRequest) (*GetDocumentIdsResponse, error)
 	mustEmbedUnimplementedRagServiceServer()
 }
 
@@ -340,6 +355,9 @@ func (UnimplementedRagServiceServer) DiscoverLinks(context.Context, *DiscoverLin
 }
 func (UnimplementedRagServiceServer) ScrapeUrls(context.Context, *ScrapeUrlsRequest) (*ScrapeUrlsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ScrapeUrls not implemented")
+}
+func (UnimplementedRagServiceServer) GetDocumentIdsByQuery(context.Context, *GetDocumentIdsRequest) (*GetDocumentIdsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDocumentIdsByQuery not implemented")
 }
 func (UnimplementedRagServiceServer) mustEmbedUnimplementedRagServiceServer() {}
 func (UnimplementedRagServiceServer) testEmbeddedByValue()                    {}
@@ -650,6 +668,24 @@ func _RagService_ScrapeUrls_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RagService_GetDocumentIdsByQuery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDocumentIdsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).GetDocumentIdsByQuery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_GetDocumentIdsByQuery_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).GetDocumentIdsByQuery(ctx, req.(*GetDocumentIdsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RagService_ServiceDesc is the grpc.ServiceDesc for RagService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -721,7 +757,11 @@ var RagService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ScrapeUrls",
 			Handler:    _RagService_ScrapeUrls_Handler,
 		},
+		{
+			MethodName: "GetDocumentIdsByQuery",
+			Handler:    _RagService_GetDocumentIdsByQuery_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "rag.proto",
+	Metadata: "api/rag.proto",
 }

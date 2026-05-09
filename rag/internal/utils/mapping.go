@@ -61,9 +61,11 @@ func PreviewResultToDomainToGRPC(res *PreviewResult) *pb.PreviewDocumentResponse
 
 func CommitDocumentFromGRPCToDomain(req *pb.CommitDocumentRequest) *CommitDocumentDomain {
 	return &CommitDocumentDomain{
-		Title:    req.GetTitle(),
-		Content:  req.GetContent(),
-		Metadata: req.GetMetadata(),
+		Title:         req.GetTitle(),
+		Content:       req.GetContent(),
+		Metadata:      req.GetMetadata(),
+		SourceType:    documentSourceTypeFromPB(req.GetSourceType()),
+		ContentBase64: req.GetContentBase64(),
 	}
 }
 

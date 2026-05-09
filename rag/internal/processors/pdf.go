@@ -47,11 +47,23 @@ func (p *KugScrapProcessor) ExtractTextFromPDF(pdfData []byte) (string, error) {
 		return "", fmt.Errorf("failed to write PDF: %w", err)
 	}
 
+	pageCount, err := p.countPdfPages(inputPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to count PDF pages: %w", err)
+	}
+
 	args := append([]string{p.scriptPath}, p.pythonArgs...)
 	args = append(args, "--pdf", inputPath)
-	args = append(args, "--pages", "1")
+
+	pages := make([]string, 0, pageCount)
+	for i := 1; i <= pageCount; i++ {
+		pages = append(pages, fmt.Sprintf("%d", i))
+	}
+	args = append(args, "--pages")
+	args = append(args, pages...)
+
 	args = append(args, "--dpi", "200")
-	args = append(args, "--strategy", "full")
+	args = append(args, "--strategy", "auto")
 	args = append(args, "--out", outputPath)
 
 	cmd := exec.CommandContext(ctx, p.pythonPath, args...)
@@ -76,4 +88,27 @@ func (p *KugScrapProcessor) ExtractTextFromPDF(pdfData []byte) (string, error) {
 	}
 
 	return text, nil
+}
+
+func (p *KugScrapProcessor) countPdfPages(pdfPath string) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, p.pythonPath, "-c",
+		"import pdfplumber; pdf = pdfplumber.open('"+pdfPath+"'); print(len(pdf.pages))",
+	)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return 0, fmt.Errorf("failed to count pages: %w, stderr: %s", err, stderr.String())
+	}
+
+	var count int
+	if _, err := fmt.Sscanf(strings.TrimSpace(stdout.String()), "%d", &count); err != nil {
+		return 0, fmt.Errorf("failed to parse page count: %w, output: %s", err, stdout.String())
+	}
+
+	return count, nil
 }

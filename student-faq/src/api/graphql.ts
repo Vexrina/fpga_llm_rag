@@ -15,7 +15,8 @@ async function graphqlRequest<T>(query: string, variables?: Record<string, unkno
 
   if (result.errors) {
     console.error('GraphQL errors:', result.errors)
-    throw new Error(result.errors[0].message)
+    const errorMessage = result.errors[0]?.message || 'Unknown GraphQL error'
+    throw new Error(errorMessage)
   }
 
   if (!result.data) {
@@ -86,8 +87,10 @@ export interface PreviewResult {
 
 export interface CommitDocumentInput {
   title: string
-  content: string
+  content?: string
   metadata?: { key: string; value: string }[]
+  sourceType?: 'URL' | 'TEXT' | 'PDF'
+  contentBase64?: string
 }
 
 export interface CommitResult {
@@ -96,18 +99,6 @@ export interface CommitResult {
     message: string
     id: string
   }
-}
-
-export async function previewDocument(input: PreviewDocumentInput): Promise<PreviewResult> {
-  const query = `
-    mutation PreviewDocument($input: PreviewDocumentInput!) {
-      previewDocument(input: $input) {
-        extractedText
-        pagesExtracted
-      }
-    }
-  `
-  return graphqlRequest<PreviewResult>(query, { input })
 }
 
 export async function commitDocument(input: CommitDocumentInput): Promise<CommitResult> {
@@ -120,7 +111,19 @@ export async function commitDocument(input: CommitDocumentInput): Promise<Commit
       }
     }
   `
-  return graphqlRequest<CommitResult>(query, { input: { title: input.title, content: input.content } })
+  return graphqlRequest<CommitResult>(query, { input })
+}
+
+export async function previewDocument(input: PreviewDocumentInput): Promise<PreviewResult> {
+  const query = `
+    mutation PreviewDocument($input: PreviewDocumentInput!) {
+      previewDocument(input: $input) {
+        extractedText
+        pagesExtracted
+      }
+    }
+  `
+  return graphqlRequest<PreviewResult>(query, { input })
 }
 
 export interface AskResult {

@@ -104,6 +104,8 @@ message CommitDocumentRequest {
   string title = 1;
   string content = 2;
   map<string, string> metadata = 3;
+  DocumentSourceType source_type = 4;
+  string content_base64 = 5;
 }
 
 // Ответ на коммит

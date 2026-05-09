@@ -14,8 +14,14 @@ func (s *RagServer) CommitDocument(ctx context.Context, req *pb.CommitDocumentRe
 	if req.GetTitle() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "title is required")
 	}
-	if req.GetContent() == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "content is required")
+	if req.GetSourceType() == pb.DocumentSourceType_SOURCE_TYPE_PDF {
+		if req.GetContentBase64() == "" {
+			return nil, status.Errorf(codes.InvalidArgument, "content_base64 is required for PDF")
+		}
+	} else {
+		if req.GetContent() == "" {
+			return nil, status.Errorf(codes.InvalidArgument, "content is required")
+		}
 	}
 
 	domain := utils.CommitDocumentFromGRPCToDomain(req)

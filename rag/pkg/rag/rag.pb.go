@@ -420,6 +420,8 @@ type CommitDocumentRequest struct {
 	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
 	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
 	Metadata      map[string]string      `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	SourceType    DocumentSourceType     `protobuf:"varint,4,opt,name=source_type,json=sourceType,proto3,enum=rag.DocumentSourceType" json:"source_type,omitempty"`
+	ContentBase64 string                 `protobuf:"bytes,5,opt,name=content_base64,json=contentBase64,proto3" json:"content_base64,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -473,6 +475,20 @@ func (x *CommitDocumentRequest) GetMetadata() map[string]string {
 		return x.Metadata
 	}
 	return nil
+}
+
+func (x *CommitDocumentRequest) GetSourceType() DocumentSourceType {
+	if x != nil {
+		return x.SourceType
+	}
+	return DocumentSourceType_SOURCE_TYPE_UNSPECIFIED
+}
+
+func (x *CommitDocumentRequest) GetContentBase64() string {
+	if x != nil {
+		return x.ContentBase64
+	}
+	return ""
 }
 
 // Ответ на коммит
@@ -2673,11 +2689,14 @@ const file_api_rag_proto_rawDesc = "" +
 	"\rurl_max_depth\x18\x05 \x01(\x05R\vurlMaxDepth\"i\n" +
 	"\x17PreviewDocumentResponse\x12%\n" +
 	"\x0eextracted_text\x18\x01 \x01(\tR\rextractedText\x12'\n" +
-	"\x0fpages_extracted\x18\x02 \x01(\x05R\x0epagesExtracted\"\xca\x01\n" +
+	"\x0fpages_extracted\x18\x02 \x01(\x05R\x0epagesExtracted\"\xab\x02\n" +
 	"\x15CommitDocumentRequest\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12D\n" +
-	"\bmetadata\x18\x03 \x03(\v2(.rag.CommitDocumentRequest.MetadataEntryR\bmetadata\x1a;\n" +
+	"\bmetadata\x18\x03 \x03(\v2(.rag.CommitDocumentRequest.MetadataEntryR\bmetadata\x128\n" +
+	"\vsource_type\x18\x04 \x01(\x0e2\x17.rag.DocumentSourceTypeR\n" +
+	"sourceType\x12%\n" +
+	"\x0econtent_base64\x18\x05 \x01(\tR\rcontentBase64\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\\\n" +
@@ -2941,57 +2960,58 @@ var file_api_rag_proto_depIdxs = []int32{
 	0,  // 1: rag.AddDocumentRequest.source_type:type_name -> rag.DocumentSourceType
 	0,  // 2: rag.PreviewDocumentRequest.source_type:type_name -> rag.DocumentSourceType
 	46, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
-	1,  // 4: rag.SearchRequest.comparison_method:type_name -> rag.ComparisonMethod
-	10, // 5: rag.SearchResponse.results:type_name -> rag.DocumentResult
-	47, // 6: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
-	10, // 7: rag.GetDocumentResponse.document:type_name -> rag.DocumentResult
-	48, // 8: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
-	23, // 9: rag.GetRagSettingsHistoryResponse.entries:type_name -> rag.SettingsHistoryEntry
-	26, // 10: rag.GetDocumentHistoryResponse.versions:type_name -> rag.DocumentVersion
-	33, // 11: rag.GetAllDocumentsResponse.documents:type_name -> rag.DocumentListItem
-	36, // 12: rag.GetQueryLogsResponse.logs:type_name -> rag.QueryLogEntry
-	41, // 13: rag.ScrapeUrlsResponse.texts:type_name -> rag.ScrapedTextEntry
-	1,  // 14: rag.GetDocumentIdsRequest.comparison_method:type_name -> rag.ComparisonMethod
-	44, // 15: rag.GetDocumentIdsResponse.document_ids:type_name -> rag.DocumentIdEntry
-	4,  // 16: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
-	6,  // 17: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
-	8,  // 18: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
-	11, // 19: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
-	13, // 20: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
-	15, // 21: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
-	17, // 22: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
-	19, // 23: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
-	21, // 24: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
-	24, // 25: rag.RagService.GetDocumentHistory:input_type -> rag.GetDocumentHistoryRequest
-	27, // 26: rag.RagService.RollbackDocument:input_type -> rag.RollbackDocumentRequest
-	29, // 27: rag.RagService.UpdateDocument:input_type -> rag.UpdateDocumentRequest
-	31, // 28: rag.RagService.GetAllDocuments:input_type -> rag.GetAllDocumentsRequest
-	34, // 29: rag.RagService.GetQueryLogs:input_type -> rag.GetQueryLogsRequest
-	37, // 30: rag.RagService.DiscoverLinks:input_type -> rag.DiscoverLinksRequest
-	39, // 31: rag.RagService.ScrapeUrls:input_type -> rag.ScrapeUrlsRequest
-	42, // 32: rag.RagService.GetDocumentIdsByQuery:input_type -> rag.GetDocumentIdsRequest
-	5,  // 33: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
-	7,  // 34: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
-	9,  // 35: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
-	12, // 36: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
-	14, // 37: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
-	16, // 38: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
-	18, // 39: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
-	20, // 40: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
-	22, // 41: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
-	25, // 42: rag.RagService.GetDocumentHistory:output_type -> rag.GetDocumentHistoryResponse
-	28, // 43: rag.RagService.RollbackDocument:output_type -> rag.RollbackDocumentResponse
-	30, // 44: rag.RagService.UpdateDocument:output_type -> rag.UpdateDocumentResponse
-	32, // 45: rag.RagService.GetAllDocuments:output_type -> rag.GetAllDocumentsResponse
-	35, // 46: rag.RagService.GetQueryLogs:output_type -> rag.GetQueryLogsResponse
-	38, // 47: rag.RagService.DiscoverLinks:output_type -> rag.DiscoverLinksResponse
-	40, // 48: rag.RagService.ScrapeUrls:output_type -> rag.ScrapeUrlsResponse
-	43, // 49: rag.RagService.GetDocumentIdsByQuery:output_type -> rag.GetDocumentIdsResponse
-	33, // [33:50] is the sub-list for method output_type
-	16, // [16:33] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	0,  // 4: rag.CommitDocumentRequest.source_type:type_name -> rag.DocumentSourceType
+	1,  // 5: rag.SearchRequest.comparison_method:type_name -> rag.ComparisonMethod
+	10, // 6: rag.SearchResponse.results:type_name -> rag.DocumentResult
+	47, // 7: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
+	10, // 8: rag.GetDocumentResponse.document:type_name -> rag.DocumentResult
+	48, // 9: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
+	23, // 10: rag.GetRagSettingsHistoryResponse.entries:type_name -> rag.SettingsHistoryEntry
+	26, // 11: rag.GetDocumentHistoryResponse.versions:type_name -> rag.DocumentVersion
+	33, // 12: rag.GetAllDocumentsResponse.documents:type_name -> rag.DocumentListItem
+	36, // 13: rag.GetQueryLogsResponse.logs:type_name -> rag.QueryLogEntry
+	41, // 14: rag.ScrapeUrlsResponse.texts:type_name -> rag.ScrapedTextEntry
+	1,  // 15: rag.GetDocumentIdsRequest.comparison_method:type_name -> rag.ComparisonMethod
+	44, // 16: rag.GetDocumentIdsResponse.document_ids:type_name -> rag.DocumentIdEntry
+	4,  // 17: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
+	6,  // 18: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
+	8,  // 19: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
+	11, // 20: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
+	13, // 21: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
+	15, // 22: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
+	17, // 23: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
+	19, // 24: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
+	21, // 25: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
+	24, // 26: rag.RagService.GetDocumentHistory:input_type -> rag.GetDocumentHistoryRequest
+	27, // 27: rag.RagService.RollbackDocument:input_type -> rag.RollbackDocumentRequest
+	29, // 28: rag.RagService.UpdateDocument:input_type -> rag.UpdateDocumentRequest
+	31, // 29: rag.RagService.GetAllDocuments:input_type -> rag.GetAllDocumentsRequest
+	34, // 30: rag.RagService.GetQueryLogs:input_type -> rag.GetQueryLogsRequest
+	37, // 31: rag.RagService.DiscoverLinks:input_type -> rag.DiscoverLinksRequest
+	39, // 32: rag.RagService.ScrapeUrls:input_type -> rag.ScrapeUrlsRequest
+	42, // 33: rag.RagService.GetDocumentIdsByQuery:input_type -> rag.GetDocumentIdsRequest
+	5,  // 34: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
+	7,  // 35: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
+	9,  // 36: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
+	12, // 37: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
+	14, // 38: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
+	16, // 39: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
+	18, // 40: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
+	20, // 41: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
+	22, // 42: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
+	25, // 43: rag.RagService.GetDocumentHistory:output_type -> rag.GetDocumentHistoryResponse
+	28, // 44: rag.RagService.RollbackDocument:output_type -> rag.RollbackDocumentResponse
+	30, // 45: rag.RagService.UpdateDocument:output_type -> rag.UpdateDocumentResponse
+	32, // 46: rag.RagService.GetAllDocuments:output_type -> rag.GetAllDocumentsResponse
+	35, // 47: rag.RagService.GetQueryLogs:output_type -> rag.GetQueryLogsResponse
+	38, // 48: rag.RagService.DiscoverLinks:output_type -> rag.DiscoverLinksResponse
+	40, // 49: rag.RagService.ScrapeUrls:output_type -> rag.ScrapeUrlsResponse
+	43, // 50: rag.RagService.GetDocumentIdsByQuery:output_type -> rag.GetDocumentIdsResponse
+	34, // [34:51] is the sub-list for method output_type
+	17, // [17:34] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_api_rag_proto_init() }
