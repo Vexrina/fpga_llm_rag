@@ -215,6 +215,36 @@ func (r *queryResolver) GetQueryLogs(ctx context.Context, page *int, pageSize *i
 	}, nil
 }
 
+// ListAdmins is the resolver for the listAdmins field.
+func (r *queryResolver) ListAdmins(ctx context.Context, token string) ([]*generated.AdminInfo, error) {
+	admins, err := r.RAGClient.ListAdmins(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*generated.AdminInfo, len(admins))
+	for i, a := range admins {
+		result[i] = &generated.AdminInfo{
+			ID:       int(a.ID),
+			Username: a.Username,
+			Role:     a.Role,
+		}
+	}
+	return result, nil
+}
+
+// ValidateToken is the resolver for the validateToken field.
+func (r *queryResolver) ValidateToken(ctx context.Context, token string) (*generated.AdminInfo, error) {
+	admin, valid, err := r.RAGClient.ValidateToken(ctx, token)
+	if err != nil || !valid {
+		return nil, nil
+	}
+	return &generated.AdminInfo{
+		ID:       int(admin.ID),
+		Username: admin.Username,
+		Role:     admin.Role,
+	}, nil
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

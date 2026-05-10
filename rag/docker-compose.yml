@@ -44,6 +44,8 @@ services:
       POSTGRES_DB: rag_db
       FLOATWEAVER_HOST: float-weaver
       FLOATWEAVER_PORT: 8081
+      JWT_SECRET: LuffyTaroKaizokuOu
+      TOKEN_EXPIRY: 2h
     ports:
       - "50051:50051"
     volumes:

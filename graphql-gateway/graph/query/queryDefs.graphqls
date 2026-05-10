@@ -9,6 +9,9 @@ type Query {
   getDocumentHistory(documentId: String!, limit: Int): [DocumentVersion!]!
   getDocuments: [DocumentListItem!]!
   getQueryLogs(page: Int, pageSize: Int): QueryLogsResult!
+
+  listAdmins(token: String!): [AdminInfo!]!
+  validateToken(token: String!): AdminInfo
 }
 
 type SettingEntry {

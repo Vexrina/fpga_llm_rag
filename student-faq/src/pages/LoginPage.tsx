@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react'
-import { login } from '../mocks/auth'
+import { adminLoginAPI } from '../api/graphql'
 
 interface LoginPageProps {
   onLogin: () => void
@@ -22,14 +22,10 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
     if (!username.trim()) {
       newErrors.username = 'Введите имя пользователя'
-    } else if (username.length < 3) {
-      newErrors.username = 'Имя должно содержать минимум 3 символа'
     }
 
     if (!password) {
       newErrors.password = 'Введите пароль'
-    } else if (password.length < 6) {
-      newErrors.password = 'Пароль должен содержать минимум 6 символов'
     }
 
     setErrors(newErrors)
@@ -44,7 +40,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setErrors({})
 
     try {
-      await login({ username, password })
+      const result = await adminLoginAPI(username, password)
+      localStorage.setItem('admin_token', result.token)
+      localStorage.setItem('admin_username', result.username)
       onLogin()
     } catch (err) {
       setErrors({

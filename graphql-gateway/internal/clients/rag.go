@@ -442,3 +442,139 @@ func (c *RAGClient) ScrapeUrls(ctx context.Context, urls []string) (*ScrapeUrlsR
 		Texts: texts,
 	}, nil
 }
+
+type AdminInfo struct {
+	ID       int32
+	Username string
+	Role     string
+}
+
+type AdminLoginResult struct {
+	Token     string
+	ExpiresAt string
+	Admin     *AdminInfo
+	Success   bool
+	Message   string
+}
+
+func (c *RAGClient) AdminLogin(ctx context.Context, username, password string) (*AdminLoginResult, error) {
+	resp, err := c.client.AdminLogin(ctx, &pb.AdminLoginRequest{
+		Username: username,
+		Password: password,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("AdminLogin RPC failed: %w", err)
+	}
+	result := &AdminLoginResult{
+		Token:     resp.Token,
+		ExpiresAt: resp.ExpiresAt,
+		Success:   resp.Success,
+		Message:   resp.Message,
+	}
+	if resp.Admin != nil {
+		result.Admin = &AdminInfo{
+			ID:       resp.Admin.Id,
+			Username: resp.Admin.Username,
+			Role:     resp.Admin.Role,
+		}
+	}
+	return result, nil
+}
+
+type AdminLogoutResult struct {
+	Success bool
+	Message string
+}
+
+func (c *RAGClient) AdminLogout(ctx context.Context, token string) (*AdminLogoutResult, error) {
+	resp, err := c.client.AdminLogout(ctx, &pb.AdminLogoutRequest{
+		Token: token,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("AdminLogout RPC failed: %w", err)
+	}
+	return &AdminLogoutResult{
+		Success: resp.Success,
+		Message: resp.Message,
+	}, nil
+}
+
+type AddAdminResult struct {
+	Success bool
+	Message string
+	Admin   *AdminInfo
+}
+
+func (c *RAGClient) AddAdmin(ctx context.Context, token, username, password string) (*AddAdminResult, error) {
+	resp, err := c.client.AddAdmin(ctx, &pb.AddAdminRequest{
+		Token:    token,
+		Username: username,
+		Password: password,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("AddAdmin RPC failed: %w", err)
+	}
+	result := &AddAdminResult{
+		Success: resp.Success,
+		Message: resp.Message,
+	}
+	if resp.Admin != nil {
+		result.Admin = &AdminInfo{
+			ID:       resp.Admin.Id,
+			Username: resp.Admin.Username,
+			Role:     resp.Admin.Role,
+		}
+	}
+	return result, nil
+}
+
+type RemoveAdminResult struct {
+	Success bool
+	Message string
+}
+
+func (c *RAGClient) RemoveAdmin(ctx context.Context, token string, adminID int32) (*RemoveAdminResult, error) {
+	resp, err := c.client.RemoveAdmin(ctx, &pb.RemoveAdminRequest{
+		Token:   token,
+		AdminId: adminID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("RemoveAdmin RPC failed: %w", err)
+	}
+	return &RemoveAdminResult{
+		Success: resp.Success,
+		Message: resp.Message,
+	}, nil
+}
+
+func (c *RAGClient) ListAdmins(ctx context.Context, token string) ([]AdminInfo, error) {
+	resp, err := c.client.ListAdmins(ctx, &pb.ListAdminsRequest{
+		Token: token,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("ListAdmins RPC failed: %w", err)
+	}
+	admins := make([]AdminInfo, 0, len(resp.Admins))
+	for _, a := range resp.Admins {
+		admins = append(admins, AdminInfo{
+			ID:       a.Id,
+			Username: a.Username,
+			Role:     a.Role,
+		})
+	}
+	return admins, nil
+}
+
+func (c *RAGClient) ValidateToken(ctx context.Context, token string) (*AdminInfo, bool, error) {
+	resp, err := c.client.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		Token: token,
+	})
+	if err != nil || !resp.Valid {
+		return nil, false, nil
+	}
+	return &AdminInfo{
+		ID:       resp.Admin.Id,
+		Username: resp.Admin.Username,
+		Role:     resp.Admin.Role,
+	}, true, nil
+}

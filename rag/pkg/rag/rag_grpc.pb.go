@@ -36,6 +36,12 @@ const (
 	RagService_DiscoverLinks_FullMethodName         = "/rag.RagService/DiscoverLinks"
 	RagService_ScrapeUrls_FullMethodName            = "/rag.RagService/ScrapeUrls"
 	RagService_GetDocumentIdsByQuery_FullMethodName = "/rag.RagService/GetDocumentIdsByQuery"
+	RagService_AdminLogin_FullMethodName            = "/rag.RagService/AdminLogin"
+	RagService_AdminLogout_FullMethodName           = "/rag.RagService/AdminLogout"
+	RagService_AddAdmin_FullMethodName              = "/rag.RagService/AddAdmin"
+	RagService_RemoveAdmin_FullMethodName           = "/rag.RagService/RemoveAdmin"
+	RagService_ListAdmins_FullMethodName            = "/rag.RagService/ListAdmins"
+	RagService_ValidateToken_FullMethodName         = "/rag.RagService/ValidateToken"
 )
 
 // RagServiceClient is the client API for RagService service.
@@ -78,6 +84,18 @@ type RagServiceClient interface {
 	ScrapeUrls(ctx context.Context, in *ScrapeUrlsRequest, opts ...grpc.CallOption) (*ScrapeUrlsResponse, error)
 	// Получить только ID документов по запросу (для метрик)
 	GetDocumentIdsByQuery(ctx context.Context, in *GetDocumentIdsRequest, opts ...grpc.CallOption) (*GetDocumentIdsResponse, error)
+	// Админ логин (без JWT)
+	AdminLogin(ctx context.Context, in *AdminLoginRequest, opts ...grpc.CallOption) (*AdminLoginResponse, error)
+	// Админ логаут (требует JWT)
+	AdminLogout(ctx context.Context, in *AdminLogoutRequest, opts ...grpc.CallOption) (*AdminLogoutResponse, error)
+	// Добавить админа (требует JWT)
+	AddAdmin(ctx context.Context, in *AddAdminRequest, opts ...grpc.CallOption) (*AddAdminResponse, error)
+	// Удалить админа (требует JWT)
+	RemoveAdmin(ctx context.Context, in *RemoveAdminRequest, opts ...grpc.CallOption) (*RemoveAdminResponse, error)
+	// Список всех админов (требует JWT)
+	ListAdmins(ctx context.Context, in *ListAdminsRequest, opts ...grpc.CallOption) (*ListAdminsResponse, error)
+	// Валидировать токен (для проверки на фронте)
+	ValidateToken(ctx context.Context, in *ValidateTokenRequest, opts ...grpc.CallOption) (*ValidateTokenResponse, error)
 }
 
 type ragServiceClient struct {
@@ -258,6 +276,66 @@ func (c *ragServiceClient) GetDocumentIdsByQuery(ctx context.Context, in *GetDoc
 	return out, nil
 }
 
+func (c *ragServiceClient) AdminLogin(ctx context.Context, in *AdminLoginRequest, opts ...grpc.CallOption) (*AdminLoginResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminLoginResponse)
+	err := c.cc.Invoke(ctx, RagService_AdminLogin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ragServiceClient) AdminLogout(ctx context.Context, in *AdminLogoutRequest, opts ...grpc.CallOption) (*AdminLogoutResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminLogoutResponse)
+	err := c.cc.Invoke(ctx, RagService_AdminLogout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ragServiceClient) AddAdmin(ctx context.Context, in *AddAdminRequest, opts ...grpc.CallOption) (*AddAdminResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddAdminResponse)
+	err := c.cc.Invoke(ctx, RagService_AddAdmin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ragServiceClient) RemoveAdmin(ctx context.Context, in *RemoveAdminRequest, opts ...grpc.CallOption) (*RemoveAdminResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveAdminResponse)
+	err := c.cc.Invoke(ctx, RagService_RemoveAdmin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ragServiceClient) ListAdmins(ctx context.Context, in *ListAdminsRequest, opts ...grpc.CallOption) (*ListAdminsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAdminsResponse)
+	err := c.cc.Invoke(ctx, RagService_ListAdmins_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ragServiceClient) ValidateToken(ctx context.Context, in *ValidateTokenRequest, opts ...grpc.CallOption) (*ValidateTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ValidateTokenResponse)
+	err := c.cc.Invoke(ctx, RagService_ValidateToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RagServiceServer is the server API for RagService service.
 // All implementations must embed UnimplementedRagServiceServer
 // for forward compatibility.
@@ -298,6 +376,18 @@ type RagServiceServer interface {
 	ScrapeUrls(context.Context, *ScrapeUrlsRequest) (*ScrapeUrlsResponse, error)
 	// Получить только ID документов по запросу (для метрик)
 	GetDocumentIdsByQuery(context.Context, *GetDocumentIdsRequest) (*GetDocumentIdsResponse, error)
+	// Админ логин (без JWT)
+	AdminLogin(context.Context, *AdminLoginRequest) (*AdminLoginResponse, error)
+	// Админ логаут (требует JWT)
+	AdminLogout(context.Context, *AdminLogoutRequest) (*AdminLogoutResponse, error)
+	// Добавить админа (требует JWT)
+	AddAdmin(context.Context, *AddAdminRequest) (*AddAdminResponse, error)
+	// Удалить админа (требует JWT)
+	RemoveAdmin(context.Context, *RemoveAdminRequest) (*RemoveAdminResponse, error)
+	// Список всех админов (требует JWT)
+	ListAdmins(context.Context, *ListAdminsRequest) (*ListAdminsResponse, error)
+	// Валидировать токен (для проверки на фронте)
+	ValidateToken(context.Context, *ValidateTokenRequest) (*ValidateTokenResponse, error)
 	mustEmbedUnimplementedRagServiceServer()
 }
 
@@ -358,6 +448,24 @@ func (UnimplementedRagServiceServer) ScrapeUrls(context.Context, *ScrapeUrlsRequ
 }
 func (UnimplementedRagServiceServer) GetDocumentIdsByQuery(context.Context, *GetDocumentIdsRequest) (*GetDocumentIdsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDocumentIdsByQuery not implemented")
+}
+func (UnimplementedRagServiceServer) AdminLogin(context.Context, *AdminLoginRequest) (*AdminLoginResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminLogin not implemented")
+}
+func (UnimplementedRagServiceServer) AdminLogout(context.Context, *AdminLogoutRequest) (*AdminLogoutResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminLogout not implemented")
+}
+func (UnimplementedRagServiceServer) AddAdmin(context.Context, *AddAdminRequest) (*AddAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddAdmin not implemented")
+}
+func (UnimplementedRagServiceServer) RemoveAdmin(context.Context, *RemoveAdminRequest) (*RemoveAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveAdmin not implemented")
+}
+func (UnimplementedRagServiceServer) ListAdmins(context.Context, *ListAdminsRequest) (*ListAdminsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListAdmins not implemented")
+}
+func (UnimplementedRagServiceServer) ValidateToken(context.Context, *ValidateTokenRequest) (*ValidateTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ValidateToken not implemented")
 }
 func (UnimplementedRagServiceServer) mustEmbedUnimplementedRagServiceServer() {}
 func (UnimplementedRagServiceServer) testEmbeddedByValue()                    {}
@@ -686,6 +794,114 @@ func _RagService_GetDocumentIdsByQuery_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RagService_AdminLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).AdminLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_AdminLogin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).AdminLogin(ctx, req.(*AdminLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RagService_AdminLogout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminLogoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).AdminLogout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_AdminLogout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).AdminLogout(ctx, req.(*AdminLogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RagService_AddAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddAdminRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).AddAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_AddAdmin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).AddAdmin(ctx, req.(*AddAdminRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RagService_RemoveAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveAdminRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).RemoveAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_RemoveAdmin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).RemoveAdmin(ctx, req.(*RemoveAdminRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RagService_ListAdmins_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAdminsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).ListAdmins(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_ListAdmins_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).ListAdmins(ctx, req.(*ListAdminsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RagService_ValidateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).ValidateToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_ValidateToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).ValidateToken(ctx, req.(*ValidateTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RagService_ServiceDesc is the grpc.ServiceDesc for RagService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -760,6 +976,30 @@ var RagService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDocumentIdsByQuery",
 			Handler:    _RagService_GetDocumentIdsByQuery_Handler,
+		},
+		{
+			MethodName: "AdminLogin",
+			Handler:    _RagService_AdminLogin_Handler,
+		},
+		{
+			MethodName: "AdminLogout",
+			Handler:    _RagService_AdminLogout_Handler,
+		},
+		{
+			MethodName: "AddAdmin",
+			Handler:    _RagService_AddAdmin_Handler,
+		},
+		{
+			MethodName: "RemoveAdmin",
+			Handler:    _RagService_RemoveAdmin_Handler,
+		},
+		{
+			MethodName: "ListAdmins",
+			Handler:    _RagService_ListAdmins_Handler,
+		},
+		{
+			MethodName: "ValidateToken",
+			Handler:    _RagService_ValidateToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

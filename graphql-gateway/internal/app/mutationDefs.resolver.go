@@ -162,6 +162,72 @@ func (r *mutationResolver) ScrapeUrls(ctx context.Context, urls []string) (*gene
 	}, nil
 }
 
+// AdminLogin is the resolver for the adminLogin field.
+func (r *mutationResolver) AdminLogin(ctx context.Context, username string, password string) (*generated.AdminLoginResult, error) {
+	result, err := r.RAGClient.AdminLogin(ctx, username, password)
+	if err != nil {
+		return nil, err
+	}
+	resp := &generated.AdminLoginResult{
+		Token:     result.Token,
+		ExpiresAt: result.ExpiresAt,
+		Success:   result.Success,
+		Message:   result.Message,
+	}
+	if result.Admin != nil {
+		resp.Admin = &generated.AdminInfo{
+			ID:       int(result.Admin.ID),
+			Username: result.Admin.Username,
+			Role:     result.Admin.Role,
+		}
+	}
+	return resp, nil
+}
+
+// AdminLogout is the resolver for the adminLogout field.
+func (r *mutationResolver) AdminLogout(ctx context.Context, token string) (*generated.AdminLogoutResult, error) {
+	result, err := r.RAGClient.AdminLogout(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	return &generated.AdminLogoutResult{
+		Success: result.Success,
+		Message: result.Message,
+	}, nil
+}
+
+// AddAdmin is the resolver for the addAdmin field.
+func (r *mutationResolver) AddAdmin(ctx context.Context, token string, username string, password string) (*generated.AddAdminResult, error) {
+	result, err := r.RAGClient.AddAdmin(ctx, token, username, password)
+	if err != nil {
+		return nil, err
+	}
+	resp := &generated.AddAdminResult{
+		Success: result.Success,
+		Message: result.Message,
+	}
+	if result.Admin != nil {
+		resp.Admin = &generated.AdminInfo{
+			ID:       int(result.Admin.ID),
+			Username: result.Admin.Username,
+			Role:     result.Admin.Role,
+		}
+	}
+	return resp, nil
+}
+
+// RemoveAdmin is the resolver for the removeAdmin field.
+func (r *mutationResolver) RemoveAdmin(ctx context.Context, token string, adminID int) (*generated.RemoveAdminResult, error) {
+	result, err := r.RAGClient.RemoveAdmin(ctx, token, int32(adminID))
+	if err != nil {
+		return nil, err
+	}
+	return &generated.RemoveAdminResult{
+		Success: result.Success,
+		Message: result.Message,
+	}, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

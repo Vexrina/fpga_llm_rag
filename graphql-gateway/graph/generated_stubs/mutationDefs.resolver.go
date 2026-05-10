@@ -51,6 +51,26 @@ func (r *mutationResolver) ScrapeUrls(ctx context.Context, urls []string) (*gene
 	panic(fmt.Errorf("not implemented: ScrapeUrls - scrapeUrls"))
 }
 
+// AdminLogin is the resolver for the adminLogin field.
+func (r *mutationResolver) AdminLogin(ctx context.Context, username string, password string) (*generated.AdminLoginResult, error) {
+	panic(fmt.Errorf("not implemented: AdminLogin - adminLogin"))
+}
+
+// AdminLogout is the resolver for the adminLogout field.
+func (r *mutationResolver) AdminLogout(ctx context.Context, token string) (*generated.AdminLogoutResult, error) {
+	panic(fmt.Errorf("not implemented: AdminLogout - adminLogout"))
+}
+
+// AddAdmin is the resolver for the addAdmin field.
+func (r *mutationResolver) AddAdmin(ctx context.Context, token string, username string, password string) (*generated.AddAdminResult, error) {
+	panic(fmt.Errorf("not implemented: AddAdmin - addAdmin"))
+}
+
+// RemoveAdmin is the resolver for the removeAdmin field.
+func (r *mutationResolver) RemoveAdmin(ctx context.Context, token string, adminID int) (*generated.RemoveAdminResult, error) {
+	panic(fmt.Errorf("not implemented: RemoveAdmin - removeAdmin"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

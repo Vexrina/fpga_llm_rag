@@ -98,6 +98,8 @@ func main() {
 			dbUser, dbPassword, dbHost, dbPort, dbName,
 		)
 		llmGatewayAddr = getEnv("LLM_GATEWAY_ADDR", "llm-gateway:8083")
+		jwtSecret      = getEnv("JWT_SECRET", "your-secret-key-change-in-production")
+		tokenExpiry    = getEnv("TOKEN_EXPIRY", "24h")
 	)
 
 	var ( // conns
@@ -116,6 +118,14 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	db := repository.NewVecDb(ctx, connStr)
+
+	// Cleanup expired admin sessions on startup
+	adminRepo := repository.NewAdminRepository(db.Pool())
+	if err := adminRepo.DeleteExpiredSessions(ctx); err != nil {
+		log.Printf("Warning: failed to cleanup expired sessions: %v", err)
+	} else {
+		log.Println("Cleaned up expired admin sessions")
+	}
 
 	if err := initDocumentIndex(ctx, db); err != nil {
 		log.Printf("Warning: failed to initialize document index: %v", err)
@@ -159,6 +169,8 @@ func main() {
 		discoverLinksUsecase   = usecases.NewDiscoverLinksUsecase(linkScraperProcessor)
 		scrapeUrlsUsecase      = usecases.NewScrapeUrlsUsecase(linkScraperProcessor)
 		getDocumentIdsUsecase  = usecases.NewGetDocumentIdsUsecase(db, fw, settingsUsecase)
+		adminUsecase           = usecases.NewAdminUsecase(adminRepo, jwtSecret, parseDuration(tokenExpiry))
+		adminHandler           = app.NewAdminHandler(adminUsecase)
 	)
 
 	// Создаем TCP listener на порту 50051
@@ -187,6 +199,7 @@ func main() {
 		scrapeUrlsUsecase,
 		reindexUsecase,
 		getDocumentIdsUsecase,
+		adminHandler,
 	)
 	pb.RegisterRagServiceServer(s, ragServer)
 
@@ -260,4 +273,12 @@ func initDocumentIndex(ctx context.Context, db *repository.VecDb) error {
 
 	log.Println("Document index initialized with existing documents")
 	return nil
+}
+
+func parseDuration(s string) time.Duration {
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		return 24 * time.Hour
+	}
+	return d
 }

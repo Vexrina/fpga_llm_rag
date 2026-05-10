@@ -56,6 +56,26 @@ service RagService {
 
   // Получить только ID документов по запросу (для метрик)
   rpc GetDocumentIdsByQuery(GetDocumentIdsRequest) returns (GetDocumentIdsResponse);
+
+  // ============= ADMIN Methods (require JWT token) =============
+
+  // Админ логин (без JWT)
+  rpc AdminLogin(AdminLoginRequest) returns (AdminLoginResponse);
+
+  // Админ логаут (требует JWT)
+  rpc AdminLogout(AdminLogoutRequest) returns (AdminLogoutResponse);
+
+  // Добавить админа (требует JWT)
+  rpc AddAdmin(AddAdminRequest) returns (AddAdminResponse);
+
+  // Удалить админа (требует JWT)
+  rpc RemoveAdmin(RemoveAdminRequest) returns (RemoveAdminResponse);
+
+  // Список всех админов (требует JWT)
+  rpc ListAdmins(ListAdminsRequest) returns (ListAdminsResponse);
+
+  // Валидировать токен (для проверки на фронте)
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
 }
 
 // Тип источника документа
@@ -359,4 +379,86 @@ message GetDocumentIdsResponse {
 message DocumentIdEntry {
   string id = 1;
   float similarity_score = 2;
+}
+
+// ============= Admin Messages =============
+
+// Запрос на админ логин
+message AdminLoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+// Ответ на админ логин
+message AdminLoginResponse {
+  string token = 1;
+  string expires_at = 2;
+  AdminInfo admin = 3;
+  bool success = 4;
+  string message = 5;
+}
+
+// Информация об админе
+message AdminInfo {
+  int32 id = 1;
+  string username = 2;
+  string role = 3;
+}
+
+// Запрос на админ логаут
+message AdminLogoutRequest {
+  string token = 1;
+}
+
+// Ответ на админ логаут
+message AdminLogoutResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Запрос на добавление админа
+message AddAdminRequest {
+  string token = 1;
+  string username = 2;
+  string password = 3;
+}
+
+// Ответ на добавление админа
+message AddAdminResponse {
+  bool success = 1;
+  string message = 2;
+  AdminInfo admin = 3;
+}
+
+// Запрос на удаление админа
+message RemoveAdminRequest {
+  string token = 1;
+  int32 admin_id = 2;
+}
+
+// Ответ на удаление админа
+message RemoveAdminResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Запрос на список админов
+message ListAdminsRequest {
+  string token = 1;
+}
+
+// Ответ на список админов
+message ListAdminsResponse {
+  repeated AdminInfo admins = 1;
+}
+
+// Запрос на валидацию токена
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+// Ответ на валидацию токена
+message ValidateTokenResponse {
+  bool valid = 1;
+  AdminInfo admin = 2;
 } 

@@ -61,6 +61,16 @@ func (r *queryResolver) GetQueryLogs(ctx context.Context, page *int, pageSize *i
 	panic(fmt.Errorf("not implemented: GetQueryLogs - getQueryLogs"))
 }
 
+// ListAdmins is the resolver for the listAdmins field.
+func (r *queryResolver) ListAdmins(ctx context.Context, token string) ([]*generated.AdminInfo, error) {
+	panic(fmt.Errorf("not implemented: ListAdmins - listAdmins"))
+}
+
+// ValidateToken is the resolver for the validateToken field.
+func (r *queryResolver) ValidateToken(ctx context.Context, token string) (*generated.AdminInfo, error) {
+	panic(fmt.Errorf("not implemented: ValidateToken - validateToken"))
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

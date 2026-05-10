@@ -126,3 +126,33 @@ type ScrapedText {
 type ScrapeUrlsResult {
   texts: [ScrapedText!]!
 }
+
+type AdminInfo {
+  id: Int!
+  username: String!
+  role: String!
+}
+
+type AdminLoginResult {
+  token: String!
+  expiresAt: String!
+  admin: AdminInfo
+  success: Boolean!
+  message: String!
+}
+
+type AdminLogoutResult {
+  success: Boolean!
+  message: String!
+}
+
+type AddAdminResult {
+  success: Boolean!
+  message: String!
+  admin: AdminInfo
+}
+
+type RemoveAdminResult {
+  success: Boolean!
+  message: String!
+}

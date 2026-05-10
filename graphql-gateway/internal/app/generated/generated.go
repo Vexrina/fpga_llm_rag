@@ -34,6 +34,31 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AddAdminResult struct {
+		Admin   func(childComplexity int) int
+		Message func(childComplexity int) int
+		Success func(childComplexity int) int
+	}
+
+	AdminInfo struct {
+		ID       func(childComplexity int) int
+		Role     func(childComplexity int) int
+		Username func(childComplexity int) int
+	}
+
+	AdminLoginResult struct {
+		Admin     func(childComplexity int) int
+		ExpiresAt func(childComplexity int) int
+		Message   func(childComplexity int) int
+		Success   func(childComplexity int) int
+		Token     func(childComplexity int) int
+	}
+
+	AdminLogoutResult struct {
+		Message func(childComplexity int) int
+		Success func(childComplexity int) int
+	}
+
 	CommitDocumentResult struct {
 		ID      func(childComplexity int) int
 		Message func(childComplexity int) int
@@ -108,10 +133,14 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddAdmin         func(childComplexity int, token string, username string, password string) int
+		AdminLogin       func(childComplexity int, username string, password string) int
+		AdminLogout      func(childComplexity int, token string) int
 		CommitDocument   func(childComplexity int, input CommitDocumentInput) int
 		DeleteDocument   func(childComplexity int, id string) int
 		DiscoverLinks    func(childComplexity int, url string, maxDepth int) int
 		PreviewDocument  func(childComplexity int, input PreviewDocumentInput) int
+		RemoveAdmin      func(childComplexity int, token string, adminID int) int
 		RollbackDocument func(childComplexity int, documentID string, versionID int, rollbackBy *string) int
 		ScrapeUrls       func(childComplexity int, urls []string) int
 		UpdateDocument   func(childComplexity int, id string, title string, content string, updatedBy *string) int
@@ -133,7 +162,9 @@ type ComplexityRoot struct {
 		GetQueryLogs             func(childComplexity int, page *int, pageSize *int) int
 		GetRagSettings           func(childComplexity int) int
 		GetRagSettingsHistory    func(childComplexity int, limit *int) int
+		ListAdmins               func(childComplexity int, token string) int
 		SearchDocuments          func(childComplexity int, query string, limit *int, threshold *float64) int
+		ValidateToken            func(childComplexity int, token string) int
 	}
 
 	QueryLogEntry struct {
@@ -151,6 +182,11 @@ type ComplexityRoot struct {
 		Page     func(childComplexity int) int
 		PageSize func(childComplexity int) int
 		Total    func(childComplexity int) int
+	}
+
+	RemoveAdminResult struct {
+		Message func(childComplexity int) int
+		Success func(childComplexity int) int
 	}
 
 	RollbackResult struct {
@@ -202,6 +238,10 @@ type MutationResolver interface {
 	RollbackDocument(ctx context.Context, documentID string, versionID int, rollbackBy *string) (*RollbackResult, error)
 	DiscoverLinks(ctx context.Context, url string, maxDepth int) (*DiscoverLinksResult, error)
 	ScrapeUrls(ctx context.Context, urls []string) (*ScrapeUrlsResult, error)
+	AdminLogin(ctx context.Context, username string, password string) (*AdminLoginResult, error)
+	AdminLogout(ctx context.Context, token string) (*AdminLogoutResult, error)
+	AddAdmin(ctx context.Context, token string, username string, password string) (*AddAdminResult, error)
+	RemoveAdmin(ctx context.Context, token string, adminID int) (*RemoveAdminResult, error)
 }
 type QueryResolver interface {
 	Ask(ctx context.Context, question string) (string, error)
@@ -214,6 +254,8 @@ type QueryResolver interface {
 	GetDocumentHistory(ctx context.Context, documentID string, limit *int) ([]*DocumentVersion, error)
 	GetDocuments(ctx context.Context) ([]*DocumentListItem, error)
 	GetQueryLogs(ctx context.Context, page *int, pageSize *int) (*QueryLogsResult, error)
+	ListAdmins(ctx context.Context, token string) ([]*AdminInfo, error)
+	ValidateToken(ctx context.Context, token string) (*AdminInfo, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -229,6 +271,88 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	ec := newExecutionContext(nil, e, nil)
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AddAdminResult.admin":
+		if e.ComplexityRoot.AddAdminResult.Admin == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddAdminResult.Admin(childComplexity), true
+	case "AddAdminResult.message":
+		if e.ComplexityRoot.AddAdminResult.Message == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddAdminResult.Message(childComplexity), true
+	case "AddAdminResult.success":
+		if e.ComplexityRoot.AddAdminResult.Success == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddAdminResult.Success(childComplexity), true
+
+	case "AdminInfo.id":
+		if e.ComplexityRoot.AdminInfo.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminInfo.ID(childComplexity), true
+	case "AdminInfo.role":
+		if e.ComplexityRoot.AdminInfo.Role == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminInfo.Role(childComplexity), true
+	case "AdminInfo.username":
+		if e.ComplexityRoot.AdminInfo.Username == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminInfo.Username(childComplexity), true
+
+	case "AdminLoginResult.admin":
+		if e.ComplexityRoot.AdminLoginResult.Admin == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminLoginResult.Admin(childComplexity), true
+	case "AdminLoginResult.expiresAt":
+		if e.ComplexityRoot.AdminLoginResult.ExpiresAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminLoginResult.ExpiresAt(childComplexity), true
+	case "AdminLoginResult.message":
+		if e.ComplexityRoot.AdminLoginResult.Message == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminLoginResult.Message(childComplexity), true
+	case "AdminLoginResult.success":
+		if e.ComplexityRoot.AdminLoginResult.Success == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminLoginResult.Success(childComplexity), true
+	case "AdminLoginResult.token":
+		if e.ComplexityRoot.AdminLoginResult.Token == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminLoginResult.Token(childComplexity), true
+
+	case "AdminLogoutResult.message":
+		if e.ComplexityRoot.AdminLogoutResult.Message == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminLogoutResult.Message(childComplexity), true
+	case "AdminLogoutResult.success":
+		if e.ComplexityRoot.AdminLogoutResult.Success == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdminLogoutResult.Success(childComplexity), true
 
 	case "CommitDocumentResult.id":
 		if e.ComplexityRoot.CommitDocumentResult.ID == nil {
@@ -481,6 +605,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.MetadataEntry.Value(childComplexity), true
 
+	case "Mutation.addAdmin":
+		if e.ComplexityRoot.Mutation.AddAdmin == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addAdmin_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AddAdmin(childComplexity, args["token"].(string), args["username"].(string), args["password"].(string)), true
+	case "Mutation.adminLogin":
+		if e.ComplexityRoot.Mutation.AdminLogin == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_adminLogin_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AdminLogin(childComplexity, args["username"].(string), args["password"].(string)), true
+	case "Mutation.adminLogout":
+		if e.ComplexityRoot.Mutation.AdminLogout == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_adminLogout_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AdminLogout(childComplexity, args["token"].(string)), true
 	case "Mutation.commitDocument":
 		if e.ComplexityRoot.Mutation.CommitDocument == nil {
 			break
@@ -525,6 +682,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.PreviewDocument(childComplexity, args["input"].(PreviewDocumentInput)), true
+	case "Mutation.removeAdmin":
+		if e.ComplexityRoot.Mutation.RemoveAdmin == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeAdmin_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RemoveAdmin(childComplexity, args["token"].(string), args["adminId"].(int)), true
 	case "Mutation.rollbackDocument":
 		if e.ComplexityRoot.Mutation.RollbackDocument == nil {
 			break
@@ -663,6 +831,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Query.GetRagSettingsHistory(childComplexity, args["limit"].(*int)), true
 
+	case "Query.listAdmins":
+		if e.ComplexityRoot.Query.ListAdmins == nil {
+			break
+		}
+
+		args, err := ec.field_Query_listAdmins_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ListAdmins(childComplexity, args["token"].(string)), true
 	case "Query.searchDocuments":
 		if e.ComplexityRoot.Query.SearchDocuments == nil {
 			break
@@ -674,6 +853,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.SearchDocuments(childComplexity, args["query"].(string), args["limit"].(*int), args["threshold"].(*float64)), true
+	case "Query.validateToken":
+		if e.ComplexityRoot.Query.ValidateToken == nil {
+			break
+		}
+
+		args, err := ec.field_Query_validateToken_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ValidateToken(childComplexity, args["token"].(string)), true
 
 	case "QueryLogEntry.createdAt":
 		if e.ComplexityRoot.QueryLogEntry.CreatedAt == nil {
@@ -742,6 +932,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.QueryLogsResult.Total(childComplexity), true
+
+	case "RemoveAdminResult.message":
+		if e.ComplexityRoot.RemoveAdminResult.Message == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RemoveAdminResult.Message(childComplexity), true
+	case "RemoveAdminResult.success":
+		if e.ComplexityRoot.RemoveAdminResult.Success == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RemoveAdminResult.Success(childComplexity), true
 
 	case "RollbackResult.message":
 		if e.ComplexityRoot.RollbackResult.Message == nil {
@@ -1099,6 +1302,36 @@ type ScrapedText {
 type ScrapeUrlsResult {
   texts: [ScrapedText!]!
 }
+
+type AdminInfo {
+  id: Int!
+  username: String!
+  role: String!
+}
+
+type AdminLoginResult {
+  token: String!
+  expiresAt: String!
+  admin: AdminInfo
+  success: Boolean!
+  message: String!
+}
+
+type AdminLogoutResult {
+  success: Boolean!
+  message: String!
+}
+
+type AddAdminResult {
+  success: Boolean!
+  message: String!
+  admin: AdminInfo
+}
+
+type RemoveAdminResult {
+  success: Boolean!
+  message: String!
+}
 `, BuiltIn: false},
 	{Name: "../../../graph/query/queryDefs.graphqls", Input: `type Query {
   ask(question: String!): String!
@@ -1111,6 +1344,9 @@ type ScrapeUrlsResult {
   getDocumentHistory(documentId: String!, limit: Int): [DocumentVersion!]!
   getDocuments: [DocumentListItem!]!
   getQueryLogs(page: Int, pageSize: Int): QueryLogsResult!
+
+  listAdmins(token: String!): [AdminInfo!]!
+  validateToken(token: String!): AdminInfo
 }
 
 type SettingEntry {
@@ -1127,6 +1363,11 @@ type SettingEntry {
   rollbackDocument(documentId: String!, versionId: Int!, rollbackBy: String): RollbackResult!
   discoverLinks(url: String!, maxDepth: Int!): DiscoverLinksResult!
   scrapeUrls(urls: [String!]!): ScrapeUrlsResult!
+
+  adminLogin(username: String!, password: String!): AdminLoginResult!
+  adminLogout(token: String!): AdminLogoutResult!
+  addAdmin(token: String!, username: String!, password: String!): AddAdminResult!
+  removeAdmin(token: String!, adminId: Int!): RemoveAdminResult!
 }
 `, BuiltIn: false},
 	{Name: "../../../graph/enums/enumDefs.graphqls", Input: `enum DocumentSourceType {
@@ -1142,6 +1383,54 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_addAdmin_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "token", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["token"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "username", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["username"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "password", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["password"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_adminLogin_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "username", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["username"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "password", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_adminLogout_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "token", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["token"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_commitDocument_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -1189,6 +1478,22 @@ func (ec *executionContext) field_Mutation_previewDocument_args(ctx context.Cont
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_removeAdmin_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "token", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["token"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "adminId", ec.unmarshalNInt2int)
+	if err != nil {
+		return nil, err
+	}
+	args["adminId"] = arg1
 	return args, nil
 }
 
@@ -1347,6 +1652,17 @@ func (ec *executionContext) field_Query_getRagSettingsHistory_args(ctx context.C
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_listAdmins_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "token", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["token"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_searchDocuments_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1365,6 +1681,17 @@ func (ec *executionContext) field_Query_searchDocuments_args(ctx context.Context
 		return nil, err
 	}
 	args["threshold"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_validateToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "token", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["token"] = arg0
 	return args, nil
 }
 
@@ -1419,6 +1746,399 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AddAdminResult_success(ctx context.Context, field graphql.CollectedField, obj *AddAdminResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AddAdminResult_success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AddAdminResult_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddAdminResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddAdminResult_message(ctx context.Context, field graphql.CollectedField, obj *AddAdminResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AddAdminResult_message,
+		func(ctx context.Context) (any, error) {
+			return obj.Message, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AddAdminResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddAdminResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddAdminResult_admin(ctx context.Context, field graphql.CollectedField, obj *AddAdminResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AddAdminResult_admin,
+		func(ctx context.Context) (any, error) {
+			return obj.Admin, nil
+		},
+		nil,
+		ec.marshalOAdminInfo2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminInfo,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_AddAdminResult_admin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddAdminResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_AdminInfo_id(ctx, field)
+			case "username":
+				return ec.fieldContext_AdminInfo_username(ctx, field)
+			case "role":
+				return ec.fieldContext_AdminInfo_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AdminInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminInfo_id(ctx context.Context, field graphql.CollectedField, obj *AdminInfo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminInfo_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminInfo_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminInfo_username(ctx context.Context, field graphql.CollectedField, obj *AdminInfo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminInfo_username,
+		func(ctx context.Context) (any, error) {
+			return obj.Username, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminInfo_username(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminInfo_role(ctx context.Context, field graphql.CollectedField, obj *AdminInfo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminInfo_role,
+		func(ctx context.Context) (any, error) {
+			return obj.Role, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminInfo_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminLoginResult_token(ctx context.Context, field graphql.CollectedField, obj *AdminLoginResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminLoginResult_token,
+		func(ctx context.Context) (any, error) {
+			return obj.Token, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminLoginResult_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminLoginResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminLoginResult_expiresAt(ctx context.Context, field graphql.CollectedField, obj *AdminLoginResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminLoginResult_expiresAt,
+		func(ctx context.Context) (any, error) {
+			return obj.ExpiresAt, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminLoginResult_expiresAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminLoginResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminLoginResult_admin(ctx context.Context, field graphql.CollectedField, obj *AdminLoginResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminLoginResult_admin,
+		func(ctx context.Context) (any, error) {
+			return obj.Admin, nil
+		},
+		nil,
+		ec.marshalOAdminInfo2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminInfo,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminLoginResult_admin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminLoginResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_AdminInfo_id(ctx, field)
+			case "username":
+				return ec.fieldContext_AdminInfo_username(ctx, field)
+			case "role":
+				return ec.fieldContext_AdminInfo_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AdminInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminLoginResult_success(ctx context.Context, field graphql.CollectedField, obj *AdminLoginResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminLoginResult_success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminLoginResult_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminLoginResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminLoginResult_message(ctx context.Context, field graphql.CollectedField, obj *AdminLoginResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminLoginResult_message,
+		func(ctx context.Context) (any, error) {
+			return obj.Message, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminLoginResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminLoginResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminLogoutResult_success(ctx context.Context, field graphql.CollectedField, obj *AdminLogoutResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminLogoutResult_success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminLogoutResult_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminLogoutResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdminLogoutResult_message(ctx context.Context, field graphql.CollectedField, obj *AdminLogoutResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AdminLogoutResult_message,
+		func(ctx context.Context) (any, error) {
+			return obj.Message, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AdminLogoutResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdminLogoutResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _CommitDocumentResult_success(ctx context.Context, field graphql.CollectedField, obj *CommitDocumentResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
@@ -2986,6 +3706,202 @@ func (ec *executionContext) fieldContext_Mutation_scrapeUrls(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_adminLogin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_adminLogin,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().AdminLogin(ctx, fc.Args["username"].(string), fc.Args["password"].(string))
+		},
+		nil,
+		ec.marshalNAdminLoginResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminLoginResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_adminLogin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "token":
+				return ec.fieldContext_AdminLoginResult_token(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_AdminLoginResult_expiresAt(ctx, field)
+			case "admin":
+				return ec.fieldContext_AdminLoginResult_admin(ctx, field)
+			case "success":
+				return ec.fieldContext_AdminLoginResult_success(ctx, field)
+			case "message":
+				return ec.fieldContext_AdminLoginResult_message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AdminLoginResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_adminLogin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_adminLogout(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_adminLogout,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().AdminLogout(ctx, fc.Args["token"].(string))
+		},
+		nil,
+		ec.marshalNAdminLogoutResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminLogoutResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_adminLogout(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_AdminLogoutResult_success(ctx, field)
+			case "message":
+				return ec.fieldContext_AdminLogoutResult_message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AdminLogoutResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_adminLogout_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addAdmin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_addAdmin,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().AddAdmin(ctx, fc.Args["token"].(string), fc.Args["username"].(string), fc.Args["password"].(string))
+		},
+		nil,
+		ec.marshalNAddAdminResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAddAdminResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addAdmin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_AddAdminResult_success(ctx, field)
+			case "message":
+				return ec.fieldContext_AddAdminResult_message(ctx, field)
+			case "admin":
+				return ec.fieldContext_AddAdminResult_admin(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AddAdminResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addAdmin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_removeAdmin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_removeAdmin,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RemoveAdmin(ctx, fc.Args["token"].(string), fc.Args["adminId"].(int))
+		},
+		nil,
+		ec.marshalNRemoveAdminResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐRemoveAdminResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_removeAdmin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_RemoveAdminResult_success(ctx, field)
+			case "message":
+				return ec.fieldContext_RemoveAdminResult_message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RemoveAdminResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_removeAdmin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PreviewDocumentResult_extractedText(ctx context.Context, field graphql.CollectedField, obj *PreviewDocumentResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3510,6 +4426,104 @@ func (ec *executionContext) fieldContext_Query_getQueryLogs(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_listAdmins(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_listAdmins,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().ListAdmins(ctx, fc.Args["token"].(string))
+		},
+		nil,
+		ec.marshalNAdminInfo2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminInfoᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_listAdmins(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_AdminInfo_id(ctx, field)
+			case "username":
+				return ec.fieldContext_AdminInfo_username(ctx, field)
+			case "role":
+				return ec.fieldContext_AdminInfo_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AdminInfo", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_listAdmins_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_validateToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_validateToken,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().ValidateToken(ctx, fc.Args["token"].(string))
+		},
+		nil,
+		ec.marshalOAdminInfo2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminInfo,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_validateToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_AdminInfo_id(ctx, field)
+			case "username":
+				return ec.fieldContext_AdminInfo_username(ctx, field)
+			case "role":
+				return ec.fieldContext_AdminInfo_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AdminInfo", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_validateToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3948,6 +4962,64 @@ func (ec *executionContext) fieldContext_QueryLogsResult_pageSize(_ context.Cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RemoveAdminResult_success(ctx context.Context, field graphql.CollectedField, obj *RemoveAdminResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RemoveAdminResult_success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_RemoveAdminResult_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RemoveAdminResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RemoveAdminResult_message(ctx context.Context, field graphql.CollectedField, obj *RemoveAdminResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RemoveAdminResult_message,
+		func(ctx context.Context) (any, error) {
+			return obj.Message, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_RemoveAdminResult_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RemoveAdminResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6088,6 +7160,201 @@ func (ec *executionContext) unmarshalInputPreviewDocumentInput(ctx context.Conte
 
 // region    **************************** object.gotpl ****************************
 
+var addAdminResultImplementors = []string{"AddAdminResult"}
+
+func (ec *executionContext) _AddAdminResult(ctx context.Context, sel ast.SelectionSet, obj *AddAdminResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, addAdminResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AddAdminResult")
+		case "success":
+			out.Values[i] = ec._AddAdminResult_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "message":
+			out.Values[i] = ec._AddAdminResult_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "admin":
+			out.Values[i] = ec._AddAdminResult_admin(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var adminInfoImplementors = []string{"AdminInfo"}
+
+func (ec *executionContext) _AdminInfo(ctx context.Context, sel ast.SelectionSet, obj *AdminInfo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, adminInfoImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AdminInfo")
+		case "id":
+			out.Values[i] = ec._AdminInfo_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "username":
+			out.Values[i] = ec._AdminInfo_username(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "role":
+			out.Values[i] = ec._AdminInfo_role(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var adminLoginResultImplementors = []string{"AdminLoginResult"}
+
+func (ec *executionContext) _AdminLoginResult(ctx context.Context, sel ast.SelectionSet, obj *AdminLoginResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, adminLoginResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AdminLoginResult")
+		case "token":
+			out.Values[i] = ec._AdminLoginResult_token(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "expiresAt":
+			out.Values[i] = ec._AdminLoginResult_expiresAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "admin":
+			out.Values[i] = ec._AdminLoginResult_admin(ctx, field, obj)
+		case "success":
+			out.Values[i] = ec._AdminLoginResult_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "message":
+			out.Values[i] = ec._AdminLoginResult_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var adminLogoutResultImplementors = []string{"AdminLogoutResult"}
+
+func (ec *executionContext) _AdminLogoutResult(ctx context.Context, sel ast.SelectionSet, obj *AdminLogoutResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, adminLogoutResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AdminLogoutResult")
+		case "success":
+			out.Values[i] = ec._AdminLogoutResult_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "message":
+			out.Values[i] = ec._AdminLogoutResult_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var commitDocumentResultImplementors = []string{"CommitDocumentResult"}
 
 func (ec *executionContext) _CommitDocumentResult(ctx context.Context, sel ast.SelectionSet, obj *CommitDocumentResult) graphql.Marshaler {
@@ -6737,6 +8004,34 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "adminLogin":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_adminLogin(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "adminLogout":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_adminLogout(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "addAdmin":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addAdmin(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "removeAdmin":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_removeAdmin(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7034,6 +8329,47 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "listAdmins":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listAdmins(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "validateToken":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_validateToken(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -7162,6 +8498,50 @@ func (ec *executionContext) _QueryLogsResult(ctx context.Context, sel ast.Select
 			}
 		case "pageSize":
 			out.Values[i] = ec._QueryLogsResult_pageSize(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var removeAdminResultImplementors = []string{"RemoveAdminResult"}
+
+func (ec *executionContext) _RemoveAdminResult(ctx context.Context, sel ast.SelectionSet, obj *RemoveAdminResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, removeAdminResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RemoveAdminResult")
+		case "success":
+			out.Values[i] = ec._RemoveAdminResult_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "message":
+			out.Values[i] = ec._RemoveAdminResult_message(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7848,6 +9228,74 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAddAdminResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAddAdminResult(ctx context.Context, sel ast.SelectionSet, v AddAdminResult) graphql.Marshaler {
+	return ec._AddAdminResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAddAdminResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAddAdminResult(ctx context.Context, sel ast.SelectionSet, v *AddAdminResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AddAdminResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAdminInfo2ᚕᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminInfoᚄ(ctx context.Context, sel ast.SelectionSet, v []*AdminInfo) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNAdminInfo2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminInfo(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNAdminInfo2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminInfo(ctx context.Context, sel ast.SelectionSet, v *AdminInfo) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AdminInfo(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAdminLoginResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminLoginResult(ctx context.Context, sel ast.SelectionSet, v AdminLoginResult) graphql.Marshaler {
+	return ec._AdminLoginResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAdminLoginResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminLoginResult(ctx context.Context, sel ast.SelectionSet, v *AdminLoginResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AdminLoginResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAdminLogoutResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminLogoutResult(ctx context.Context, sel ast.SelectionSet, v AdminLogoutResult) graphql.Marshaler {
+	return ec._AdminLogoutResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAdminLogoutResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminLogoutResult(ctx context.Context, sel ast.SelectionSet, v *AdminLogoutResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AdminLogoutResult(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8119,6 +9567,20 @@ func (ec *executionContext) marshalNQueryLogsResult2ᚖgraphqlᚑgatewayᚋinter
 		return graphql.Null
 	}
 	return ec._QueryLogsResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNRemoveAdminResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐRemoveAdminResult(ctx context.Context, sel ast.SelectionSet, v RemoveAdminResult) graphql.Marshaler {
+	return ec._RemoveAdminResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNRemoveAdminResult2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐRemoveAdminResult(ctx context.Context, sel ast.SelectionSet, v *RemoveAdminResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._RemoveAdminResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNRollbackResult2graphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐRollbackResult(ctx context.Context, sel ast.SelectionSet, v RollbackResult) graphql.Marshaler {
@@ -8440,6 +9902,13 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalOAdminInfo2ᚖgraphqlᚑgatewayᚋinternalᚋappᚋgeneratedᚐAdminInfo(ctx context.Context, sel ast.SelectionSet, v *AdminInfo) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AdminInfo(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {

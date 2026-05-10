@@ -28,6 +28,7 @@ type (
 		scrapeUrlsUsecase       ScrapeUrlsUsecase
 		reindexDocumentsUsecase ReindexDocumentsUsecase
 		getDocumentIdsUsecase   GetDocumentIdsUsecase
+		adminHandler            *AdminHandler
 	}
 
 	AddDocumentUsecase interface {
@@ -92,6 +93,7 @@ func NewRagServer(
 	scrapeUrlsUsecase ScrapeUrlsUsecase,
 	reindexDocumentsUsecase ReindexDocumentsUsecase,
 	getDocumentIdsUsecase GetDocumentIdsUsecase,
+	adminHandler *AdminHandler,
 ) *RagServer {
 	return &RagServer{
 		db:                      database,
@@ -106,5 +108,30 @@ func NewRagServer(
 		scrapeUrlsUsecase:       scrapeUrlsUsecase,
 		reindexDocumentsUsecase: reindexDocumentsUsecase,
 		getDocumentIdsUsecase:   getDocumentIdsUsecase,
+		adminHandler:            adminHandler,
 	}
+}
+
+func (s *RagServer) AdminLogin(ctx context.Context, req *pb.AdminLoginRequest) (*pb.AdminLoginResponse, error) {
+	return s.adminHandler.AdminLogin(ctx, req)
+}
+
+func (s *RagServer) AdminLogout(ctx context.Context, req *pb.AdminLogoutRequest) (*pb.AdminLogoutResponse, error) {
+	return s.adminHandler.AdminLogout(ctx, req)
+}
+
+func (s *RagServer) AddAdmin(ctx context.Context, req *pb.AddAdminRequest) (*pb.AddAdminResponse, error) {
+	return s.adminHandler.AddAdmin(ctx, req)
+}
+
+func (s *RagServer) RemoveAdmin(ctx context.Context, req *pb.RemoveAdminRequest) (*pb.RemoveAdminResponse, error) {
+	return s.adminHandler.RemoveAdmin(ctx, req)
+}
+
+func (s *RagServer) ListAdmins(ctx context.Context, req *pb.ListAdminsRequest) (*pb.ListAdminsResponse, error) {
+	return s.adminHandler.ListAdmins(ctx, req)
+}
+
+func (s *RagServer) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
+	return s.adminHandler.ValidateToken(ctx, req)
 }

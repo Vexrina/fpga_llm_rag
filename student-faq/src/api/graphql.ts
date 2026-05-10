@@ -414,3 +414,65 @@ export async function getQueryLogsAPI(page: number = 1, pageSize: number = 20): 
   const result = await graphqlRequest<GetQueryLogsResult>(query, { page, pageSize })
   return result.getQueryLogs
 }
+
+export interface AdminLoginResult {
+  adminLogin: {
+    token: string
+    expiresAt: string
+    admin: {
+      id: number
+      username: string
+      role: string
+    }
+    success: boolean
+    message: string
+  }
+}
+
+export async function adminLoginAPI(username: string, password: string): Promise<{ token: string; username: string }> {
+  const query = `
+    mutation AdminLogin($username: String!, $password: String!) {
+      adminLogin(username: $username, password: $password) {
+        token
+        expiresAt
+        admin {
+          id
+          username
+          role
+        }
+        success
+        message
+      }
+    }
+  `
+  const result = await graphqlRequest<AdminLoginResult>(query, { username, password })
+  if (!result.adminLogin.success) {
+    throw new Error(result.adminLogin.message || 'Ошибка входа')
+  }
+  return {
+    token: result.adminLogin.token,
+    username: result.adminLogin.admin.username,
+  }
+}
+
+export interface ValidateTokenResult {
+  validateToken: {
+    id: number
+    username: string
+    role: string
+  } | null
+}
+
+export async function validateTokenAPI(token: string): Promise<{ id: number; username: string; role: string } | null> {
+  const query = `
+    query ValidateToken($token: String!) {
+      validateToken(token: $token) {
+        id
+        username
+        role
+      }
+    }
+  `
+  const result = await graphqlRequest<ValidateTokenResult>(query, { token })
+  return result.validateToken
+}

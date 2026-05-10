@@ -7,4 +7,9 @@ type Mutation {
   rollbackDocument(documentId: String!, versionId: Int!, rollbackBy: String): RollbackResult!
   discoverLinks(url: String!, maxDepth: Int!): DiscoverLinksResult!
   scrapeUrls(urls: [String!]!): ScrapeUrlsResult!
+
+  adminLogin(username: String!, password: String!): AdminLoginResult!
+  adminLogout(token: String!): AdminLogoutResult!
+  addAdmin(token: String!, username: String!, password: String!): AddAdminResult!
+  removeAdmin(token: String!, adminId: Int!): RemoveAdminResult!
 }

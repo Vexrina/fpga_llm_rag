@@ -2657,6 +2657,711 @@ func (x *DocumentIdEntry) GetSimilarityScore() float32 {
 	return 0
 }
 
+// Запрос на админ логин
+type AdminLoginRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminLoginRequest) Reset() {
+	*x = AdminLoginRequest{}
+	mi := &file_api_rag_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminLoginRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminLoginRequest) ProtoMessage() {}
+
+func (x *AdminLoginRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminLoginRequest.ProtoReflect.Descriptor instead.
+func (*AdminLoginRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *AdminLoginRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *AdminLoginRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+// Ответ на админ логин
+type AdminLoginResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	ExpiresAt     string                 `protobuf:"bytes,2,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	Admin         *AdminInfo             `protobuf:"bytes,3,opt,name=admin,proto3" json:"admin,omitempty"`
+	Success       bool                   `protobuf:"varint,4,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,5,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminLoginResponse) Reset() {
+	*x = AdminLoginResponse{}
+	mi := &file_api_rag_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminLoginResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminLoginResponse) ProtoMessage() {}
+
+func (x *AdminLoginResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminLoginResponse.ProtoReflect.Descriptor instead.
+func (*AdminLoginResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *AdminLoginResponse) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *AdminLoginResponse) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+func (x *AdminLoginResponse) GetAdmin() *AdminInfo {
+	if x != nil {
+		return x.Admin
+	}
+	return nil
+}
+
+func (x *AdminLoginResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *AdminLoginResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// Информация об админе
+type AdminInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminInfo) Reset() {
+	*x = AdminInfo{}
+	mi := &file_api_rag_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminInfo) ProtoMessage() {}
+
+func (x *AdminInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminInfo.ProtoReflect.Descriptor instead.
+func (*AdminInfo) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *AdminInfo) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *AdminInfo) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *AdminInfo) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+// Запрос на админ логаут
+type AdminLogoutRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminLogoutRequest) Reset() {
+	*x = AdminLogoutRequest{}
+	mi := &file_api_rag_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminLogoutRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminLogoutRequest) ProtoMessage() {}
+
+func (x *AdminLogoutRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminLogoutRequest.ProtoReflect.Descriptor instead.
+func (*AdminLogoutRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *AdminLogoutRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+// Ответ на админ логаут
+type AdminLogoutResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminLogoutResponse) Reset() {
+	*x = AdminLogoutResponse{}
+	mi := &file_api_rag_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminLogoutResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminLogoutResponse) ProtoMessage() {}
+
+func (x *AdminLogoutResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminLogoutResponse.ProtoReflect.Descriptor instead.
+func (*AdminLogoutResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *AdminLogoutResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *AdminLogoutResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// Запрос на добавление админа
+type AddAdminRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddAdminRequest) Reset() {
+	*x = AddAdminRequest{}
+	mi := &file_api_rag_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddAdminRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddAdminRequest) ProtoMessage() {}
+
+func (x *AddAdminRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddAdminRequest.ProtoReflect.Descriptor instead.
+func (*AddAdminRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *AddAdminRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *AddAdminRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *AddAdminRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+// Ответ на добавление админа
+type AddAdminResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Admin         *AdminInfo             `protobuf:"bytes,3,opt,name=admin,proto3" json:"admin,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddAdminResponse) Reset() {
+	*x = AddAdminResponse{}
+	mi := &file_api_rag_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddAdminResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddAdminResponse) ProtoMessage() {}
+
+func (x *AddAdminResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddAdminResponse.ProtoReflect.Descriptor instead.
+func (*AddAdminResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{49}
+}
+
+func (x *AddAdminResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *AddAdminResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *AddAdminResponse) GetAdmin() *AdminInfo {
+	if x != nil {
+		return x.Admin
+	}
+	return nil
+}
+
+// Запрос на удаление админа
+type RemoveAdminRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	AdminId       int32                  `protobuf:"varint,2,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveAdminRequest) Reset() {
+	*x = RemoveAdminRequest{}
+	mi := &file_api_rag_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveAdminRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveAdminRequest) ProtoMessage() {}
+
+func (x *RemoveAdminRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveAdminRequest.ProtoReflect.Descriptor instead.
+func (*RemoveAdminRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *RemoveAdminRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *RemoveAdminRequest) GetAdminId() int32 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+// Ответ на удаление админа
+type RemoveAdminResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveAdminResponse) Reset() {
+	*x = RemoveAdminResponse{}
+	mi := &file_api_rag_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveAdminResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveAdminResponse) ProtoMessage() {}
+
+func (x *RemoveAdminResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveAdminResponse.ProtoReflect.Descriptor instead.
+func (*RemoveAdminResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *RemoveAdminResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *RemoveAdminResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// Запрос на список админов
+type ListAdminsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAdminsRequest) Reset() {
+	*x = ListAdminsRequest{}
+	mi := &file_api_rag_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAdminsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAdminsRequest) ProtoMessage() {}
+
+func (x *ListAdminsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAdminsRequest.ProtoReflect.Descriptor instead.
+func (*ListAdminsRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *ListAdminsRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+// Ответ на список админов
+type ListAdminsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Admins        []*AdminInfo           `protobuf:"bytes,1,rep,name=admins,proto3" json:"admins,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAdminsResponse) Reset() {
+	*x = ListAdminsResponse{}
+	mi := &file_api_rag_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAdminsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAdminsResponse) ProtoMessage() {}
+
+func (x *ListAdminsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAdminsResponse.ProtoReflect.Descriptor instead.
+func (*ListAdminsResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *ListAdminsResponse) GetAdmins() []*AdminInfo {
+	if x != nil {
+		return x.Admins
+	}
+	return nil
+}
+
+// Запрос на валидацию токена
+type ValidateTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ValidateTokenRequest) Reset() {
+	*x = ValidateTokenRequest{}
+	mi := &file_api_rag_proto_msgTypes[54]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ValidateTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidateTokenRequest) ProtoMessage() {}
+
+func (x *ValidateTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[54]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidateTokenRequest.ProtoReflect.Descriptor instead.
+func (*ValidateTokenRequest) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{54}
+}
+
+func (x *ValidateTokenRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+// Ответ на валидацию токена
+type ValidateTokenResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
+	Admin         *AdminInfo             `protobuf:"bytes,2,opt,name=admin,proto3" json:"admin,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ValidateTokenResponse) Reset() {
+	*x = ValidateTokenResponse{}
+	mi := &file_api_rag_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ValidateTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidateTokenResponse) ProtoMessage() {}
+
+func (x *ValidateTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_rag_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidateTokenResponse.ProtoReflect.Descriptor instead.
+func (*ValidateTokenResponse) Descriptor() ([]byte, []int) {
+	return file_api_rag_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *ValidateTokenResponse) GetValid() bool {
+	if x != nil {
+		return x.Valid
+	}
+	return false
+}
+
+func (x *ValidateTokenResponse) GetAdmin() *AdminInfo {
+	if x != nil {
+		return x.Admin
+	}
+	return nil
+}
+
 var File_api_rag_proto protoreflect.FileDescriptor
 
 const file_api_rag_proto_rawDesc = "" +
@@ -2856,7 +3561,49 @@ const file_api_rag_proto_rawDesc = "" +
 	"totalFound\"L\n" +
 	"\x0fDocumentIdEntry\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12)\n" +
-	"\x10similarity_score\x18\x02 \x01(\x02R\x0fsimilarityScore*q\n" +
+	"\x10similarity_score\x18\x02 \x01(\x02R\x0fsimilarityScore\"K\n" +
+	"\x11AdminLoginRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xa3\x01\n" +
+	"\x12AdminLoginResponse\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12\x1d\n" +
+	"\n" +
+	"expires_at\x18\x02 \x01(\tR\texpiresAt\x12$\n" +
+	"\x05admin\x18\x03 \x01(\v2\x0e.rag.AdminInfoR\x05admin\x12\x18\n" +
+	"\asuccess\x18\x04 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x05 \x01(\tR\amessage\"K\n" +
+	"\tAdminInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x12\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\"*\n" +
+	"\x12AdminLogoutRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"I\n" +
+	"\x13AdminLogoutResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"_\n" +
+	"\x0fAddAdminRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x03 \x01(\tR\bpassword\"l\n" +
+	"\x10AddAdminResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12$\n" +
+	"\x05admin\x18\x03 \x01(\v2\x0e.rag.AdminInfoR\x05admin\"E\n" +
+	"\x12RemoveAdminRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12\x19\n" +
+	"\badmin_id\x18\x02 \x01(\x05R\aadminId\"I\n" +
+	"\x13RemoveAdminResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\")\n" +
+	"\x11ListAdminsRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"<\n" +
+	"\x12ListAdminsResponse\x12&\n" +
+	"\x06admins\x18\x01 \x03(\v2\x0e.rag.AdminInfoR\x06admins\",\n" +
+	"\x14ValidateTokenRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"S\n" +
+	"\x15ValidateTokenResponse\x12\x14\n" +
+	"\x05valid\x18\x01 \x01(\bR\x05valid\x12$\n" +
+	"\x05admin\x18\x02 \x01(\v2\x0e.rag.AdminInfoR\x05admin*q\n" +
 	"\x12DocumentSourceType\x12\x1b\n" +
 	"\x17SOURCE_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10SOURCE_TYPE_TEXT\x10\x01\x12\x13\n" +
@@ -2867,8 +3614,7 @@ const file_api_rag_proto_rawDesc = "" +
 	"\x18COMPARISON_METHOD_COSINE\x10\x01\x12\x19\n" +
 	"\x15COMPARISON_METHOD_DOT\x10\x02\x12\x1f\n" +
 	"\x1bCOMPARISON_METHOD_EUCLIDEAN\x10\x03\x12\x18\n" +
-	"\x14COMPARISON_METHOD_L1\x10\x042\x94\n" +
-	"\n" +
+	"\x14COMPARISON_METHOD_L1\x10\x042\x97\r\n" +
 	"\n" +
 	"RagService\x12L\n" +
 	"\x0fPreviewDocument\x12\x1b.rag.PreviewDocumentRequest\x1a\x1c.rag.PreviewDocumentResponse\x12I\n" +
@@ -2888,7 +3634,15 @@ const file_api_rag_proto_rawDesc = "" +
 	"\rDiscoverLinks\x12\x19.rag.DiscoverLinksRequest\x1a\x1a.rag.DiscoverLinksResponse\x12=\n" +
 	"\n" +
 	"ScrapeUrls\x12\x16.rag.ScrapeUrlsRequest\x1a\x17.rag.ScrapeUrlsResponse\x12P\n" +
-	"\x15GetDocumentIdsByQuery\x12\x1a.rag.GetDocumentIdsRequest\x1a\x1b.rag.GetDocumentIdsResponseB\aZ\x05./ragb\x06proto3"
+	"\x15GetDocumentIdsByQuery\x12\x1a.rag.GetDocumentIdsRequest\x1a\x1b.rag.GetDocumentIdsResponse\x12=\n" +
+	"\n" +
+	"AdminLogin\x12\x16.rag.AdminLoginRequest\x1a\x17.rag.AdminLoginResponse\x12@\n" +
+	"\vAdminLogout\x12\x17.rag.AdminLogoutRequest\x1a\x18.rag.AdminLogoutResponse\x127\n" +
+	"\bAddAdmin\x12\x14.rag.AddAdminRequest\x1a\x15.rag.AddAdminResponse\x12@\n" +
+	"\vRemoveAdmin\x12\x17.rag.RemoveAdminRequest\x1a\x18.rag.RemoveAdminResponse\x12=\n" +
+	"\n" +
+	"ListAdmins\x12\x16.rag.ListAdminsRequest\x1a\x17.rag.ListAdminsResponse\x12F\n" +
+	"\rValidateToken\x12\x19.rag.ValidateTokenRequest\x1a\x1a.rag.ValidateTokenResponseB\aZ\x05./ragb\x06proto3"
 
 var (
 	file_api_rag_proto_rawDescOnce sync.Once
@@ -2903,7 +3657,7 @@ func file_api_rag_proto_rawDescGZIP() []byte {
 }
 
 var file_api_rag_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_api_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
+var file_api_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 60)
 var file_api_rag_proto_goTypes = []any{
 	(DocumentSourceType)(0),               // 0: rag.DocumentSourceType
 	(ComparisonMethod)(0),                 // 1: rag.ComparisonMethod
@@ -2950,22 +3704,35 @@ var file_api_rag_proto_goTypes = []any{
 	(*GetDocumentIdsRequest)(nil),         // 42: rag.GetDocumentIdsRequest
 	(*GetDocumentIdsResponse)(nil),        // 43: rag.GetDocumentIdsResponse
 	(*DocumentIdEntry)(nil),               // 44: rag.DocumentIdEntry
-	nil,                                   // 45: rag.AddDocumentRequest.MetadataEntry
-	nil,                                   // 46: rag.CommitDocumentRequest.MetadataEntry
-	nil,                                   // 47: rag.DocumentResult.MetadataEntry
-	nil,                                   // 48: rag.GetRagSettingsResponse.SettingsEntry
+	(*AdminLoginRequest)(nil),             // 45: rag.AdminLoginRequest
+	(*AdminLoginResponse)(nil),            // 46: rag.AdminLoginResponse
+	(*AdminInfo)(nil),                     // 47: rag.AdminInfo
+	(*AdminLogoutRequest)(nil),            // 48: rag.AdminLogoutRequest
+	(*AdminLogoutResponse)(nil),           // 49: rag.AdminLogoutResponse
+	(*AddAdminRequest)(nil),               // 50: rag.AddAdminRequest
+	(*AddAdminResponse)(nil),              // 51: rag.AddAdminResponse
+	(*RemoveAdminRequest)(nil),            // 52: rag.RemoveAdminRequest
+	(*RemoveAdminResponse)(nil),           // 53: rag.RemoveAdminResponse
+	(*ListAdminsRequest)(nil),             // 54: rag.ListAdminsRequest
+	(*ListAdminsResponse)(nil),            // 55: rag.ListAdminsResponse
+	(*ValidateTokenRequest)(nil),          // 56: rag.ValidateTokenRequest
+	(*ValidateTokenResponse)(nil),         // 57: rag.ValidateTokenResponse
+	nil,                                   // 58: rag.AddDocumentRequest.MetadataEntry
+	nil,                                   // 59: rag.CommitDocumentRequest.MetadataEntry
+	nil,                                   // 60: rag.DocumentResult.MetadataEntry
+	nil,                                   // 61: rag.GetRagSettingsResponse.SettingsEntry
 }
 var file_api_rag_proto_depIdxs = []int32{
-	45, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
+	58, // 0: rag.AddDocumentRequest.metadata:type_name -> rag.AddDocumentRequest.MetadataEntry
 	0,  // 1: rag.AddDocumentRequest.source_type:type_name -> rag.DocumentSourceType
 	0,  // 2: rag.PreviewDocumentRequest.source_type:type_name -> rag.DocumentSourceType
-	46, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
+	59, // 3: rag.CommitDocumentRequest.metadata:type_name -> rag.CommitDocumentRequest.MetadataEntry
 	0,  // 4: rag.CommitDocumentRequest.source_type:type_name -> rag.DocumentSourceType
 	1,  // 5: rag.SearchRequest.comparison_method:type_name -> rag.ComparisonMethod
 	10, // 6: rag.SearchResponse.results:type_name -> rag.DocumentResult
-	47, // 7: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
+	60, // 7: rag.DocumentResult.metadata:type_name -> rag.DocumentResult.MetadataEntry
 	10, // 8: rag.GetDocumentResponse.document:type_name -> rag.DocumentResult
-	48, // 9: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
+	61, // 9: rag.GetRagSettingsResponse.settings:type_name -> rag.GetRagSettingsResponse.SettingsEntry
 	23, // 10: rag.GetRagSettingsHistoryResponse.entries:type_name -> rag.SettingsHistoryEntry
 	26, // 11: rag.GetDocumentHistoryResponse.versions:type_name -> rag.DocumentVersion
 	33, // 12: rag.GetAllDocumentsResponse.documents:type_name -> rag.DocumentListItem
@@ -2973,45 +3740,61 @@ var file_api_rag_proto_depIdxs = []int32{
 	41, // 14: rag.ScrapeUrlsResponse.texts:type_name -> rag.ScrapedTextEntry
 	1,  // 15: rag.GetDocumentIdsRequest.comparison_method:type_name -> rag.ComparisonMethod
 	44, // 16: rag.GetDocumentIdsResponse.document_ids:type_name -> rag.DocumentIdEntry
-	4,  // 17: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
-	6,  // 18: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
-	8,  // 19: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
-	11, // 20: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
-	13, // 21: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
-	15, // 22: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
-	17, // 23: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
-	19, // 24: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
-	21, // 25: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
-	24, // 26: rag.RagService.GetDocumentHistory:input_type -> rag.GetDocumentHistoryRequest
-	27, // 27: rag.RagService.RollbackDocument:input_type -> rag.RollbackDocumentRequest
-	29, // 28: rag.RagService.UpdateDocument:input_type -> rag.UpdateDocumentRequest
-	31, // 29: rag.RagService.GetAllDocuments:input_type -> rag.GetAllDocumentsRequest
-	34, // 30: rag.RagService.GetQueryLogs:input_type -> rag.GetQueryLogsRequest
-	37, // 31: rag.RagService.DiscoverLinks:input_type -> rag.DiscoverLinksRequest
-	39, // 32: rag.RagService.ScrapeUrls:input_type -> rag.ScrapeUrlsRequest
-	42, // 33: rag.RagService.GetDocumentIdsByQuery:input_type -> rag.GetDocumentIdsRequest
-	5,  // 34: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
-	7,  // 35: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
-	9,  // 36: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
-	12, // 37: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
-	14, // 38: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
-	16, // 39: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
-	18, // 40: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
-	20, // 41: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
-	22, // 42: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
-	25, // 43: rag.RagService.GetDocumentHistory:output_type -> rag.GetDocumentHistoryResponse
-	28, // 44: rag.RagService.RollbackDocument:output_type -> rag.RollbackDocumentResponse
-	30, // 45: rag.RagService.UpdateDocument:output_type -> rag.UpdateDocumentResponse
-	32, // 46: rag.RagService.GetAllDocuments:output_type -> rag.GetAllDocumentsResponse
-	35, // 47: rag.RagService.GetQueryLogs:output_type -> rag.GetQueryLogsResponse
-	38, // 48: rag.RagService.DiscoverLinks:output_type -> rag.DiscoverLinksResponse
-	40, // 49: rag.RagService.ScrapeUrls:output_type -> rag.ScrapeUrlsResponse
-	43, // 50: rag.RagService.GetDocumentIdsByQuery:output_type -> rag.GetDocumentIdsResponse
-	34, // [34:51] is the sub-list for method output_type
-	17, // [17:34] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	47, // 17: rag.AdminLoginResponse.admin:type_name -> rag.AdminInfo
+	47, // 18: rag.AddAdminResponse.admin:type_name -> rag.AdminInfo
+	47, // 19: rag.ListAdminsResponse.admins:type_name -> rag.AdminInfo
+	47, // 20: rag.ValidateTokenResponse.admin:type_name -> rag.AdminInfo
+	4,  // 21: rag.RagService.PreviewDocument:input_type -> rag.PreviewDocumentRequest
+	6,  // 22: rag.RagService.CommitDocument:input_type -> rag.CommitDocumentRequest
+	8,  // 23: rag.RagService.SearchDocuments:input_type -> rag.SearchRequest
+	11, // 24: rag.RagService.GetDocument:input_type -> rag.GetDocumentRequest
+	13, // 25: rag.RagService.DeleteDocument:input_type -> rag.DeleteDocumentRequest
+	15, // 26: rag.RagService.GetIndexStats:input_type -> rag.GetIndexStatsRequest
+	17, // 27: rag.RagService.GetRagSettings:input_type -> rag.GetRagSettingsRequest
+	19, // 28: rag.RagService.UpdateRagSettings:input_type -> rag.UpdateRagSettingsRequest
+	21, // 29: rag.RagService.GetRagSettingsHistory:input_type -> rag.GetRagSettingsHistoryRequest
+	24, // 30: rag.RagService.GetDocumentHistory:input_type -> rag.GetDocumentHistoryRequest
+	27, // 31: rag.RagService.RollbackDocument:input_type -> rag.RollbackDocumentRequest
+	29, // 32: rag.RagService.UpdateDocument:input_type -> rag.UpdateDocumentRequest
+	31, // 33: rag.RagService.GetAllDocuments:input_type -> rag.GetAllDocumentsRequest
+	34, // 34: rag.RagService.GetQueryLogs:input_type -> rag.GetQueryLogsRequest
+	37, // 35: rag.RagService.DiscoverLinks:input_type -> rag.DiscoverLinksRequest
+	39, // 36: rag.RagService.ScrapeUrls:input_type -> rag.ScrapeUrlsRequest
+	42, // 37: rag.RagService.GetDocumentIdsByQuery:input_type -> rag.GetDocumentIdsRequest
+	45, // 38: rag.RagService.AdminLogin:input_type -> rag.AdminLoginRequest
+	48, // 39: rag.RagService.AdminLogout:input_type -> rag.AdminLogoutRequest
+	50, // 40: rag.RagService.AddAdmin:input_type -> rag.AddAdminRequest
+	52, // 41: rag.RagService.RemoveAdmin:input_type -> rag.RemoveAdminRequest
+	54, // 42: rag.RagService.ListAdmins:input_type -> rag.ListAdminsRequest
+	56, // 43: rag.RagService.ValidateToken:input_type -> rag.ValidateTokenRequest
+	5,  // 44: rag.RagService.PreviewDocument:output_type -> rag.PreviewDocumentResponse
+	7,  // 45: rag.RagService.CommitDocument:output_type -> rag.CommitDocumentResponse
+	9,  // 46: rag.RagService.SearchDocuments:output_type -> rag.SearchResponse
+	12, // 47: rag.RagService.GetDocument:output_type -> rag.GetDocumentResponse
+	14, // 48: rag.RagService.DeleteDocument:output_type -> rag.DeleteDocumentResponse
+	16, // 49: rag.RagService.GetIndexStats:output_type -> rag.GetIndexStatsResponse
+	18, // 50: rag.RagService.GetRagSettings:output_type -> rag.GetRagSettingsResponse
+	20, // 51: rag.RagService.UpdateRagSettings:output_type -> rag.UpdateRagSettingsResponse
+	22, // 52: rag.RagService.GetRagSettingsHistory:output_type -> rag.GetRagSettingsHistoryResponse
+	25, // 53: rag.RagService.GetDocumentHistory:output_type -> rag.GetDocumentHistoryResponse
+	28, // 54: rag.RagService.RollbackDocument:output_type -> rag.RollbackDocumentResponse
+	30, // 55: rag.RagService.UpdateDocument:output_type -> rag.UpdateDocumentResponse
+	32, // 56: rag.RagService.GetAllDocuments:output_type -> rag.GetAllDocumentsResponse
+	35, // 57: rag.RagService.GetQueryLogs:output_type -> rag.GetQueryLogsResponse
+	38, // 58: rag.RagService.DiscoverLinks:output_type -> rag.DiscoverLinksResponse
+	40, // 59: rag.RagService.ScrapeUrls:output_type -> rag.ScrapeUrlsResponse
+	43, // 60: rag.RagService.GetDocumentIdsByQuery:output_type -> rag.GetDocumentIdsResponse
+	46, // 61: rag.RagService.AdminLogin:output_type -> rag.AdminLoginResponse
+	49, // 62: rag.RagService.AdminLogout:output_type -> rag.AdminLogoutResponse
+	51, // 63: rag.RagService.AddAdmin:output_type -> rag.AddAdminResponse
+	53, // 64: rag.RagService.RemoveAdmin:output_type -> rag.RemoveAdminResponse
+	55, // 65: rag.RagService.ListAdmins:output_type -> rag.ListAdminsResponse
+	57, // 66: rag.RagService.ValidateToken:output_type -> rag.ValidateTokenResponse
+	44, // [44:67] is the sub-list for method output_type
+	21, // [21:44] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_api_rag_proto_init() }
@@ -3025,7 +3808,7 @@ func file_api_rag_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_rag_proto_rawDesc), len(file_api_rag_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   47,
+			NumMessages:   60,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -1,13 +1,51 @@
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+
+const INACTIVITY_TIMEOUT = 2 * 60 * 60 * 1000 // 2 hours in ms
+
+function isTokenExpired(): boolean {
+  const token = localStorage.getItem('admin_token')
+  if (!token) return true
+  
+  const lastActive = parseInt(localStorage.getItem('last_active_time') || '0', 10)
+  if (!lastActive) return true
+  
+  return Date.now() - lastActive > INACTIVITY_TIMEOUT
+}
 
 export default function Layout() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem('admin_token')
+    if (token) {
+      if (isTokenExpired()) {
+        localStorage.removeItem('admin_token')
+        localStorage.removeItem('admin_username')
+        localStorage.removeItem('last_active_time')
+        setIsAdmin(false)
+        if (location.pathname === '/admin') {
+          navigate('/login')
+        }
+      } else {
+        setIsAdmin(true)
+      }
+    } else {
+      setIsAdmin(false)
+    }
+  }, [location, navigate])
 
   const navItems = [
     { path: '/chat', label: 'Чат' },
-    { path: '/admin', label: 'Настройки RAG' },
-    { path: '/login', label: 'Войти' },
   ]
+
+  if (isAdmin) {
+    navItems.push({ path: '/admin', label: 'Настройки RAG' })
+  } else {
+    navItems.push({ path: '/login', label: 'Вход' })
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

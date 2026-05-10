@@ -9,6 +9,31 @@ import (
 	"strconv"
 )
 
+type AddAdminResult struct {
+	Success bool       `json:"success"`
+	Message string     `json:"message"`
+	Admin   *AdminInfo `json:"admin,omitempty"`
+}
+
+type AdminInfo struct {
+	ID       int    `json:"id"`
+	Username string `json:"username"`
+	Role     string `json:"role"`
+}
+
+type AdminLoginResult struct {
+	Token     string     `json:"token"`
+	ExpiresAt string     `json:"expiresAt"`
+	Admin     *AdminInfo `json:"admin,omitempty"`
+	Success   bool       `json:"success"`
+	Message   string     `json:"message"`
+}
+
+type AdminLogoutResult struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 type CommitDocumentInput struct {
 	Title         string              `json:"title"`
 	Content       *string             `json:"content,omitempty"`
@@ -129,6 +154,11 @@ type QueryLogsResult struct {
 	Total    int              `json:"total"`
 	Page     int              `json:"page"`
 	PageSize int              `json:"pageSize"`
+}
+
+type RemoveAdminResult struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
 }
 
 type RollbackResult struct {
