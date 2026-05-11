@@ -41,8 +41,9 @@ type OllamaClient struct {
 }
 
 func NewOllamaClient(host string) *OllamaClient {
+	timeout := 180 * time.Second
 	return &OllamaClient{
-		httpClient: http.Client{Timeout: 60 * time.Second},
+		httpClient: http.Client{Timeout: timeout},
 		host:       ensureHTTPrefix(host),
 	}
 }
