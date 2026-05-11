@@ -12,7 +12,7 @@ import (
 )
 
 type GetDocumentIdsRepository interface {
-	SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []float32, limit int, method utils.ComparisonMethod) ([]repository.SearchResult, error)
+	SearchSimilar(ctx context.Context, tx pgx.Tx, queryEmbedding []float32, limit int, threshold float32, method utils.ComparisonMethod) ([]repository.SearchResult, error)
 	WithTransactional(ctx context.Context, fn func(tx pgx.Tx) error) error
 }
 
@@ -60,7 +60,7 @@ func (u *GetDocumentIdsUsecase) GetDocumentIds(ctx context.Context, domain *util
 	var totalFound int32
 
 	err = u.repository.WithTransactional(ctx, func(tx pgx.Tx) error {
-		items, err := u.repository.SearchSimilar(ctx, tx, queryEmbedding, int(domain.Limit), method)
+		items, err := u.repository.SearchSimilar(ctx, tx, queryEmbedding, int(domain.Limit), domain.SimilarityThs, method)
 		if err != nil {
 			return err
 		}
