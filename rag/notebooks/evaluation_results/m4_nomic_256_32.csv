@@ -1,0 +1,6 @@
+Metric,limit,sim_thresh,method,Value
+Combined,3,0.33,DOT,0.5547
+F1@5,3,0.5,COSINE,0.447
+MRR,10,0.33,DOT,0.7747
+P@5,3,0.5,COSINE,0.3414
+R@5,5,0.33,DOT,0.8157
