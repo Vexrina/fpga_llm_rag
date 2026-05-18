@@ -1,0 +1,15 @@
+=== Results ===
+Total requests: 60
+Successful: 43
+Errors: 17
+
+Latency (seconds):
+  Avg: 131.403s
+  p50: 137.258s
+  p95: 175.703s
+  p99: 177.798s
+  Min: 19.974s
+  Max: 177.798s
+
+Errors: 17/60 (28.3%)
+  - timeout
